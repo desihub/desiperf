@@ -1,0 +1,5 @@
+This etc/ directory is for small files that don't fit elsewhere, e.g. a
+module definition file.
+
+This README can be deleted (git rm etc/README) after another file has been
+added (git doesn't like blank directories, so this file is a placeholder).

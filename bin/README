@@ -1,0 +1,5 @@
+This bin/ directory is for executable scripts that someone would run
+from the command line.
+
+This README file can be deleted (git rm bin/README) after a script has been
+added (git doesn't like blank directories, so this file is a placeholder).

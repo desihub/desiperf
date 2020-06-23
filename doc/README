@@ -1,0 +1,4 @@
+This doc/ directory is for documentation about this module.
+
+This README file can be deleted (git rm doc/README) after doc files have been
+added (git doesn't like blank directories, so this file is a placeholder).
