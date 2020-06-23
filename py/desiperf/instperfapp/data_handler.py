@@ -26,7 +26,7 @@ class DataHandler(object):
         all_coord_files = glob.glob('/exposures/desi/*/*/coordinates-*')
 
         self.coord_files = []
-        for f in coord_files:
+        for f in all_coord_files:
             try:
                 df = Table.read(f, format='fits').to_pandas()
                 good = df['OFFSET_0']
@@ -90,13 +90,13 @@ class DataHandler(object):
         return df
 
     def telemetry_queries(self):
-        exp_query = pd.read_sql_query(f"SELECT * FROM exposure WHERE time_recorded >= '{self.start_date}' AND time_recorded < '{self.end_date}'",conn)
+        exp_query = pd.read_sql_query(f"SELECT * FROM exposure WHERE time_recorded >= '{self.start_date}' AND time_recorded <'{self.end_date}'",self.conn)
         new_query = exp_query[exp_query.id.isin(self.exposures)]
         new_df = pd.merge(left=new_query, right=self.exp_df, left_on='id', right_on='EXPOSURE')
         times = list(new_df.mjd_obs)
 
-        tempquery = pd.read_sql_query(f"SELECT * FROM environmentmonitor_telescope WHERE time_recorded >= '{self.start_date}' AND time_recorded < '{self.end_date}'",conn)
-        towerquery = pd.read_sql_query(f"SELECT * FROM environmentmonitor_tower WHERE time_recorded >= '{self.start_date}' AND time_recorded < '{self.end_date}'",conn)
+        tempquery = pd.read_sql_query(f"SELECT * FROM environmentmonitor_telescope WHERE time_recorded >= '{self.start_date}' AND time_recorded < '{self.end_date}'",self.conn)
+        towerquery = pd.read_sql_query(f"SELECT * FROM environmentmonitor_tower WHERE time_recorded >= '{self.start_date}' AND time_recorded < '{self.end_date}'",self.conn)
 
         temp_cols = ['mirror_temp','truss_temp','air_temp','mirror_avg_temp']
         tower_cols = ['wind_speed','wind_direction', 'humidity', 'pressure', 'temperature', 'dewpoint']
@@ -108,7 +108,7 @@ class DataHandler(object):
         tower_df = self.get_temp_values(towerquery, tower_dtimes, times, tower_cols)
 
         ## FVC Data
-        fvcquery = pd.read_sql_query(f"SELECT * FROM fvc_camerastatus WHERE time_recorded >= '{self.start_date}' AND time_recorded < '{self.end_date}'",conn)
+        fvcquery = pd.read_sql_query(f"SELECT * FROM fvc_camerastatus WHERE time_recorded >= '{self.start_date}' AND time_recorded <'{self.end_date}'",self.conn)
         fvc_cols = ['shutter_open','exptime_sec','psf_pixels']
         fvc_dtimes = [Time(t.to_datetime64()).mjd for t in list(fvcquery.time_recorded)]
         fvc_df = self.get_temp_values(fvcquery, fvc_dtimes, times, fvc_cols)
@@ -117,9 +117,13 @@ class DataHandler(object):
         self.results = pd.concat([new_df,temp_df,tower_df,fvc_df],axis=1)
 
     def update_data(self):
-        self.coord_files()
+        print('here1')
+        self.get_coord_files()
+        print('here2')
         self.posacc_data()
+        print('here3')
         self.telemetry_queries()
+        print('here4')
 
         table = Table.from_pandas(self.results)
         table.write('data.fits',format='fits')

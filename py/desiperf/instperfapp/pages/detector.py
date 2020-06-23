@@ -7,7 +7,7 @@ from static.page import Page
 
 class DetectorPage(Page):
 	def __init__(self, source):
-		self.page = Page('Detector Noise Performance')
+		self.page = Page('Detector Noise Performance',source)
 		self.btn = self.page.button('OK')
 		self.txt = self.page.text("This is a sentence")
 		self.data_source = self.page.data_source

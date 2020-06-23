@@ -31,6 +31,7 @@ init_bt = Button(label="Initialize Data", button_type='primary',width=300)
 
 DH = DataHandler()
 init_data_source = DH.data_source
+print(init_data_source)
 
 FP = FiberPosPage(init_data_source)
 TP = TputPage(init_data_source)
@@ -39,14 +40,15 @@ GP = GuidingPage(init_data_source)
 for page in [FP, TP, DP, GP]:
 	page.run()
 
-print(FP.data_source)
-init_bt.on_click(init_data)
+def update_data():
+    print('Helloooo')
+    DH.update_data()
+    updated_data = DH.data_source
+    FP.update_data(updated_data)
+
+init_bt.on_click(update_data)
 ## LAYOUTS ##
 
-def update_data():
-	DH.update_data()
-	updated_data = DH.data_source
-	FP.update_data(updated_data)
 
 #FP.btn.on_click(FP.ps)
 

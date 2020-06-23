@@ -7,7 +7,7 @@ from static.page import Page
 
 class GuidingPage(Page):
 	def __init__(self, source):
-		self.page = Page('Guiding Performance')
+		self.page = Page('Guiding Performance',source)
 		self.btn = self.page.button('OK')
 		self.txt = self.page.text("This is a sentence")
 		self.data_source = self.page.data_source
