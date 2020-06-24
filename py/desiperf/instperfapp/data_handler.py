@@ -13,10 +13,29 @@ class DataHandler(object):
     def __init__(self, start_date = '2020-01-23', end_date = '2020-03-16'):
         self.start_date = start_date
         self.end_date = end_date
-        self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev",
-                        user="desi_reader", password="reader")
+        self.data_columns = [ 'skyra', 'skydec',  'exptime',
+                            'tileid',  'airmass', 'mountha', 'zd', 'mountaz',
+                            'domeaz', 
+                            'zenith', 'mjd_obs',  'moonra',
+                            'moondec',   'EXPOSURE', 'max_blind',
+                            'max_blind_95', 'rms_blind', 'rms_blind_95', 'max_corr',
+                            'max_corr_95', 'rms_corr', 'rms_corr_95', 'mirror_temp',
+                            'truss_temp', 'air_temp', 'mirror_avg_temp', 'wind_speed',
+                            'wind_direction', 'humidity', 'pressure', 'temperature',
+                            'dewpoint', 'shutter_open', 'exptime_sec', 'psf_pixels'] #'hexapod', 'adc','spectrographs',
+                            #'image_cameras', 'guide_cameras', 'focus_cameras','date_obs','time_between_exposures',  'excluded',
+                            #'s2n', 'transpar', 'skylevel','st', 'hexapod_time', 'slew_time','moonangl',
+                            #'aos', 'seeing', 'guider', 'focus','utc_dark', 'utc_beg',
+                            #'utc_end', 'reqra', 'reqdec','deltara', 'deltadec',
+                            #'targtra','targtdec', 'telstat',
         try:
-            init_data = Table.read('data.fits', format='fits').to_pandas() 
+            self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev",
+                        user="desi_reader", password="reader")
+        except:
+            pass
+        try:
+            init_data = Table.read('/Users/pfagrelius/Research/DESI/InstPerfTool/desiperf/py/desiperf/instperfapp/data.fits', format='fits').to_pandas() 
+            init_data = init_data[self.data_columns]
             self.data_source = ColumnDataSource(init_data)
         except:
             self.data_source = None
