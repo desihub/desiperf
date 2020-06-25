@@ -19,7 +19,8 @@ from bokeh.models.widgets import Panel, Tabs
 from bokeh.models.widgets.markups import Div
 import numpy as np
 import pandas as pd 
-from pages.fiberpos import FiberPosPage 
+from pages.focalplane import FocalPlanePage 
+from pages.positioner import PosAccPage
 from pages.tput import TputPage
 from pages.detector import DetectorPage
 from pages.guiding import GuidingPage
@@ -30,13 +31,15 @@ title_1 = Div(text='''<font size="4">Instrument Peformance Tool</font>''', width
 init_bt = Button(label="Initialize Data", button_type='primary',width=300)
 
 DH = DataHandler()
-init_data_source = DH.data_source
+timestamp_source = DH.data_source
+exp_source = DH.exp_source
 
 
-FP = FiberPosPage(init_data_source)
-TP = TputPage(init_data_source)
-DP = DetectorPage(init_data_source)
-GP = GuidingPage(init_data_source)
+FP = FocalPlanePage(timestamp_source)
+PP = PosAccPage(timestamp_source)
+TP = TputPage(timestamp_source)
+DP = DetectorPage(exp_source)
+GP = GuidingPage(timestamp_source)
 for page in [FP, TP, DP, GP]:
 	page.run()
 
@@ -54,12 +57,13 @@ layout1 = layout([[title_1],
 tab1 = Panel(child=layout1, title="Data Initilization")
 
 tab2 = FP.page_layout()
-tab3 = GP.page_layout()
-tab4 = TP.page_layout()
-tab5 = DP.page_layout()
+tab3 = PP.page_layout()
+tab4 = GP.page_layout()
+tab5 = TP.page_layout()
+tab6 = DP.page_layout()
 
 
-tabs = Tabs(tabs=[tab1, tab2, tab3, tab4, tab5])
+tabs = Tabs(tabs=[tab1, tab2, tab3, tab4, tab5, tab6])
 
 curdoc().title = 'DESI Instrument Performance Tool'
 curdoc().add_root(tabs)
