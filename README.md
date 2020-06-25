@@ -9,3 +9,7 @@ Tools for monitoring DESI Instrument Performance
   * **doc/**: documentation
   * **etc/**: for small config files or other things that don't fit elsewhere
 
+## To run InstPerfApp on local machine (temporary)
+  * **cd py/desiperf/**
+  * **bokeh serve --show instperfapp**
+  * output will be found at **http://localhost:5006/instperfapp**
