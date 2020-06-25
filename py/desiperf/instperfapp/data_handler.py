@@ -34,7 +34,7 @@ class DataHandler(object):
         except:
             pass
         try:
-            init_data = Table.read('/Users/pfagrelius/Research/DESI/InstPerfTool/desiperf/py/desiperf/instperfapp/data.fits', format='fits').to_pandas() 
+            init_data = Table.read('./instperfapp/data/data.fits', format='fits').to_pandas() 
             init_data = init_data[self.data_columns]
             self.data_source = ColumnDataSource(init_data)
         except:

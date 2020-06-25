@@ -41,9 +41,10 @@ for page in [FP, TP, DP, GP]:
 	page.run()
 
 def update_data():
-    DH.update_data()
-    updated_data = DH.data_source
-    FP.update_data(updated_data)
+    print("Update Data function disabled currently")
+    # DH.update_data()
+    #updated_data = DH.data_source
+    #FP.update_data(updated_data)
 
 init_bt.on_click(update_data)
 ## LAYOUTS ##
