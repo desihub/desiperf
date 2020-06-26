@@ -1,27 +1,64 @@
 
 from bokeh.layouts import column, layout
 from bokeh.models.widgets import Panel, Tabs
+from bokeh.models import ColumnDataSource, PreText, Select
 from bokeh.models.widgets.markups import Div
+from bokeh.plotting import figure
+import pandas as pd 
 
 from static.page import Page
 
 class GuidingPage(Page):
-	def __init__(self, source):
-		self.page = Page('Guiding Performance',source)
-		self.btn = self.page.button('OK')
-		self.txt = self.page.text("This is a sentence")
-		self.data_source = self.page.data_source
+    def __init__(self, source):
+        self.page = Page('Guiding Performance',source)
+        self.btn = self.page.button('OK')
+        self.details = self.page.pretext(' ')
+        self.data_source = self.page.data_source
+        self.default_options = ['guide_meanx', 'guide_meany','guide_meanx2', 'guide_meany2', 'guide_meanxy', 'guide_maxx',
+        'guide_maxy', 'guider_combined_x', 'guider_combined_y','skyra', 'skydec',  'exptime','tileid',  'airmass', 'mountha', 'zd', 'mountaz','domeaz', 
+        'reqra', 'reqdec','targtra','targtdec','zenith', 'mjd_obs',  'moonra','moondec','EXPOSURE', 'mirror_temp',
+        'truss_temp', 'air_temp', 'mirror_avg_temp', 'wind_speed','wind_direction', 'humidity', 'pressure', 'temperature',
+        'dewpoint', 'shutter_open', 'exptime_sec', 'psf_pixels',
+        'hex_trim','hex_rot_rate','hex_status','hex_rot_offset','hex_rot_enabled','hex_position','hex_rot_interval','hex_tweak',
+        'adc_status','adc_home1','adc_home2','adc_nrev1','adc_nrev2','adc_angle1','adc_angle2','adc_status','adc_status1','adc_status2','adc_rem_time1','adc_rem_time2']
+
+        self.x_select = Select(value='max_blind',options=self.default_options)
+        self.y_select = Select(value='airmass', options=self.default_options)
+        self.btn = self.page.button('Plot')
+
+    def get_data(self, attr1, attr2, update=False):
+        data = pd.DataFrame(self.data_source.data)[['mjd_obs',attr1,attr2]]
+        self.details.text = str(data.describe())
+        #self.cov.text = str(data.cov())
+        data_ = data.rename(columns={attr1:'attr1',attr2:'attr2'}) 
+        if update:
+            self.plot_source.data = data_
+        else:
+            self.plot_source = ColumnDataSource(data_)
+        self.time_series_plot()
+
+    def page_layout(self):
+        this_layout = layout([[self.page.header],
+                      [self.x_select, self.y_select, self.btn],
+                      [self.corr,self.details],
+                      [self.ts1],
+                      [self.ts2]])
+        tab = Panel(child=this_layout, title=self.page.title)
+        return tab
+
+    def time_series_plot(self):
+        self.corr = figure(plot_width=350, plot_height=250, tools=self.page.tools)
+        self.ts1 = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select")
+        self.ts2 = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select")
+        if self.data_source is not None:
+            self.corr.circle(x='attr1', y='attr2', size=2, source=self.plot_source, selection_color="orange", alpha=0.6, nonselection_alpha=0.1, selection_alpha=0.4)
+            self.ts1.circle(x='mjd_obs', y='attr1', size=5, source=self.plot_source, color="blue", selection_color="orange")
+            self.ts2.circle(x='mjd_obs', y='attr2', size=5, source=self.plot_source, color="blue", selection_color="orange")
 
 
-	def page_layout(self):
-		this_layout = layout([[self.page.header],
-						[self.btn],
-						[self.txt]])
-		tab = Panel(child=this_layout, title=self.page.title)
-		return tab
+    def update(self):
+        self.get_data(self.x_select.value, self.y_select.value, update=True)
 
-	def ps(self):
-		self.txt.text = "This is a new sentence"
-
-	def run(self):
-		self.btn.on_click(self.ps)
+    def run(self):
+        self.get_data(self.x_select.value, self.y_select.value)
+        self.btn.on_click(self.update)

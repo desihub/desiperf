@@ -1,7 +1,7 @@
 from bokeh.io import curdoc
 import bokeh.plotting as bk 
 from bokeh.models import (LinearColorMapper, ColorBar, ColumnDataSource,
-    Title, Button, CheckboxButtonGroup, PreText)
+    Title, Button, CheckboxButtonGroup, PreText, Select)
 from bokeh.layouts import column, layout
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.models.widgets.markups import Div
@@ -21,6 +21,10 @@ class Page(object):
 	def button(self,label):
 		btn = Button(label=label,button_type='primary',width=300)
 		return btn 
+
+	def select(self,label,options):
+		menu = Select(value=label,options=options)
+		return menu
 
 	def text(self, text):
 		txt = Div(text=text, width=500)

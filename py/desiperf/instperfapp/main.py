@@ -40,8 +40,8 @@ PP = PosAccPage(timestamp_source)
 TP = TputPage(timestamp_source)
 DP = DetectorPage(exp_source)
 GP = GuidingPage(timestamp_source)
-for page in [FP, TP, DP, GP]:
-	page.run()
+for page in [FP, PP, TP, DP, GP]:
+    page.run()
 
 def update_data():
     print("Update Data function disabled currently")
