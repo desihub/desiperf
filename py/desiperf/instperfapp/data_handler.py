@@ -13,16 +13,22 @@ class DataHandler(object):
     def __init__(self, start_date = '2020-01-23', end_date = '2020-03-16'):
         self.start_date = start_date
         self.end_date = end_date
-        self.data_columns = [ 'skyra', 'skydec',  'exptime',
-                            'tileid',  'airmass', 'mountha', 'zd', 'mountaz',
-                            'domeaz', 
-                            'zenith', 'mjd_obs',  'moonra',
-                            'moondec',   'EXPOSURE', 'max_blind',
-                            'max_blind_95', 'rms_blind', 'rms_blind_95', 'max_corr',
-                            'max_corr_95', 'rms_corr', 'rms_corr_95', 'mirror_temp',
-                            'truss_temp', 'air_temp', 'mirror_avg_temp', 'wind_speed',
-                            'wind_direction', 'humidity', 'pressure', 'temperature',
-                            'dewpoint', 'shutter_open', 'exptime_sec', 'psf_pixels'] #'hexapod', 'adc','spectrographs',
+        self.data_columns = [ 'skyra', 'skydec',  'exptime', 'tileid', 
+                            'airmass', 'mountha', 'zd', 'mountaz', 'domeaz', 
+                            'zenith', 'mjd_obs', 'moonra', 'moondec', 
+                            'EXPOSURE', 'max_blind', 'max_blind_95', 
+                            'rms_blind', 'rms_blind_95', 'max_corr',
+                            'max_corr_95', 'rms_corr', 'rms_corr_95', 
+                            'mirror_temp', 'truss_temp', 'air_temp', 
+                            'mirror_avg_temp', 'wind_speed', 'wind_direction', 
+                            'humidity', 'pressure', 'temperature', 'dewpoint', 
+                            'shutter_open', 'exptime_sec', 'psf_pixels', 
+                            'guide_meanx', 'guide_meany','guide_meanx2', 
+                            'guide_meany2', 'guide_meanxy', 'guide_maxx',
+                            'guide_maxy', 'guider_combined_x', 
+                            'guider_combined_y']
+
+                            #'hexapod', 'adc','spectrographs',
                             #'image_cameras', 'guide_cameras', 'focus_cameras','date_obs','time_between_exposures',  'excluded',
                             #'s2n', 'transpar', 'skylevel','st', 'hexapod_time', 'slew_time','moonangl',
                             #'aos', 'seeing', 'guider', 'focus','utc_dark', 'utc_beg',

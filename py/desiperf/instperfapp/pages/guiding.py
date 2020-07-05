@@ -14,13 +14,25 @@ class GuidingPage(Page):
         self.btn = self.page.button('OK')
         self.details = self.page.pretext(' ')
         self.data_source = self.page.data_source
-        self.default_options = ['guide_meanx', 'guide_meany','guide_meanx2', 'guide_meany2', 'guide_meanxy', 'guide_maxx',
-        'guide_maxy', 'guider_combined_x', 'guider_combined_y','skyra', 'skydec',  'exptime','tileid',  'airmass', 'mountha', 'zd', 'mountaz','domeaz', 
-        'reqra', 'reqdec','targtra','targtdec','zenith', 'mjd_obs',  'moonra','moondec','EXPOSURE', 'mirror_temp',
-        'truss_temp', 'air_temp', 'mirror_avg_temp', 'wind_speed','wind_direction', 'humidity', 'pressure', 'temperature',
-        'dewpoint', 'shutter_open', 'exptime_sec', 'psf_pixels',
-        'hex_trim','hex_rot_rate','hex_status','hex_rot_offset','hex_rot_enabled','hex_position','hex_rot_interval','hex_tweak',
-        'adc_status','adc_home1','adc_home2','adc_nrev1','adc_nrev2','adc_angle1','adc_angle2','adc_status','adc_status1','adc_status2','adc_rem_time1','adc_rem_time2']
+        self.default_options = ['guide_meanx', 'guide_meany', 'guide_meanx2', 
+                                'guide_meany2', 'guide_meanxy', 'guide_maxx',
+                                'guide_maxy', 'guider_combined_x', 
+                                'guider_combined_y', 'skyra', 'skydec', 
+                                'exptime', 'tileid', 'airmass', 'mountha', 
+                                'zd', 'mountaz','domeaz', 'reqra', 'reqdec', 
+                                'targtra', 'targtdec', 'zenith', 'mjd_obs', 
+                                'moonra', 'moondec', 'EXPOSURE', 'mirror_temp',
+                                'truss_temp', 'air_temp', 'mirror_avg_temp', 
+                                'wind_speed', 'wind_direction', 'humidity',  
+                                'pressure', 'temperature', 'dewpoint', 
+                                'shutter_open', 'exptime_sec', 'psf_pixels',
+                                'hex_trim', 'hex_rot_rate', 'hex_status', 
+                                'hex_rot_offset', 'hex_rot_enabled', 
+                                'hex_position', 'hex_rot_interval', 'hex_tweak',
+                                'adc_status', 'adc_home1', 'adc_home2', 
+                                'adc_nrev1', 'adc_nrev2', 'adc_angle1', 
+                                'adc_angle2', 'adc_status', 'adc_status1', 
+                                'adc_status2', 'adc_rem_time1', 'adc_rem_time2']
 
         self.x_select = Select(value='guide_meanx',options=self.default_options)
         self.y_select = Select(value='airmass', options=self.default_options)
@@ -58,7 +70,9 @@ class GuidingPage(Page):
 
     def update(self):
         self.get_data(self.x_select.value, self.y_select.value, update=True)
+        self.time_series_plot()
 
     def run(self):
         self.get_data(self.x_select.value, self.y_select.value)
+        self.time_series_plot()
         self.btn.on_click(self.update)
