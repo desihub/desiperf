@@ -1,31 +1,32 @@
 
 from bokeh.layouts import column, layout
-from bokeh.models.widgets import Panel, Tabs
-from bokeh.models import ColumnDataSource, PreText, Select, CDSView, GroupFilter
-from bokeh.models.widgets.markups import Div
+from bokeh.models.widgets import Panel
+from bokeh.models import ColumnDataSource, Select, CDSView, GroupFilter
 from bokeh.plotting import figure
-import pandas as pd 
+import pandas as pd
 
 from static.page import Page
 
+
 class DetectorPage(Page):
     def __init__(self, source):
-        self.page = Page('Detector Noise Performance',source)
+        self.page = Page('Detector Noise Performance', source)
         self.btn = self.page.button('OK')
         self.details = self.page.pretext(' ')
         self.data_source = self.page.data_source
-        self.default_options = ['READNOISE','BIAS','COSMICS_RATE'] #'NIGHT','EXPID','SPECTRO','CAM','AMP',
+        self.default_options = ['READNOISE', 'BIAS', 'COSMICS_RATE']
+        # 'NIGHT','EXPID','SPECTRO','CAM','AMP',
 
-        self.x_select = Select(value='READNOISE',options=self.default_options)
+        self.x_select = Select(value='READNOISE', options=self.default_options)
         self.btn = self.page.button('Plot')
 
     def get_data(self, attr1,  update=False):
-        data = pd.DataFrame(self.data_source.data)[['EXPID',attr1, 'CAM']]
+        data = pd.DataFrame(self.data_source.data)[['EXPID', attr1, 'CAM']]
         # Convert CAM from byte encoding
         camdf = data['CAM'].str.decode('utf-8')
         data['CAM'] = camdf
         self.details.text = str(data.describe())
-        data_ = data.rename(columns={attr1:'attr1'}) 
+        data_ = data.rename(columns={attr1: 'attr1'}) 
         if update:
             self.plot_source.data = data_
         else:
@@ -36,9 +37,8 @@ class DetectorPage(Page):
 
     def page_layout(self):
         this_layout = layout([[self.page.header],
-                      [self.x_select, self.btn],
-                      [self.details],
-                      [self.tsb], [self.tsr], [self.tsz]])
+                              [self.x_select, self.btn], [self.details],
+                              [self.tsb], [self.tsr], [self.tsz]])
         tab = Panel(child=this_layout, title=self.page.title)
         return tab
 

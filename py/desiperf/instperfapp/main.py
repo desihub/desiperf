@@ -1,4 +1,4 @@
-"""
+'''
 @author: Parker Fagrelius (pfagrelius@noao.edu)
 
 start server with following commands:
@@ -7,9 +7,8 @@ bokeh serve --show instperfapp
 
 view at http://localhost:5006/instperfapp
 
-"""
+'''
 
-## INPUTS
 from bokeh.io import curdoc
 import bokeh.plotting as bk 
 from bokeh.models import (LinearColorMapper, ColorBar, ColumnDataSource,
@@ -17,14 +16,12 @@ from bokeh.models import (LinearColorMapper, ColorBar, ColumnDataSource,
 from bokeh.layouts import column, layout
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.models.widgets.markups import Div
-import numpy as np
-import pandas as pd 
-from pages.focalplane import FocalPlanePage 
+from pages.focalplane import FocalPlanePage
 from pages.positioner import PosAccPage
 from pages.tput import TputPage
 from pages.detector import DetectorPage
 from pages.guiding import GuidingPage
-from data_handler import DataHandler 
+from data_handler import DataHandler
 
 
 title_1 = Div(text='''<font size="4">Instrument Peformance Tool</font>''', width=500)
@@ -43,14 +40,17 @@ GP = GuidingPage(timestamp_source)
 for page in [FP, PP, TP, DP, GP]:
     page.run()
 
+
 def update_data():
     print("Update Data function disabled currently")
     # DH.update_data()
-    #updated_data = DH.data_source
-    #FP.update_data(updated_data)
+    # updated_data = DH.data_source
+    # FP.update_data(updated_data)
+
 
 init_bt.on_click(update_data)
-## LAYOUTS ##
+
+''' LAYOUTS '''
 
 layout1 = layout([[title_1],
                  [init_bt]])
