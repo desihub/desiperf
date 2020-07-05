@@ -1,5 +1,5 @@
 
-from bokeh.layouts import column, layout
+from bokeh.layouts import layout
 from bokeh.models.widgets import Panel
 from bokeh.models import ColumnDataSource, Select, CDSView, GroupFilter
 from bokeh.plotting import figure
@@ -15,18 +15,24 @@ class DetectorPage(Page):
         self.details = self.page.pretext(' ')
         self.data_source = self.page.data_source
         self.default_options = ['READNOISE', 'BIAS', 'COSMICS_RATE']
-        # 'NIGHT','EXPID','SPECTRO','CAM','AMP',
+# 'NIGHT','EXPID','SPECTRO','CAM','AMP',
+        self.spectro_options = ['ALL', '0', '1', '2', '3', '4', '5', '6', '7',
+                                '8', '9']
 
         self.x_select = Select(value='READNOISE', options=self.default_options)
+        self.sp_select = Select(value='ALL', options=self.spectro_options)
         self.btn = self.page.button('Plot')
 
-    def get_data(self, attr1,  update=False):
-        data = pd.DataFrame(self.data_source.data)[['EXPID', attr1, 'CAM']]
+    def get_data(self, attr1,  spectro, update=False):
+        data = pd.DataFrame(self.data_source.data)[['EXPID', attr1, 'SPECTRO', 'CAM']]
         # Convert CAM from byte encoding
         camdf = data['CAM'].str.decode('utf-8')
         data['CAM'] = camdf
+        # Filter by sp_select if not 'ALL'
+        if spectro != 'ALL':
+            data = data.loc[data['SPECTRO'] == int(spectro)]
         self.details.text = str(data.describe())
-        data_ = data.rename(columns={attr1: 'attr1'}) 
+        data_ = data.rename(columns={attr1: 'attr1'})
         if update:
             self.plot_source.data = data_
         else:
@@ -37,7 +43,8 @@ class DetectorPage(Page):
 
     def page_layout(self):
         this_layout = layout([[self.page.header],
-                              [self.x_select, self.btn], [self.details],
+                              [self.x_select, self.sp_select, self.btn],
+                              [self.details],
                               [self.tsb], [self.tsr], [self.tsz]])
         tab = Panel(child=this_layout, title=self.page.title)
         return tab
@@ -52,10 +59,10 @@ class DetectorPage(Page):
             self.tsz.circle(x='EXPID', y='attr1', size=5, source=self.plot_source, selection_color="gray", view=self.viewz)
 
     def update(self):
-        self.get_data(self.x_select.value, update=True)
+        self.get_data(self.x_select.value, self.sp_select.value, update=True)
         self.time_series_plot()
 
     def run(self):
-        self.get_data(self.x_select.value)
+        self.get_data(self.x_select.value, self.sp_select.value)
         self.time_series_plot()
         self.btn.on_click(self.update)
