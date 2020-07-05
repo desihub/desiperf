@@ -1,6 +1,5 @@
 from bokeh.io import curdoc
 from bokeh.models import Button, CheckboxButtonGroup, PreText, Select
-from bokeh.layouts import column, layout
 from bokeh.models.widgets.markups import Div
 
 
@@ -8,7 +7,7 @@ class Page(object):
     def __init__(self, title, source):
         self.title = title
         self.header = Div(text="{}".format(title), width=500)
-        self.data_source = source  # Here it will pick up the latest 
+        self.data_source = source  # Here it will pick up the latest
         self.tools = 'pan,wheel_zoom,xbox_select,reset'
 
     def update_data(self, source):
