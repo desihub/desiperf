@@ -1,7 +1,7 @@
 
 from bokeh.layouts import column, layout
 from bokeh.models.widgets import Panel, Tabs
-from bokeh.models import ColumnDataSource, PreText, Select
+from bokeh.models import ColumnDataSource, PreText, Select, CDSView, GroupFilter
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 import pandas as pd 
@@ -20,35 +20,39 @@ class DetectorPage(Page):
         self.btn = self.page.button('Plot')
 
     def get_data(self, attr1,  update=False):
-        data = pd.DataFrame(self.data_source.data)[['EXPID',attr1]]
+        data = pd.DataFrame(self.data_source.data)[['EXPID',attr1, 'CAM']]
+        # Convert CAM from byte encoding
+        camdf = data['CAM'].str.decode('utf-8')
+        data['CAM'] = camdf
         self.details.text = str(data.describe())
         data_ = data.rename(columns={attr1:'attr1'}) 
         if update:
             self.plot_source.data = data_
         else:
             self.plot_source = ColumnDataSource(data_)
+            self.viewb = CDSView(source=self.plot_source, filters=[GroupFilter(column_name='CAM', group='B')])
+            self.viewr = CDSView(source=self.plot_source, filters=[GroupFilter(column_name='CAM', group='R')])
+            self.viewz = CDSView(source=self.plot_source, filters=[GroupFilter(column_name='CAM', group='Z')])
 
     def page_layout(self):
         this_layout = layout([[self.page.header],
                       [self.x_select, self.btn],
                       [self.details],
-                      [self.ts1]])
+                      [self.tsb], [self.tsr], [self.tsz]])
         tab = Panel(child=this_layout, title=self.page.title)
         return tab
 
     def time_series_plot(self):
-        #self.corr = figure(plot_width=350, plot_height=250, tools=self.page.tools)
-        self.ts1 = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select", x_axis_label='EXPID', y_axis_label=self.x_select.value)
-        #self.ts2 = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select")
+        self.tsb = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select", x_axis_label='EXPID', y_axis_label=self.x_select.value)
+        self.tsr = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select", x_axis_label='EXPID', y_axis_label=self.x_select.value)
+        self.tsz = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select", x_axis_label='EXPID', y_axis_label=self.x_select.value)
         if self.data_source is not None:
-            #self.corr.circle(x='attr1', y='attr2', size=2, source=self.plot_source, selection_color="orange", alpha=0.6, nonselection_alpha=0.1, selection_alpha=0.4)
-            self.ts1.circle(x='EXPID', y='attr1', size=5, source=self.plot_source, color="blue", selection_color="orange")
-            #self.ts2.circle(x='EXPID', y='attr2', size=5, source=self.plot_source, color="blue", selection_color="orange")
+            self.tsb.circle(x='EXPID', y='attr1', size=5, source=self.plot_source, selection_color="cyan", view=self.viewb)
+            self.tsr.circle(x='EXPID', y='attr1', size=5, source=self.plot_source, selection_color="orange", view=self.viewr)
+            self.tsz.circle(x='EXPID', y='attr1', size=5, source=self.plot_source, selection_color="gray", view=self.viewz)
 
     def update(self):
-        print('here')
         self.get_data(self.x_select.value, update=True)
-        print(self.plot_source.data)
         self.time_series_plot()
 
     def run(self):
