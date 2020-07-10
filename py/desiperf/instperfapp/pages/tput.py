@@ -1,23 +1,24 @@
 
 from bokeh.layouts import column, layout
 from bokeh.models.widgets import Panel, Tabs
+from bokeh.models import Button, CheckboxButtonGroup, PreText, Select
 from bokeh.models.widgets.markups import Div
 
-from static.page import Page
+from static.plots import Plots
 
-class TputPage(Page):
-	def __init__(self, source):
-		self.page = Page('Throughput Performance',source)
-		self.btn = self.page.button('OK')
-		self.txt = self.page.text("This is a sentence")
-		self.data_source = self.page.data_source
+class TputPage():
+	def __init__(self, datahandler):
+		self.plots = Plots('Throughput Performance', source=None)
+		self.btn = Button(label='OK', button_type='primary',width=200)
+		self.txt = PreText(text="This is a sentence")
+		self.data_source = self.plots.data_source
 
 
 	def page_layout(self):
-		this_layout = layout([[self.page.header],
+		this_layout = layout([[self.plots.header],
 						[self.btn],
 						[self.txt]])
-		tab = Panel(child=this_layout, title=self.page.title)
+		tab = Panel(child=this_layout, title=self.plots.title)
 		return tab
 
 	def ps(self):

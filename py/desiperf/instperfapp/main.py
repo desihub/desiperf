@@ -21,22 +21,21 @@ from pages.positioner import PosAccPage
 from pages.tput import TputPage
 from pages.detector import DetectorPage
 from pages.guiding import GuidingPage
-from data_handler import DataHandler
+from data_mgt.data_handler import DataHandler
 
 
 title_1 = Div(text='''<font size="4">Instrument Peformance Tool</font>''', width=500)
 init_bt = Button(label="Initialize Data", button_type='primary',width=300)
 
 DH = DataHandler()
-timestamp_source = DH.data_source
-exp_source = DH.exp_source
+DH.run()
 
 
-FP = FocalPlanePage(timestamp_source)
-PP = PosAccPage(timestamp_source)
-TP = TputPage(timestamp_source)
-DP = DetectorPage(exp_source)
-GP = GuidingPage(timestamp_source)
+FP = FocalPlanePage(DH)
+PP = PosAccPage(DH) #Has its own data
+TP = TputPage(DH)#Data not available yet
+DP = DetectorPage(DH)
+GP = GuidingPage(DH)
 for page in [FP, PP, TP, DP, GP]:
     page.run()
 
