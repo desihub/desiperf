@@ -24,7 +24,7 @@ from data_mgt.data_general import DataSource
 
 
 class DataHandler(object):
-    def __init__(self, start_date = '20200101', end_date = '20200316', option = 'no_update'):
+    def __init__(self, start_date = '20200123', end_date = '20200316', option = 'no_update'):
         self.start_date = start_date
         self.end_date = end_date
         self.DS = DataSource(self.start_date, self.end_date)
@@ -43,8 +43,8 @@ class DataHandler(object):
                             'guide_meany2', 'guide_meanxy', 'guide_maxx',
                             'guide_maxy', 'guider_combined_x', 
                             'guider_combined_y']
-        hdu = fits.open('./instperfapp/data/fiberpos.fits')
-        self.fiberpos = Table(hdu[1].data).to_pandas()
+        self.fiberpos = pd.read_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/fiberpos.csv')
+        #self.fiberpos = Table(hdu[1].data).to_pandas()
         #print(self.fiberpos)
 
     def get_focalplane_data(self):
@@ -53,17 +53,31 @@ class DataHandler(object):
             self.focalplane_source = ColumnDataSource(init_data)
 
         elif self.option == 'init':
+            print(datetime.now())
             telescope_telem = self.DS.db_query('environmentmonitor_telescope', sample=60)
             tower_telem = self.DS.db_query('environmentmonitor_tower', sample=60)
             fvc_telem = self.DS.db_query('fvc_camerastatus',sample=60)
-
+            guide1 = self.DS.db_query('guider_summary')
+            guide2 = self.DS.db_query('guider_centroids')
+            print(datetime.now())
             pos_df = self.DS.fp_pos_accuracy()
+            pos_df.drop_duplicates(subset='EXPOSURE', keep='first',inplace=True)
+            pos_df = pos_df[pos_df.EXPOSURE.isin(self.DS.full_exp_list.id)]
             fp_exposures = np.unique(pos_df.EXPOSURE) #this has exposures
+            print(datetime.now())
             telescope_df = self.DS.convert_time_to_exp(fp_exposures, telescope_telem)
             tower_df = self.DS.convert_time_to_exp(fp_exposures, tower_telem)
             fvc_df = self.DS.convert_time_to_exp(fp_exposures, fvc_telem)
-
-            fp_df = pd.concat([new_df,temp_df,tower_df,fvc_df],axis=1)
+            guide1_df = self.DS.convert_time_to_exp(fp_exposures, guide1)
+            guide2_df = self.DS.convert_time_to_exp(fp_exposures, guide2)
+            print(datetime.now())
+            for df in [telescope_df, tower_df, fvc_df, guide1_df, guide2_df, pos_df]:
+                df.reset_index(inplace=True, drop=True)
+            fp_df = pd.concat([pos_df,telescope_df,tower_df,fvc_df,guide1_df,guide2_df],axis=1)
+            print(datetime.now())
+            dfs = np.array_split(fp_df,4) #How small??
+            for i, df_ in enumerate(dfs):
+                df_.to_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/focalplane/fp_data_{}.csv'.format(i),index=False)
             self.focalplane_source = ColumnDataSource(fp_df)
 
         elif self.option == 'update':
@@ -90,7 +104,7 @@ class DataHandler(object):
             df = pd.merge(left=qa_df, right=new_spec_df, left_on = 'EXPID', right_on='EXPID',how='inner')
             dfs = np.array_split(df,4) #How small??
             for i, df_ in enumerate(dfs):
-                df_.to_csv('./instperfapp/data/detector/det_qa_{}.csv'.format(i))
+                df_.to_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/detector/det_qa_{}.csv'.format(i))
             self.detector_source = ColumnDataSource(df)
 
         elif self.option == 'update':

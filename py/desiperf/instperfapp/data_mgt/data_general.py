@@ -1,5 +1,6 @@
 
 import pandas as pd
+import fnmatch
 import numpy as np
 import os, glob
 
@@ -83,7 +84,7 @@ class DataSource():
         #for row in exposure_array:
         #    date = np.datetime_as_string(row['date_obs'],unit='D').replace('-','') #prob need to manipulate
         #    exp = str(int(row['id'])).zfill(8)
-        for date in np.unique(self.exp_list['date_obs']):
+        for date in np.unique(self.full_exp_list['date_obs']):
             date = np.datetime_as_string(date, unit='D').replace('-','')
             qa_files.append(glob.glob(self.qa_dir+'{}/*/qa-*.fits'.format(date)))
         qa_files = np.hstack(qa_files)
@@ -99,15 +100,16 @@ class DataSource():
             except:
                 print(qa)
 
-       df = pd.DataFrame(np.vstack(D), columns = cols)
-       return df
+        df = pd.DataFrame(np.vstack(D), columns = cols)
+        return df
 
     def get_coord_files(self):
         if self.exp_df is None:
             self.get_exp_df()
-
+        
+        exp_list = self.exp_df[self.exp_df.sequence == 'DESI']
         self.coord_files = []
-        for date in np.unique(self.exp_list['date_obd']):
+        for date in np.unique(exp_list['date_obs']):
             date = np.datetime_as_string(date, unit='D').replace('-','')
             files = glob.glob(self.coord_dir+'{}/*/coordinates-*'.format(date))
             for f in files:
@@ -115,20 +117,20 @@ class DataSource():
                     df = Table.read(f, format='fits').to_pandas()
                     good = df['OFFSET_0']
                     self.coord_files.append(f)
-                else:
+                except:
                     pass
 
     def fp_pos_accuracy(self):
         def rms(x):
             return np.sqrt(np.mean(np.array(x)**2))
-            
+        print('here')    
         self.get_coord_files()
-
+        print(len(self.coord_files))
         data = []
         for f in self.coord_files:
-            exp_id = int(file[-13:-5])
+            exp_id = int(f[-13:-5])
 
-            df = Table.read(file,format='fits').to_pandas()
+            df = Table.read(f,format='fits').to_pandas()
             good_df = df[df['FLAGS_FVC_0'] == 4]
             blind = np.array(good_df['OFFSET_0'])
             blind = blind[~np.isnan(blind)]
@@ -151,9 +153,9 @@ class DataSource():
                     data.append([exp_id, max_blind, max_blind_95, rms_blind, rms_blind_95, 
                                  max_corr, max_corr_95, rms_corr, rms_corr_95])  
                 except:
-                    print(file)
+                    print(f)
             except:
-                print('failed blind',file)
+                print('failed blind',f)
 
         df = pd.DataFrame(np.vstack(data), columns=['EXPOSURE','max_blind','max_blind_95','rms_blind',
                                                         'rms_blind_95', 'max_corr', 'max_corr_95', 
