@@ -8,7 +8,12 @@ class Page(object):
         self.title = title
         self.header = Div(text="{}".format(title), width=500)
         self.data_source = source  # Here it will pick up the latest
-        self.tools = 'pan,wheel_zoom,xbox_select,reset'
+        self.tools = 'pan,wheel_zoom,lasso_select,reset,undo,save,hover'
+        self.TOOLTIPS = [
+                    ("index", "$index"),
+                    ("(x,y)", "($x, $y)"),
+                    ("desc", "@desc"),
+                    ]
 
     def update_data(self, source):
         self.data_source = source

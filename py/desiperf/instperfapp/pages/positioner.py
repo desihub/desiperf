@@ -42,8 +42,8 @@ class PosAccPage(Page):
 
     def time_series_plot(self):
         #self.corr = figure(plot_width=350, plot_height=250, tools=self.page.tools)
-        self.ts1 = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select")
-        #self.ts2 = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select")
+        self.ts1 = figure(plot_width=900, plot_height=200, tools=self.page.tools)
+        #self.ts2 = figure(plot_width=900, plot_height=200, tools=self.page.tools)
         if self.pos_source is not None:
             #self.corr.circle(x='attr1', y='attr2', size=2, source=self.plot_source, selection_color="orange", alpha=0.6, nonselection_alpha=0.1, selection_alpha=0.4)
             self.ts1.circle(x='EXPOSURE', y='attr1', size=5, source=self.pos_source, color="blue", selection_color="orange")

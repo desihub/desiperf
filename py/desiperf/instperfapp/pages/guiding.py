@@ -60,8 +60,8 @@ class GuidingPage(Page):
 
     def time_series_plot(self):
         self.corr = figure(plot_width=350, plot_height=250, tools=self.page.tools, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
-        self.ts1 = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select", x_axis_label='MJD_OBS', y_axis_label=self.x_select.value)
-        self.ts2 = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select", x_axis_label='MJD_OBS', y_axis_label=self.y_select.value)
+        self.ts1 = figure(plot_width=900, plot_height=200, tools=self.page.tools, x_axis_label='MJD_OBS', y_axis_label=self.x_select.value)
+        self.ts2 = figure(plot_width=900, plot_height=200, tools=self.page.tools, x_axis_label='MJD_OBS', y_axis_label=self.y_select.value)
         if self.data_source is not None:
             self.corr.circle(x='attr1', y='attr2', size=2, source=self.plot_source, selection_color="orange", alpha=0.6, nonselection_alpha=0.1, selection_alpha=0.4)
             self.ts1.circle(x='mjd_obs', y='attr1', size=5, source=self.plot_source, color="blue", selection_color="orange")

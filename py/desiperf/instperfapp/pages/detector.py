@@ -50,9 +50,9 @@ class DetectorPage(Page):
         return tab
 
     def time_series_plot(self):
-        self.tsb = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select", x_axis_label='EXPID', y_axis_label=self.x_select.value)
-        self.tsr = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select", x_axis_label='EXPID', y_axis_label=self.x_select.value)
-        self.tsz = figure(plot_width=900, plot_height=200, tools=self.page.tools, active_drag="xbox_select", x_axis_label='EXPID', y_axis_label=self.x_select.value)
+        self.tsb = figure(plot_width=900, plot_height=200, tools=self.page.tools, x_axis_label='EXPID', y_axis_label=self.x_select.value)
+        self.tsr = figure(plot_width=900, plot_height=200, tools=self.page.tools, x_axis_label='EXPID', y_axis_label=self.x_select.value)
+        self.tsz = figure(plot_width=900, plot_height=200, tools=self.page.tools, x_axis_label='EXPID', y_axis_label=self.x_select.value)
         if self.data_source is not None:
             self.tsb.circle(x='EXPID', y='attr1', size=5, source=self.plot_source, selection_color="cyan", view=self.viewb)
             self.tsr.circle(x='EXPID', y='attr1', size=5, source=self.plot_source, selection_color="orange", view=self.viewr)
