@@ -41,9 +41,14 @@ class DataHandler(object):
             pass
         try:
             init_data = Table.read('./instperfapp/data/per_timestamp.fits', format='fits').to_pandas() 
-            exp_data = Table.read('./instperfapp/data/per_exposure.fits',format='fits').to_pandas()
             init_data = init_data[self.data_columns]
             self.data_source = ColumnDataSource(init_data)
+            
+            exp_files = glob.glob('./instperfapp/data/per_exposures_*.csv') #Table.read('./instperfapp/data/per_exposure.fits',format='fits').to_pandas()
+            exp_data = []
+            for f in exp_files:
+                exp_data.append(pd.read_csv(f))
+            exp_data = pd.concat(exp_data)
             self.exp_source = ColumnDataSource(exp_data)
         except:
             self.data_source = None
