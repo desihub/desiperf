@@ -14,27 +14,31 @@ class GuidingPage():
         self.btn = Button(label='OK', button_type='primary', width=200)
         self.details = PreText(text=' ', width=500)
         self.data_source = self.plots.data_source
-        self.default_options = ['guide_meanx', 'guide_meany', 'guide_meanx2', 
-                                'guide_meany2', 'guide_meanxy', 'guide_maxx',
-                                'guide_maxy', 'guider_combined_x', 
-                                'guider_combined_y', 'skyra', 'skydec', 
-                                'exptime', 'tileid', 'airmass', 'mountha', 
-                                'zd', 'mountaz','domeaz', 'reqra', 'reqdec', 
-                                'targtra', 'targtdec', 'zenith', 'mjd_obs', 
-                                'moonra', 'moondec', 'EXPOSURE', 'mirror_temp',
-                                'truss_temp', 'air_temp', 'mirror_avg_temp', 
-                                'wind_speed', 'wind_direction', 'humidity',  
-                                'pressure', 'temperature', 'dewpoint', 
-                                'shutter_open', 'exptime_sec', 'psf_pixels',
-                                'hex_trim', 'hex_rot_rate', 'hex_status', 
-                                'hex_rot_offset', 'hex_rot_enabled', 
-                                'hex_position', 'hex_rot_interval', 'hex_tweak',
-                                'adc_status', 'adc_home1', 'adc_home2', 
-                                'adc_nrev1', 'adc_nrev2', 'adc_angle1', 
-                                'adc_angle2', 'adc_status', 'adc_status1', 
-                                'adc_status2', 'adc_rem_time1', 'adc_rem_time2']
+        self.default_options = ['targtra','targtdec', 'exptime', 'airmass', 'mountha', 'zd', 'mountaz',
+       'domeaz', 'mjd_obs', 'date_obs', 'moonra',
+       'moondec', 'EXPOSURE', 'max_blind', 'max_blind_95', 'rms_blind',
+       'rms_blind_95', 'max_corr', 'max_corr_95', 'rms_corr',
+       'rms_corr_95',  'mirror_avg_temp', 'mirror_desired_temp',
+       'air_temp', 'air_dewpoint', 'air_flow',
+       'probe1_humidity', 'probe1_temp', 'probe2_humidity', 'probe2_temp',
+       'flowrate_in', 'flowrate_out', 'mirror_rtd_temp','glycol_in_temp', 'glycol_out_temp',
+       'air_in_temp', 'air_out_temp', 'truss_ntt_temp', 'truss_ett_temp',
+       'hinge_s_temp', 'hinge_w_temp', 'chimney_os_temp',
+       'chimney_ow_temp', 'chimney_ib_temp', 'chimney_im_temp',
+       'chimney_it_temp', 'centersection_i_temp', 'centersection_o_temp',
+       'primarycell_i_temp', 'primarycell_o_temp', 'casscage_i_temp',
+       'casscage_o_temp', 'decbore_temp', 'mirror_status',
+       'row_status_user', 'mirror_temp', 'truss_temp', 'EXPID',
+       'environmentmonitor_tower', 'tower_timestamp', 'wind_speed',
+       'wind_direction', 'humidity', 'pressure', 'temperature',
+       'dewpoint', 'split.1', 'gust', 'fvc_camerastatus',
+       'controller_open', 'reset', 'initialized', 'shutter_open',
+       'fan_on', 'temp_degc', 'exptime_sec', 'psf_pixels', 'last_updated',
+       'guider_summary', 'duration', 'expid', 'seeing.1', 'frames.1',
+       'meanx', 'meany', 'meanx2', 'meany2', 'meanxy', 'maxx', 'maxy',
+       'guider_centroids', 'combined_x', 'combined_y']
 
-        self.x_select = Select(value='guide_meanx',options=self.default_options)
+        self.x_select = Select(value='meanx',options=self.default_options)
         self.y_select = Select(value='airmass', options=self.default_options)
         self.btn = Button(label='Plot', button_type='primary', width=200)
 

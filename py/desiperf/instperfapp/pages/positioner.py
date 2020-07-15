@@ -1,18 +1,26 @@
 
+import os
+import glob
+import pandas as pd
+import numpy as np
+
 from bokeh.layouts import column, layout
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.models import ColumnDataSource
 from bokeh.models import Button, CheckboxButtonGroup, PreText, Select
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
-import pandas as pd
-import numpy as np
-import glob, os
+
 
 from static.plots import Plots
 
 class PosAccPage():
     def __init__(self, datahandler):
+        '''
+        Args:
+            datahandler :
+
+        '''
         self.DH = datahandler
         self.plots = Plots('Positioner Accuracy Performance',source=None)
         self.data_source = self.plots.data_source
@@ -31,6 +39,7 @@ class PosAccPage():
 
 
     def page_layout(self):
+        #docstring
         this_layout = layout([[self.plots.header],
                         [self.pos_select, self.x_select, self.y_select, self.btn],
                         [self.corr],
@@ -41,6 +50,7 @@ class PosAccPage():
         return tab
 
     def get_pos_data(self, update=False):
+        #- docstring
         pos_file = os.getcwd()+'/instperfapp/data/per_fiber/{}.csv'.format(self.pos)
         data = pd.read_csv(pos_file)
         self.dev = int(np.unique(data.DEVICE_LOC)[0])
@@ -68,19 +78,21 @@ class PosAccPage():
             self.plots.circle_plot(self.ts2, x='mjd_obs',y='attr2',source=self.pos_source)
 
     def pos_loc_plot(self):
+        #- docstring
         self.fp = self.DH.fiberpos
-        print(self.fp.head())
         self.fp['COLOR'] = 'white'
         idx = self.fp[(self.fp.DEVICE == self.dev) & (self.fp.PETAL == self.petal)].index
         self.fp.at[idx, 'COLOR'] = 'red'
-        self.scatt = self.plots.figure(width=450, height=450, x_axis_label='obsX / mm', y_axis_label='obsY / mm')
+        self.scatt = self.plots.figure(width=450, height=450, x_axis_label='obsX / mm', y_axis_label='obsY / mm', tooltips=self.plots.pos_tooltips)
         self.plots.pos_scatter(self.scatt, self.fp, 'COLOR')
 
     def update(self):
+        #- docstring
         self.pos = self.pos_select.value
         self.get_pos_data(update=True)
 
     def run(self):
+        #- docstring
         self.get_pos_data()
         #self.time_series_plot()
         self.btn.on_click(self.update)

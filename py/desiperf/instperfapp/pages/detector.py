@@ -71,9 +71,9 @@ class DetectorPage():
         return tab
 
     def time_series_plot(self, same=True):
-        self.tsb = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.TOOLTIPS, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
-        self.tsr = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.TOOLTIPS,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
-        self.tsz = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.TOOLTIPS,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
+        self.tsb = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
+        self.tsr = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
+        self.tsz = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
         if self.data_source is not None:
             self.tsb.circle(x='attrb', y='attr2', size=5, source=self.plot_source, selection_color="cyan", view=self.viewb)
             if same:
