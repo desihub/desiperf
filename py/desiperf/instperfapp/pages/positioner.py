@@ -66,9 +66,6 @@ class PosAccPage():
         self.pos_loc_plot()
 
     def time_series_plot(self):
-        """
-        Note, cannot get labels to update
-        """
         self.corr = self.plots.figure(width=350, height=250, x_axis_label='attr1', y_axis_label='attr2')
         self.ts1 = self.plots.figure(x_axis_label='mjd_obs', y_axis_label='attr1')
         self.ts2 = self.plots.figure(x_axis_label='mjd_obs', y_axis_label='attr2')
