@@ -80,6 +80,7 @@ class DataHandler(object):
                 df_.to_csv('./instperfapp/data/focalplane/fp_data_{}.csv'.format(i),index=False)
             self.focalplane_source = ColumnDataSource(fp_df)
 
+
         elif self.option == 'update':
             pass
 
@@ -117,7 +118,7 @@ class DataHandler(object):
             #make new file
 
     def run(self):
-        self.get_detector_data() #self.detector_source
         self.get_focalplane_data() #self.focalplane_source
+        self.get_detector_data() #self.detector_source
         self.etc_source = ColumnDataSource(self.etc_data)
 

@@ -45,6 +45,7 @@ class DataSource():
 
         except:
             self.connect_info = "Cannot connect to DB on desi server. Cannot fetch data."
+            return None
 
     def get_exp_df(self):
         self.exp_df = self.db_query('exposure',table_type='exposure')

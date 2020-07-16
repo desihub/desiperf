@@ -74,7 +74,8 @@ init_bt.on_click(update_data)
 layout1 = layout([[title_1],
                   [data_info],
                   [start_date, end_date],
-                  [init_bt]])
+                  [init_bt],
+                  [connect_info]])
 tab1 = Panel(child=layout1, title="Data Initilization")
 
 tab2 = fp_tab
