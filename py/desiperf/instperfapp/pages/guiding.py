@@ -1,42 +1,46 @@
 
 from bokeh.layouts import column, layout
 from bokeh.models.widgets import Panel, Tabs
-from bokeh.models import ColumnDataSource, PreText, Select
+from bokeh.models import ColumnDataSource, PreText, Select, Button
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 import pandas as pd 
 
-from static.page import Page
+from static.plots import Plots
 
-class GuidingPage(Page):
-    def __init__(self, source):
-        self.page = Page('Guiding Performance',source)
-        self.btn = self.page.button('OK')
-        self.details = self.page.pretext(' ')
-        self.data_source = self.page.data_source
-        self.default_options = ['guide_meanx', 'guide_meany', 'guide_meanx2', 
-                                'guide_meany2', 'guide_meanxy', 'guide_maxx',
-                                'guide_maxy', 'guider_combined_x', 
-                                'guider_combined_y', 'skyra', 'skydec', 
-                                'exptime', 'tileid', 'airmass', 'mountha', 
-                                'zd', 'mountaz','domeaz', 'reqra', 'reqdec', 
-                                'targtra', 'targtdec', 'zenith', 'mjd_obs', 
-                                'moonra', 'moondec', 'EXPOSURE', 'mirror_temp',
-                                'truss_temp', 'air_temp', 'mirror_avg_temp', 
-                                'wind_speed', 'wind_direction', 'humidity',  
-                                'pressure', 'temperature', 'dewpoint', 
-                                'shutter_open', 'exptime_sec', 'psf_pixels',
-                                'hex_trim', 'hex_rot_rate', 'hex_status', 
-                                'hex_rot_offset', 'hex_rot_enabled', 
-                                'hex_position', 'hex_rot_interval', 'hex_tweak',
-                                'adc_status', 'adc_home1', 'adc_home2', 
-                                'adc_nrev1', 'adc_nrev2', 'adc_angle1', 
-                                'adc_angle2', 'adc_status', 'adc_status1', 
-                                'adc_status2', 'adc_rem_time1', 'adc_rem_time2']
+class GuidingPage():
+    def __init__(self, datahandler):
+        self.plots = Plots('Guiding Performance',datahandler.focalplane_source)
+        self.btn = Button(label='OK', button_type='primary', width=200)
+        self.details = PreText(text=' ', width=500)
+        self.data_source = self.plots.data_source
+        self.default_options = ['targtra','targtdec', 'exptime', 'airmass', 'mountha', 'zd', 'mountaz',
+       'domeaz', 'mjd_obs', 'date_obs', 'moonra',
+       'moondec', 'EXPOSURE', 'max_blind', 'max_blind_95', 'rms_blind',
+       'rms_blind_95', 'max_corr', 'max_corr_95', 'rms_corr',
+       'rms_corr_95',  'mirror_avg_temp', 'mirror_desired_temp',
+       'air_temp', 'air_dewpoint', 'air_flow',
+       'probe1_humidity', 'probe1_temp', 'probe2_humidity', 'probe2_temp',
+       'flowrate_in', 'flowrate_out', 'mirror_rtd_temp','glycol_in_temp', 'glycol_out_temp',
+       'air_in_temp', 'air_out_temp', 'truss_ntt_temp', 'truss_ett_temp',
+       'hinge_s_temp', 'hinge_w_temp', 'chimney_os_temp',
+       'chimney_ow_temp', 'chimney_ib_temp', 'chimney_im_temp',
+       'chimney_it_temp', 'centersection_i_temp', 'centersection_o_temp',
+       'primarycell_i_temp', 'primarycell_o_temp', 'casscage_i_temp',
+       'casscage_o_temp', 'decbore_temp', 'mirror_status',
+       'row_status_user', 'mirror_temp', 'truss_temp', 'EXPID',
+       'environmentmonitor_tower', 'tower_timestamp', 'wind_speed',
+       'wind_direction', 'humidity', 'pressure', 'temperature',
+       'dewpoint', 'split.1', 'gust', 'fvc_camerastatus',
+       'controller_open', 'reset', 'initialized', 'shutter_open',
+       'fan_on', 'temp_degc', 'exptime_sec', 'psf_pixels', 'last_updated',
+       'guider_summary', 'duration', 'expid', 'seeing.1', 'frames.1',
+       'meanx', 'meany', 'meanx2', 'meany2', 'meanxy', 'maxx', 'maxy',
+       'guider_centroids', 'combined_x', 'combined_y']
 
-        self.x_select = Select(value='guide_meanx',options=self.default_options)
+        self.x_select = Select(value='meanx',options=self.default_options)
         self.y_select = Select(value='airmass', options=self.default_options)
-        self.btn = self.page.button('Plot')
+        self.btn = Button(label='Plot', button_type='primary', width=200)
 
     def get_data(self, attr1, attr2, update=False):
         data = pd.DataFrame(self.data_source.data)[['mjd_obs',attr1,attr2]]
@@ -50,22 +54,25 @@ class GuidingPage(Page):
         self.time_series_plot()
 
     def page_layout(self):
-        this_layout = layout([[self.page.header],
+        this_layout = layout([[self.plots.header],
                       [self.x_select, self.y_select, self.btn],
                       [self.corr,self.details],
                       [self.ts1],
                       [self.ts2]])
-        tab = Panel(child=this_layout, title=self.page.title)
+        tab = Panel(child=this_layout, title=self.plots.title)
         return tab
 
     def time_series_plot(self):
-        self.corr = figure(plot_width=350, plot_height=250, tools=self.page.tools, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
-        self.ts1 = figure(plot_width=900, plot_height=200, tools=self.page.tools, x_axis_label='MJD_OBS', y_axis_label=self.x_select.value)
-        self.ts2 = figure(plot_width=900, plot_height=200, tools=self.page.tools, x_axis_label='MJD_OBS', y_axis_label=self.y_select.value)
+        self.corr = self.plots.figure(width=350, height=250, x_axis_label='attr1', y_axis_label='attr2')
+        self.ts1 = self.plots.figure(x_axis_label='mjd_obs', y_axis_label='attr1')
+        self.ts2 = self.plots.figure(x_axis_label='mjd_obs', y_axis_label='attr2')
         if self.data_source is not None:
-            self.corr.circle(x='attr1', y='attr2', size=2, source=self.plot_source, selection_color="orange", alpha=0.6, nonselection_alpha=0.1, selection_alpha=0.4)
-            self.ts1.circle(x='mjd_obs', y='attr1', size=5, source=self.plot_source, color="blue", selection_color="orange")
-            self.ts2.circle(x='mjd_obs', y='attr2', size=5, source=self.plot_source, color="blue", selection_color="orange")
+            self.plots.corr_plot(self.corr, x='attr1',y='attr2', source=self.plot_source)
+            self.plots.circle_plot(self.ts1, x='mjd_obs',y='attr1',source=self.plot_source)
+            self.plots.circle_plot(self.ts2, x='mjd_obs',y='attr2',source=self.plot_source)
+            #self.corr.circle(x='attr1', y='attr2', size=2, source=self.plot_source, selection_color="orange", alpha=0.6, nonselection_alpha=0.1, selection_alpha=0.4)
+            #self.ts1.circle(x='mjd_obs', y='attr1', size=5, source=self.plot_source, color="blue", selection_color="orange")
+            #self.ts2.circle(x='mjd_obs', y='attr2', size=5, source=self.plot_source, color="blue", selection_color="orange")
 
 
     def update(self):
