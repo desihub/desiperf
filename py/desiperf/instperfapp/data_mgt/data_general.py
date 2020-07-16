@@ -21,23 +21,30 @@ class DataSource():
         self.coord_dir = '/exposures/desi/'
 
         self.exp_df = None
+        self.connect_info = ' '
 
     def db_query(self, table_name, sample = None, table_type = 'telemetry'):
         """
         sample: int number of data points to take. If sample=60, it will sample every 60th data point.
         """
-        self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev",
+        try:
+            self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev",
                   user="desi_reader", password="reader")
-        if table_type == 'telemetry':
-            query = pd.read_sql_query(f"SELECT * FROM {table_name} WHERE time_recorded >= '{self.start_date}' AND time_recorded <'{self.end_date}'",self.conn)
-        elif table_type == 'exposure':
-            #start, end = self.get_mjd_times([self.start_date, self.end_date], time_type='date')
-            query = pd.read_sql_query(f"SELECT * FROM {table_name} WHERE date_obs >= '{self.start_date}' AND date_obs < '{self.end_date}'",self.conn)
-        
-        # Resample data. Most telemetry streams are taken every 1.5 seconds. 
-        if isinstance(sample, int): 
-            query = query[query.index % sample == 0]
-        return query
+            self.connect_info = 'Connected to DB on desi server'
+            if table_type == 'telemetry':
+                query = pd.read_sql_query(f"SELECT * FROM {table_name} WHERE time_recorded >= '{self.start_date}' AND time_recorded <'{self.end_date}'",self.conn)
+            elif table_type == 'exposure':
+                #start, end = self.get_mjd_times([self.start_date, self.end_date], time_type='date')
+                query = pd.read_sql_query(f"SELECT * FROM {table_name} WHERE date_obs >= '{self.start_date}' AND date_obs < '{self.end_date}'",self.conn)
+            
+            # Resample data. Most telemetry streams are taken every 1.5 seconds. 
+            if isinstance(sample, int): 
+                query = query[query.index % sample == 0]
+            return query
+
+
+        except:
+            self.connect_info = "Cannot connect to DB on desi server. Cannot fetch data."
 
     def get_exp_df(self):
         self.exp_df = self.db_query('exposure',table_type='exposure')
