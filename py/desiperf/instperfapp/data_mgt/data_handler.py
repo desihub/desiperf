@@ -44,6 +44,7 @@ class DataHandler(object):
                             'guide_maxy', 'guider_combined_x', 
                             'guider_combined_y']
         self.fiberpos = pd.read_csv('./instperfapp/data/fiberpos.csv')
+        self.etc_data = pd.read_csv('./instperfapp/data/etc_output.csv')
         #self.fiberpos = Table(hdu[1].data).to_pandas()
         #print(self.fiberpos)
 
@@ -118,4 +119,5 @@ class DataHandler(object):
     def run(self):
         self.get_detector_data() #self.detector_source
         self.get_focalplane_data() #self.focalplane_source
+        self.etc_source = ColumnDataSource(self.etc_data)
 
