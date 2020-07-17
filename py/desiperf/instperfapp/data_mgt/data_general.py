@@ -20,6 +20,9 @@ class DataSource():
         self.qa_dir = '/exposures/nightwatch/'
         self.coord_dir = '/exposures/desi/'
 
+        self.fiberpos = pd.read_csv('./instperfapp/data/fiberpos.csv')
+        self.posfile_cols = ['PETAL_LOC', 'DEVICE_LOC','TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X', 'FIBERASSIGN_Y','OFFSET_0','OFFSET_2','FIBER']
+
         self.exp_df = None
         self.connect_info = ' '
 
@@ -101,6 +104,35 @@ class DataSource():
         #give exposure number to time data
         new_df['EXPID'] = list(self.exp_df[self.exp_df.id.isin(exposures)].id)
         return new_df
+
+    def init_pos_file(self, fib):
+        df = pd.DataFrame(columns = self.posfile_cols)
+        df.to_csv('./instperfapp/data/per_fiber/{}.csv'.format(fib),index=False)
+
+    def coord_data_to_pos_files(self, fib):
+        if len(self.coord_files) == 0:
+            self.get_coord_files()
+            
+        filen = './instperfapp/data/per_fiber/{}.csv'.format(fib)
+        if not os.path.isfile(filen):
+            self.init_pos_file(fib)
+
+        pdf = pd.read_csv(filen)
+        new_data = []
+        for coord in self.coord_files:
+            df = Table.read(coord,format='fits').to_pandas()
+            df = df.merge(self.fiberpos, how='left',left_on=['PETAL_LOC','DEVICE_LOC'], right_on=['PETAL','DEVICE'])
+            exposure = int(os.path.splitext(os.path.split(coord)[0])[0][-6:])
+            ddf = df[df.FIBER == float(fib)]
+            final_move = np.sort(fnmatch.filter(ddf.columns, 'OFFSET_*'))[-1]
+            ddf = ddf[['PETAL_LOC', 'DEVICE_LOC','TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X', 'FIBERASSIGN_Y','OFFSET_0',final_move,'FIBER']]
+            ddf['EXPOSURE'] = exposure
+            ddf = ddf.rename(columns={final_move:'OFFSET_FINAL'})
+            new_data.append(ddf)
+
+        new_df = pd.DataFrame(np.vstack(new_data),columns=self.posfile_cols)
+        pdf = pd.concat([pdf,new_df])
+        pdf.to_csv(filen, index=False)
 
     def get_qa_data(self, hdu_name, cols):
 

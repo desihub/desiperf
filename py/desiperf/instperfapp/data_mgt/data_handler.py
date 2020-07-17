@@ -43,10 +43,9 @@ class DataHandler(object):
                             'guide_meany2', 'guide_meanxy', 'guide_maxx',
                             'guide_maxy', 'guider_combined_x', 
                             'guider_combined_y']
-        self.fiberpos = pd.read_csv('./instperfapp/data/fiberpos.csv')
+        self.fiberpos = self.DS.fiberpos
         self.etc_data = pd.read_csv('./instperfapp/data/etc_output.csv')
-        #self.fiberpos = Table(hdu[1].data).to_pandas()
-        #print(self.fiberpos)
+        self.FIBERS = [1235, 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
 
     def get_focalplane_data(self):
         if self.option == 'no_update':
@@ -117,6 +116,12 @@ class DataHandler(object):
             #Get QA data
             #Get exp data
             #make new file
+
+    def get_positioner_data(self):
+        if self.FIBERS == 'all':
+            self.FIBERS = np.linspace(0,5000,5000)
+        for fib in self.FIBERS:
+            self.DS.coord_data_to_pos_files(fib)
 
     def run(self):
         self.get_focalplane_data() #self.focalplane_source
