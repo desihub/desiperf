@@ -71,8 +71,9 @@ class DataHandler(object):
             fvc_df = self.DS.convert_time_to_exp(fp_exposures, fvc_telem)
             guide1_df = self.DS.convert_time_to_exp(fp_exposures, guide1)
             guide2_df = self.DS.convert_time_to_exp(fp_exposures, guide2)
+            hex_adc_df = self.DS.hex_and_adc(telescope_df)
             exp_df = self.DS.exp_df[self.DS.exp_df.id.isin(fp_exposures)]
-            for df in [exp_df, telescope_df, tower_df, fvc_df, guide1_df, guide2_df, pos_df]:
+            for df in [exp_df, telescope_df, tower_df, fvc_df, guide1_df, guide2_df, hex_adc_df, pos_df]:
                 df.reset_index(inplace=True, drop=True)
             fp_df = pd.concat([exp_df, pos_df,telescope_df,tower_df,fvc_df,guide1_df,guide2_df],axis=1)
             dfs = np.array_split(fp_df,4) #How small??

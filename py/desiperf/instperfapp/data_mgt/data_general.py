@@ -62,6 +62,26 @@ class DataSource():
         combined_df = pd.concat([df_with_exp, df_with_time], axis=1)
         return combined_df
 
+    def hex_and_adc(self, df):
+        hexs = temp['hexapod']
+        new_list = []
+        for row in df.iterrows():
+            this_list = []
+            for n in ['hex_trim','rot_rate','hex_status','rot_offset','rot_enabled','hex_position','rot_interval','hex_tweak']:
+                try:
+                    this_list.append(row['hexapod'][n])
+                except:
+                    this_list.append(np.nan)
+            for n in ['status','adc_home1','adc_home2','adc_nrev1','adc_nrev2','adc_angle1','adc_angle2','adc_status','adc_status1','adc_status2','adc_rem_time1','adc_rem_time2']:
+                try:
+                    this_list.append(row['adc'][n])
+                except:
+                    this_list.append(np.nan)
+            new_list.append(this_list)
+
+        new_df = pd.DataFrame(np.vstack(new_list), columns =['hex_trim','rot_rate','hex_status','rot_offset','rot_enabled','hex_position','rot_interval','hex_tweak','adc_status','adc_home1','adc_home2','adc_nrev1','adc_nrev2','adc_angle1','adc_angle2','adc_status','adc_status1','adc_status2','adc_rem_time1','adc_rem_time2'] )
+        return new_df
+
     def convert_time_to_exp(self, exposures, tele_df):
         
         if self.exp_df is None:
