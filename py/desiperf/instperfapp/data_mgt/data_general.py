@@ -63,9 +63,8 @@ class DataSource():
         return combined_df
 
     def hex_and_adc(self, df):
-        hexs = temp['hexapod']
         new_list = []
-        for row in df.iterrows():
+        for ix, row in df.iterrows():
             this_list = []
             for n in ['hex_trim','rot_rate','hex_status','rot_offset','rot_enabled','hex_position','rot_interval','hex_tweak']:
                 try:
