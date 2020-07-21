@@ -8,7 +8,7 @@ from static.plots import Plots
 
 class TputPage():
 	def __init__(self, datahandler):
-		self.plots = Plots('Throughput Performance', source=None)
+		self.plots = Plots('Throughput Performance', source=datahandler.etc_source)
 		self.btn = Button(label='OK', button_type='primary',width=200)
 		self.txt = PreText(text="This is a sentence")
 		self.data_source = self.plots.data_source

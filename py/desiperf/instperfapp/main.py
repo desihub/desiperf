@@ -51,6 +51,7 @@ def update_data():
     print("You must run this on the desi server")
     DH = DataHandler(option='init')
     DH.run()
+    connect_info.text = DH.DS.connect_info
     fp_tab, pp_tab, gp_tab, tp_tab, dp_tab = init_pages(DH)
     tab2.children = fp_tab
     tab3.children = pp_tab
@@ -63,6 +64,7 @@ data_info = Div(text="Data is available for the dates listed below. If you want 
 start_date = TextInput(title='Start Date', value=DH.start_date)
 end_date = TextInput(title='End Date', value=DH.start_date)
 init_bt = Button(label="Initialize Data", button_type='primary', width=300)
+connect_info = Div(text=DH.DS.connect_info, width=300)
 
 fp_tab, pp_tab, gp_tab, tp_tab, dp_tab = init_pages(DH)
 init_bt.on_click(update_data)
@@ -72,7 +74,8 @@ init_bt.on_click(update_data)
 layout1 = layout([[title_1],
                   [data_info],
                   [start_date, end_date],
-                  [init_bt]])
+                  [init_bt],
+                  [connect_info]])
 tab1 = Panel(child=layout1, title="Data Initilization")
 
 tab2 = fp_tab

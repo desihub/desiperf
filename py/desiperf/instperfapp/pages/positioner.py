@@ -42,10 +42,9 @@ class PosAccPage():
         #docstring
         this_layout = layout([[self.plots.header],
                         [self.pos_select, self.x_select, self.y_select, self.btn],
-                        [self.corr],
+                        [self.corr,self.scatt],
                         [self.ts1],
-                        [self.ts2],
-                        [self.scatt]])
+                        [self.ts2]])
         tab = Panel(child=this_layout, title=self.plots.title)
         return tab
 
