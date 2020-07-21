@@ -19,9 +19,12 @@ class DataSource():
 
         self.qa_dir = '/exposures/nightwatch/'
         self.coord_dir = '/exposures/desi/'
+        self.coord_files = None
 
-        self.fiberpos = pd.read_csv('./instperfapp/data/fiberpos.csv')
-        self.posfile_cols = ['PETAL_LOC', 'DEVICE_LOC','TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X', 'FIBERASSIGN_Y','OFFSET_0','OFFSET_2','FIBER']
+        self.fiberpos = pd.read_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp//data/fiberpos.csv')
+        self.posfile_cols = ['PETAL_LOC', 'DEVICE_LOC','TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X',
+        'FIBERASSIGN_Y','OFFSET_0','OFFSET_2','FIBER','EXPOSURE']
+        self.petal_loc_to_id = {0:'4',1:'5',2:'6',3:'3',4:'8',5:'10',6:'11',7:'2',8:'7',9:'9'}
 
         self.exp_df = None
         self.connect_info = ' '
@@ -107,13 +110,13 @@ class DataSource():
 
     def init_pos_file(self, fib):
         df = pd.DataFrame(columns = self.posfile_cols)
-        df.to_csv('./instperfapp/data/per_fiber/{}.csv'.format(fib),index=False)
+        df.to_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/per_fiber/{}.csv'.format(fib),index=False)
 
     def coord_data_to_pos_files(self, fib):
-        if len(self.coord_files) == 0:
+        if self.coord_files is None:
             self.get_coord_files()
             
-        filen = './instperfapp/data/per_fiber/{}.csv'.format(fib)
+        filen = '/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/per_fiber/{}.csv'.format(fib)
         if not os.path.isfile(filen):
             self.init_pos_file(fib)
 
@@ -133,6 +136,22 @@ class DataSource():
         new_df = pd.DataFrame(np.vstack(new_data),columns=self.posfile_cols)
         pdf = pd.concat([pdf,new_df])
         pdf.to_csv(filen, index=False)
+
+    def add_posmove_telemetry(self, fib):
+        filen = '/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/per_fiber/{}.csv'.format(fib)
+        pdf = pd.read_csv(filen)
+        pdf.drop_duplicates(subset='EXPOSURE', keep='first',inplace=True)
+        ptl_loc = int(np.unique(pdf.PETAL_LOC))
+        dev = int(np.unique(pdf.DEVICE_LOC))
+        telem_query = self.db_query('environmentmonitor_telescope', sample=60)
+        ptl = self.petal_loc_to_id[ptl_loc]
+        pos_query = pd.read_sql_query("SELECT * FROM positioner_moves_p{} WHERE device_loc = {} AND time_recorded >= '{}' AND time_recorded < '{}'".format(ptl,dev, self.start_date, self.end_date),self.conn)
+        pos_df = self.convert_time_to_exp(list(np.unique(pdf.EXPOSURE)), pos_query)
+        telem_df = self.convert_time_to_exp(list(np.unique(pdf.EXPOSURE)), telem_query)
+        for df in [pdf, pos_df, telem_df]:
+            df.reset_index(inplace=True, drop=True)
+        df = pd.concat([pdf, telem_df, pos_df],axis=1)
+        df.to_csv(filen, index=False)
 
     def get_qa_data(self, hdu_name, cols):
 

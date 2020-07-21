@@ -44,8 +44,8 @@ class DataHandler(object):
                             'guide_maxy', 'guider_combined_x', 
                             'guider_combined_y']
         self.fiberpos = self.DS.fiberpos
-        self.etc_data = pd.read_csv('./instperfapp/data/etc_output.csv')
-        self.FIBERS = [1235, 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
+        self.etc_data = pd.read_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/etc_output.csv')
+        self.FIBERS = [2418, 294, 3532, 4731, 595] #[1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
 
     def get_focalplane_data(self):
         if self.option == 'no_update':
@@ -120,11 +120,18 @@ class DataHandler(object):
     def get_positioner_data(self):
         if self.FIBERS == 'all':
             self.FIBERS = np.linspace(0,5000,5000)
-        for fib in self.FIBERS:
-            self.DS.coord_data_to_pos_files(fib)
+        if self.option == 'no_update':
+            pass
+        elif self.option == 'init':
+            for fib in self.FIBERS:
+                self.DS.coord_data_to_pos_files(fib)
+                self.DS.add_posmove_telemetry(fib)
+        elif self.option == 'update':
+            pass
 
     def run(self):
         self.get_focalplane_data() #self.focalplane_source
         self.get_detector_data() #self.detector_source
+        self.get_positioner_data()
         self.etc_source = ColumnDataSource(self.etc_data)
 
