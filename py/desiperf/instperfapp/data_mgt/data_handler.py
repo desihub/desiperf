@@ -43,10 +43,9 @@ class DataHandler(object):
                             'guide_meany2', 'guide_meanxy', 'guide_maxx',
                             'guide_maxy', 'guider_combined_x', 
                             'guider_combined_y']
-        self.fiberpos = pd.read_csv('./instperfapp/data/fiberpos.csv')
-        self.etc_data = pd.read_csv('./instperfapp/data/etc_output.csv')
-        #self.fiberpos = Table(hdu[1].data).to_pandas()
-        #print(self.fiberpos)
+        self.fiberpos = self.DS.fiberpos
+        self.etc_data = pd.read_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/etc_output.csv')
+        self.FIBERS = [2418, 294, 3532, 4731, 595] #[1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
 
     def get_focalplane_data(self):
         if self.option == 'no_update':
@@ -72,7 +71,8 @@ class DataHandler(object):
             guide1_df = self.DS.convert_time_to_exp(fp_exposures, guide1)
             guide2_df = self.DS.convert_time_to_exp(fp_exposures, guide2)
             exp_df = self.DS.exp_df[self.DS.exp_df.id.isin(fp_exposures)]
-            for df in [exp_df, telescope_df, tower_df, fvc_df, guide1_df, guide2_df, pos_df]:
+            hex_adc_df = self.DS.hex_and_adc(exp_df)
+            for df in [exp_df, telescope_df, tower_df, fvc_df, guide1_df, guide2_df, hex_adc_df, pos_df]:
                 df.reset_index(inplace=True, drop=True)
             fp_df = pd.concat([exp_df, pos_df,telescope_df,tower_df,fvc_df,guide1_df,guide2_df],axis=1)
             dfs = np.array_split(fp_df,4) #How small??
@@ -117,8 +117,21 @@ class DataHandler(object):
             #Get exp data
             #make new file
 
+    def get_positioner_data(self):
+        if self.FIBERS == 'all':
+            self.FIBERS = np.linspace(0,5000,5000)
+        if self.option == 'no_update':
+            pass
+        elif self.option == 'init':
+            for fib in self.FIBERS:
+                self.DS.coord_data_to_pos_files(fib)
+                self.DS.add_posmove_telemetry(fib)
+        elif self.option == 'update':
+            pass
+
     def run(self):
         self.get_focalplane_data() #self.focalplane_source
         self.get_detector_data() #self.detector_source
+        self.get_positioner_data()
         self.etc_source = ColumnDataSource(self.etc_data)
 
