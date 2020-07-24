@@ -60,7 +60,7 @@ def update_data():
     tab6.children = dp_tab
 
 #- Landing page widgets
-data_info = Div(text="Data is available for the dates listed below. If you want to re-initalize all data, press the button below. This is not recommended as it takes more than an hour. If you do need to re-initialize the data, you must be running this tool on the desi server.")
+data_info = Div(text="Data is available for the dates listed below. If you want to re-initialize all data, press the button below. This is not recommended as it takes more than an hour. If you do need to re-initialize the data, you must be running this tool on the desi server.")
 start_date = TextInput(title='Start Date', value=DH.start_date)
 end_date = TextInput(title='End Date', value=DH.start_date)
 init_bt = Button(label="Initialize Data", button_type='primary', width=300)
@@ -76,7 +76,7 @@ layout1 = layout([[title_1],
                   [start_date, end_date],
                   [init_bt],
                   [connect_info]])
-tab1 = Panel(child=layout1, title="Data Initilization")
+tab1 = Panel(child=layout1, title="Data Initialization")
 
 tab2 = fp_tab
 tab3 = pp_tab

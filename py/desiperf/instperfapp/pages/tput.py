@@ -13,13 +13,14 @@ from static.plots import Plots
 class TputPage():
 	def __init__(self, datahandler):
 		self.plots = Plots('Throughput Performance', source=datahandler.etc_source)
+		self.description = Div(text='These plots show the throughput over time.', width=800, style=self.plots.text_style)
 		self.details = PreText(text=' ', width=500)
 		self.cov = PreText(text=' ', width=500)
 		self.data_source = self.plots.data_source
 		self.default_options = ['estimated_snr', 'goal_snr', 'seeing', 'transparency', 'skylevel', 'max_exposure_time', 'expid']
 
-		self.x_select = Select(value='seeing', options=self.default_options)
-		self.y_select = Select(value='transparency', options=self.default_options)
+		self.x_select = Select(title='Option 1', value='seeing', options=self.default_options)
+		self.y_select = Select(title='Option 2', value='transparency', options=self.default_options)
 		self.btn = Button(label='OK', button_type='primary',width=200)
 
 	def get_data(self, attr1, attr2, update=False):
@@ -34,6 +35,7 @@ class TputPage():
 
 	def page_layout(self):
 		this_layout = layout([[self.plots.header],
+							  [self.description],
 							  [self.x_select, self.y_select, self.btn],
 							  [self.corr, self.details, self.cov],
 							  [self.ts1],

@@ -11,6 +11,7 @@ from static.plots import Plots
 class GuidingPage():
     def __init__(self, datahandler):
         self.plots = Plots('Guiding Performance',datahandler.focalplane_source)
+        self.description = Div(text='These plots show the behavior of the GFA cameras during a given time or exposure.', width=800, style=self.plots.text_style)
         self.btn = Button(label='OK', button_type='primary', width=200)
         self.details = PreText(text=' ', width=500)
         self.data_source = self.plots.data_source
@@ -38,8 +39,8 @@ class GuidingPage():
        'meanx', 'meany', 'meanx2', 'meany2', 'meanxy', 'maxx', 'maxy',
        'guider_centroids', 'combined_x', 'combined_y']
 
-        self.x_select = Select(value='meanx',options=self.default_options)
-        self.y_select = Select(value='airmass', options=self.default_options)
+        self.x_select = Select(title='Option 1', value='meanx',options=self.default_options)
+        self.y_select = Select(title='Option 2', value='airmass', options=self.default_options)
         self.btn = Button(label='Plot', button_type='primary', width=200)
 
     def get_data(self, attr1, attr2, update=False):
@@ -55,6 +56,7 @@ class GuidingPage():
 
     def page_layout(self):
         this_layout = layout([[self.plots.header],
+                      [self.description],
                       [self.x_select, self.y_select, self.btn],
                       [self.corr,self.details],
                       [self.ts1],

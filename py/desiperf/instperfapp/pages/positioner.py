@@ -23,6 +23,7 @@ class PosAccPage():
         '''
         self.DH = datahandler
         self.plots = Plots('Positioner Accuracy Performance',source=None)
+        self.description = Div(text='These plots show behavior for a single (selected) positioner over time.', width=800, style=self.plots.text_style)
         self.data_source = self.plots.data_source
         self.pos = str(1235)
         posfiles = glob.glob(os.getcwd()+'/instperfapp/data/per_fiber/*.csv')
@@ -31,9 +32,10 @@ class PosAccPage():
         self.y_options = ['TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X', 'FIBERASSIGN_Y','EXPOSURE','total_move_sequences',
                         'airmass','mirror_temp','truss_temp','air_mirror_temp_diff','wind_speed','wind_direction',
                         'humidity','guide_meanxy','hex_rot_offset','ctrl_enabled']
-        self.pos_select = Select(value=self.pos, options=self.pos_list)
-        self.x_select = Select(value='OFFSET_0', options=self.x_options)
-        self.y_select = Select(value='TARGET_RA', options=self.y_options)
+
+        self.pos_select = Select(title='Select POS', value=self.pos, options=self.pos_list)
+        self.x_select = Select(title='Option 1', value='OFFSET_0', options=self.x_options)
+        self.y_select = Select(title='Option 2', value='TARGET_RA', options=self.y_options)
 
         self.btn = Button(label = 'Get Pos', button_type='primary',width=300)
 
@@ -41,6 +43,7 @@ class PosAccPage():
     def page_layout(self):
         #docstring
         this_layout = layout([[self.plots.header],
+                        [self.description],
                         [self.pos_select, self.x_select, self.y_select, self.btn],
                         [self.corr,self.scatt],
                         [self.ts1],
@@ -55,7 +58,7 @@ class PosAccPage():
         self.dev = int(np.unique(data.DEVICE_LOC)[0])
         self.petal = int(np.unique(data.PETAL_LOC)[0])
         data['air_mirror_temp_diff'] = np.abs(data['air_temp'] - data['mirror_temp'])
-        data_ = data[['mjd_obs',self.x_select.value, self.y_select.value]]
+        data_ = data[['EXPID',self.x_select.value, self.y_select.value]]
         data_ = data.rename(columns={self.x_select.value:'attr1',self.y_select.value:'attr2'}) 
         if update:
             self.pos_source.data = data_
@@ -66,12 +69,12 @@ class PosAccPage():
 
     def time_series_plot(self):
         self.corr = self.plots.figure(width=350, height=250, x_axis_label='attr1', y_axis_label='attr2')
-        self.ts1 = self.plots.figure(x_axis_label='mjd_obs', y_axis_label='attr1')
-        self.ts2 = self.plots.figure(x_axis_label='mjd_obs', y_axis_label='attr2')
+        self.ts1 = self.plots.figure(x_axis_label='EXPID', y_axis_label='attr1')
+        self.ts2 = self.plots.figure(x_axis_label='EXPID', y_axis_label='attr2')
         if self.pos_source is not None:
             self.plots.corr_plot(self.corr, x='attr1',y='attr2', source=self.pos_source)
-            self.plots.circle_plot(self.ts1, x='mjd_obs',y='attr1',source=self.pos_source)
-            self.plots.circle_plot(self.ts2, x='mjd_obs',y='attr2',source=self.pos_source)
+            self.plots.circle_plot(self.ts1, x='EXPID',y='attr1',source=self.pos_source)
+            self.plots.circle_plot(self.ts2, x='EXPID',y='attr2',source=self.pos_source)
 
     def pos_loc_plot(self):
         #- docstring

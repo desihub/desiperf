@@ -3,6 +3,7 @@ from bokeh.layouts import column, layout
 from bokeh.models.widgets import Panel
 from bokeh.models import ColumnDataSource, Select
 from bokeh.models import Button, CheckboxButtonGroup, PreText, Select
+from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 import pandas as pd
 
@@ -12,6 +13,7 @@ from static.plots import Plots
 class FocalPlanePage():
     def __init__(self, datahandler):
         self.plots = Plots('Focal Plane Performance', datahandler.focalplane_source)
+        self.description = Div(text='These plots show the average behavior across the whole focal plate for a given time or exposure.', width=800, style=self.plots.text_style)
         self.details = PreText(text=' ', width=500)
         self.cov = PreText(text=' ', width=500)
         self.data_source = self.plots.data_source
@@ -39,8 +41,8 @@ class FocalPlanePage():
        'meanx', 'meany', 'meanx2', 'meany2', 'meanxy', 'maxx', 'maxy',
        'guider_centroids', 'combined_x', 'combined_y']
 
-        self.x_select = Select(value='max_blind', options=self.default_options)
-        self.y_select = Select(value='airmass', options=self.default_options)
+        self.x_select = Select(title='Option 1', value='max_blind', options=self.default_options)
+        self.y_select = Select(title='Option 2', value='airmass', options=self.default_options)
         self.btn = Button(label='Plot', button_type='primary', width=200)
 
     def get_data(self, attr1, attr2, update=False):
@@ -55,6 +57,7 @@ class FocalPlanePage():
 
     def page_layout(self):
         this_layout = layout([[self.plots.header],
+                              [self.description],
                               [self.x_select, self.y_select, self.btn],
                               [self.corr, self.details, self.cov],
                               [self.ts1],

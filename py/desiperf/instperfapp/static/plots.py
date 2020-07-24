@@ -14,8 +14,10 @@ class Plots(object):
             source :
 
         '''
+        self.subt_style = {'font-family':'serif', 'font-size':'200%'}
+        self.text_style = {'font-family':'serif', 'font-size':'125%'}
         self.title = title
-        self.header = Div(text="{}".format(title), width=500)
+        self.header = Div(text="{}".format(title), width=500, style = self.subt_style)
         self.data_source = source  # Here it will pick up the latest
         self.tools = 'pan,wheel_zoom,lasso_select,reset,undo,save,hover'
 
