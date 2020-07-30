@@ -31,15 +31,14 @@ class Plots(object):
         self.default_tooltips = [
                     ("index", "$index"),
                     ("(x,y)", "($x, $y)"),
-                    ("desc", "@desc"),
                     ]
 
 
     def update_data(self, source):
         self.data_source = source
 
-    def figure(self, width=900, height=200, x_axis_label=None, 
-                 y_axis_label=None, tooltips=None):
+    def figure(self, width=900, height=300, x_axis_label=None, 
+                 y_axis_label=None, tooltips=None, title=None):
         '''
         OPTIONS:
             width :
@@ -51,28 +50,28 @@ class Plots(object):
         '''
         if tooltips is None:
             tooltips = self.default_tooltips
-        fig = figure(plot_width=width, plot_height=height, 
-                    tools=self.tools, tooltips=tooltips, toolbar_location="below",
-                    x_axis_label=x_axis_label, y_axis_label=y_axis_label)
+
+        if x_axis_label == 'datetime':
+            fig = figure(plot_width=width, plot_height=height, 
+                        tools=self.tools, tooltips=tooltips, toolbar_location="below",
+                        x_axis_label=x_axis_label, y_axis_label=y_axis_label, x_axis_type='datetime', title=title)
+        else:
+            fig = figure(plot_width=width, plot_height=height, 
+                        tools=self.tools, tooltips=tooltips, toolbar_location="below",
+                        x_axis_label=x_axis_label, y_axis_label=y_axis_label, title=title)
+
         fig.hover.show_arrow = True
 
         return fig
 
-    def corr_plot(self, fig, x, y, source, size=2, selection_color='orange', 
+    def corr_plot(self, fig, x, y, source, size=5, selection_color='orange', 
                     alpha=0.75, nonselection_alpha=0.1, selection_alpha=0.5):
         '''
         Args:
             fig :
             x :
             y :
-            source :
-
-        OPTIONS:
-            size :
-            selection_color :
-            alpha :
-            nonselection_alpha :
-            selection_alpha : 
+            source : 
 
         '''
         p = fig.circle(x=x, y=y, size=size, source=source, selection_color=selection_color,
@@ -80,7 +79,7 @@ class Plots(object):
                         selection_alpha=selection_alpha)
         return p
 
-    def circle_plot(self, fig, x, y, source, size=5, color='blue', selection_color='orange'):
+    def circle_plot(self, fig, x, y, source, size=5, selection_color='orange'):
         '''
         Args:
             fig :
@@ -88,13 +87,8 @@ class Plots(object):
             y :
             source :
 
-        OPTIONS:
-            size :
-            color :
-            selection_color :
-
         '''
-        p = fig.circle(x=x, y=y, size=size, source=source, color=color, selection_color=selection_color)
+        p = fig.circle(x=x, y=y, size=size, source=source, selection_color=selection_color)
 
         return p
 
@@ -104,9 +98,6 @@ class Plots(object):
             fig :
             df :
             attr :
-
-        OPTIONS:
-            size :
 
         '''
         p = fig.circle(x='X', y='Y', size=size, source=df, fill_color={'field': attr})

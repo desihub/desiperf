@@ -14,7 +14,7 @@ class DetectorPage():
     def __init__(self, datahandler):
         self.plots = Plots('Detector Noise Performance', datahandler.detector_source)
         self.description = Div(text='These plots show the behavior of the detectors in each spectrograph over time.', width=800, style=self.plots.text_style)
-        self.details = PreText(text=' ', width=500)
+        self.details = PreText(text='Data Overview: \n ', width=500)
         self.data_source = self.plots.data_source
         self.y_default_options = ['READNOISE', 'BIAS', 'COSMICS_RATE']
         self.x_default_options = ['EXPID','TIME_RECORDED','CAMERA_TEMP','CAMERA_HUMIDITY','BENCH_CRYO_TEMP','BENCH_COLL_TEMP','BENCH_NIR_TEMP']
@@ -52,7 +52,7 @@ class DetectorPage():
             data_ = data.rename(columns={attr1: 'attrb', attr2: 'attr2'})
             same = True
 
-        self.details.text = str(data.describe())
+        self.details.text = 'Data Overview: \n ' + str(data.describe())
         
         if update:
             self.plot_source.data = data_
@@ -74,9 +74,9 @@ class DetectorPage():
         return tab
 
     def time_series_plot(self, same=True):
-        self.tsb = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
-        self.tsr = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
-        self.tsz = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
+        self.tsb = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Blue Detectors')
+        self.tsr = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Red Detectors')
+        self.tsz = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Infrared Detectors')
         if self.data_source is not None:
             self.tsb.circle(x='attrb', y='attr2', size=5, source=self.plot_source, selection_color="cyan", view=self.viewb)
             if same:

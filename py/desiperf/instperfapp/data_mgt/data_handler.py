@@ -44,13 +44,14 @@ class DataHandler(object):
                             'guide_maxy', 'guider_combined_x', 
                             'guider_combined_y']
         self.fiberpos = self.DS.fiberpos
-        self.etc_data = pd.read_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/etc_output.csv')
-        self.FIBERS = [2418, 294, 3532, 4731, 595] #[1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
+        self.etc_data = pd.read_csv('./instperfapp/data/etc_output.csv')
+        self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
 
     def get_focalplane_data(self):
         if self.option == 'no_update':
             files = glob.glob('./instperfapp/data/focalplane/fp_data_*.csv')
             fp_df = pd.concat([pd.read_csv(f) for f in files])
+            fp_df = self.get_datetime(fp_df)
             self.focalplane_source = ColumnDataSource(fp_df)
 
         elif self.option == 'init':
@@ -92,6 +93,7 @@ class DataHandler(object):
         if self.option == 'no_update':
             files = glob.glob('./instperfapp/data/detector/det_qa_*.csv')
             df = pd.concat([pd.read_csv(f) for f in files])
+            df = self.get_datetime(df)
             self.detector_source = ColumnDataSource(df)
 
         elif self.option == 'init':
@@ -117,9 +119,23 @@ class DataHandler(object):
             #Get exp data
             #make new file
 
+    def get_datetime(self, df):
+        if 'mjd_obs' in list(df.columns):
+            dt = [Time(t, format='mjd', scale='utc').datetime for t in list(df.mjd_obs)]
+            datetimes = pd.to_datetime(dt)
+        elif 'time_recorded' in list(df.columns):
+            datetimes = pd.to_datetime(df.time_recorded)
+        else:
+            datetimes = np.zeros(len(df))
+
+        df['datetime'] = datetimes
+        return df
+
+
     def get_positioner_data(self):
         if self.FIBERS == 'all':
             self.FIBERS = np.linspace(0,5000,5000)
+
         if self.option == 'no_update':
             pass
         elif self.option == 'init':

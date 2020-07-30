@@ -21,7 +21,7 @@ class DataSource():
         self.coord_dir = '/exposures/desi/'
         self.coord_files = None
 
-        self.fiberpos = pd.read_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp//data/fiberpos.csv')
+        self.fiberpos = pd.read_csv('./instperfapp//data/fiberpos.csv')
         self.posfile_cols = ['PETAL_LOC', 'DEVICE_LOC','TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X',
         'FIBERASSIGN_Y','OFFSET_0','OFFSET_2','FIBER','EXPOSURE']
         self.petal_loc_to_id = {0:'4',1:'5',2:'6',3:'3',4:'8',5:'10',6:'11',7:'2',8:'7',9:'9'}
@@ -110,13 +110,13 @@ class DataSource():
 
     def init_pos_file(self, fib):
         df = pd.DataFrame(columns = self.posfile_cols)
-        df.to_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/per_fiber/{}.csv'.format(fib),index=False)
+        df.to_csv('./instperfapp/data/per_fiber/{}.csv'.format(fib),index=False)
 
     def coord_data_to_pos_files(self, fib):
         if self.coord_files is None:
             self.get_coord_files()
             
-        filen = '/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/per_fiber/{}.csv'.format(fib)
+        filen = './instperfapp/data/per_fiber/{}.csv'.format(fib)
         if not os.path.isfile(filen):
             self.init_pos_file(fib)
 
@@ -138,7 +138,7 @@ class DataSource():
         pdf.to_csv(filen, index=False)
 
     def add_posmove_telemetry(self, fib):
-        filen = '/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/per_fiber/{}.csv'.format(fib)
+        filen = './instperfapp/data/per_fiber/{}.csv'.format(fib)
         pdf = pd.read_csv(filen)
         pdf.drop_duplicates(subset='EXPOSURE', keep='first',inplace=True)
         ptl_loc = int(np.unique(pdf.PETAL_LOC))
