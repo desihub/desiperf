@@ -8,6 +8,7 @@ bokeh serve --show instperfapp
 view at http://localhost:5006/instperfapp
 
 '''
+import pandas as pd
 
 from bokeh.io import curdoc
 from bokeh.models import Button, TextInput, PreText
@@ -52,33 +53,36 @@ def init_pages(datahandler):
 
     return FP.page_layout(), PP.page_layout(), GP.page_layout(), TP.page_layout(), DP.page_layout()
 
-def update_data():
-    print("You must run this on the desi server")
-    #callback_holder.js_on_change('text', callback)
-    #callback_holder.text = "Are you sure!"
+# def update_data():
+#     print("You must run this on the desi server")
+#     #callback_holder.js_on_change('text', callback)
+#     #callback_holder.text = "Are you sure!"
 
-    DH = DataHandler(option='init')
-    DH.run()
-    connect_info.text = DH.DS.connect_info
-    fp_tab, pp_tab, gp_tab, tp_tab, dp_tab = init_pages(DH)
-    tab2.children = fp_tab
-    tab3.children = pp_tab
-    tab4.children = gp_tab
-    tab5.children = tp_tab
-    tab6.children = dp_tab
+#     DH = DataHandler(option='init')
+#     DH.run()
+#     connect_info.text = DH.DS.connect_info
+#     fp_tab, pp_tab, gp_tab, tp_tab, dp_tab = init_pages(DH)
+#     tab2.children = fp_tab
+#     tab3.children = pp_tab
+#     tab4.children = gp_tab
+#     tab5.children = tp_tab
+#     tab6.children = dp_tab
 
 #- Page Logo
 page_logo = Div(text="<img src='instperfapp/static/logo.png'>", width=350, height=300)
 
 #- Landing page widgets
-data_info = Div(text="Data is available for the dates listed below. If you want to re-initialize all data, press the button below. This is not recommended as it takes more than an hour. If you do need to re-initialize the data, you must be running this tool on the desi server.",width=800)
-start_date = TextInput(title='Start Date', value=DH.start_date)
-end_date = TextInput(title='End Date', value=DH.start_date)
-init_bt = Button(label="Initialize Data", button_type='primary', width=300)
+ds = pd.DataFrame(DH.detector_source.data)
+fps = pd.DataFrame(DH.focalplane_source.data)
+data_info = PreText(text="Data is available for the dates listed below.\n Detector Data: {} - {} (Exposures {} - {}) \n Focalplane Data: {} - {} (Exposures {} - {})".format(int(min(ds.NIGHT)), int(max(ds.NIGHT)), int(min(ds.EXPID)), int(max(ds.EXPID)), int(min(fps.night)), int(max(fps.night)), int(min(fps.EXPOSURE)), int(max(fps.EXPOSURE))),width=800,style={'font-family':'serif', 'font-size':'150%'})
+
+#start_date = TextInput(title='Start Date', value=DH.start_date)
+#end_date = TextInput(title='End Date', value=DH.start_date)
+#init_bt = Button(label="Initialize Data", button_type='primary', width=300)
 connect_info = Div(text=DH.DS.connect_info, width=300)
 
 fp_tab, pp_tab, gp_tab, tp_tab, dp_tab = init_pages(DH)
-init_bt.on_click(update_data)
+#init_bt.on_click(update_data)
 
 #- Popup 
 
@@ -86,10 +90,8 @@ init_bt.on_click(update_data)
 ''' LAYOUTS '''
 
 layout1 = layout([[title_1],
-                  [data_info],
                   [page_logo],
-                  [start_date, end_date],
-                  [init_bt],
+                  [data_info],
                   [connect_info]])
 tab1 = Panel(child=layout1, title="Data Initialization")
 

@@ -18,7 +18,6 @@ class DetectorPage():
         self.data_source = self.plots.data_source
         self.y_default_options = ['READNOISE', 'BIAS', 'COSMICS_RATE']
         self.x_default_options = ['EXPID','TIME_RECORDED','CAMERA_TEMP','CAMERA_HUMIDITY','BENCH_CRYO_TEMP','BENCH_COLL_TEMP','BENCH_NIR_TEMP']
-# 'NIGHT','EXPID','SPECTRO','CAM','AMP',
         self.spectro_options = ['ALL', '0', '1', '2', '3', '4', '5', '6', '7',
                                 '8', '9']
 
@@ -70,13 +69,17 @@ class DetectorPage():
                               [self.x_select, self.y_select, self.sp_select, self.btn],
                               [self.details],
                               [self.tsb], [self.tsr], [self.tsz]])
+
         tab = Panel(child=this_layout, title=self.plots.title)
         return tab
 
     def time_series_plot(self, same=True):
-        self.tsb = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Blue Detectors')
-        self.tsr = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Red Detectors')
-        self.tsz = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Infrared Detectors')
+        self.tsb = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips, 
+                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Blue Detectors')
+        self.tsr = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  
+                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Red Detectors')
+        self.tsz = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  
+                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Infrared Detectors')
         if self.data_source is not None:
             self.tsb.circle(x='attrb', y='attr2', size=5, source=self.plot_source, selection_color="cyan", view=self.viewb)
             if same:

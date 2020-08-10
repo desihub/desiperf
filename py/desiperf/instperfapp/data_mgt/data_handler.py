@@ -43,13 +43,18 @@ class DataHandler(object):
                             'guide_meany2', 'guide_meanxy', 'guide_maxx',
                             'guide_maxy', 'guider_combined_x', 
                             'guider_combined_y']
+
+        self.data_dir = os.path.join(os.getcwd(),'instperfapp','data')
+        self.pos_dir = os.path.join(self.data_dir, 'per_fiber')
+        self.fp_dir = os.path.join(self.data_dir, 'focalplane')
+        self.det_dir = os.path.join(self.data_dir, 'detector')
         self.fiberpos = self.DS.fiberpos
-        self.etc_data = pd.read_csv('./instperfapp/data/etc_output.csv')
+        self.etc_data = pd.read_csv(os.path.join(self.data_dir, 'etc_output.csv'))
         self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
 
     def get_focalplane_data(self):
         if self.option == 'no_update':
-            files = glob.glob('./instperfapp/data/focalplane/fp_data_*.csv')
+            files = glob.glob(os.path.join(self.fp_dir, 'fp_data_*.csv')) 
             fp_df = pd.concat([pd.read_csv(f) for f in files])
             fp_df = self.get_datetime(fp_df)
             self.focalplane_source = ColumnDataSource(fp_df)
@@ -78,7 +83,7 @@ class DataHandler(object):
             fp_df = pd.concat([exp_df, pos_df,telescope_df,tower_df,fvc_df,guide1_df,guide2_df],axis=1)
             dfs = np.array_split(fp_df,4) #How small??
             for i, df_ in enumerate(dfs):
-                df_.to_csv('./instperfapp/data/focalplane/fp_data_{}.csv'.format(i),index=False)
+                df_.to_csv(os.path.join(self.fp_dir, 'fp_data_{}.csv'.format(i)), index=False)
             self.focalplane_source = ColumnDataSource(fp_df)
 
 
@@ -91,7 +96,7 @@ class DataHandler(object):
         Don't know how to split up data yet. Will just start with a few files and go from there
         """
         if self.option == 'no_update':
-            files = glob.glob('./instperfapp/data/detector/det_qa_*.csv')
+            files = glob.glob(os.path.join(self.det_dir, 'det_qa_*.csv'))
             df = pd.concat([pd.read_csv(f) for f in files])
             df = self.get_datetime(df)
             self.detector_source = ColumnDataSource(df)
@@ -107,7 +112,7 @@ class DataHandler(object):
             df = pd.merge(left=qa_df, right=new_spec_df, left_on = 'EXPID', right_on='EXPID',how='inner')
             dfs = np.array_split(df,4) #How small??
             for i, df_ in enumerate(dfs):
-                df_.to_csv('./instperfapp/data/detector/det_qa_{}.csv'.format(i))
+                df_.to_csv(os.path.join(self.det_dir,'det_qa_{}.csv'.format(i)))
             self.detector_source = ColumnDataSource(df)
 
         elif self.option == 'update':

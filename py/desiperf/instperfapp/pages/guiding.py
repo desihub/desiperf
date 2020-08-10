@@ -11,12 +11,13 @@ from static.plots import Plots
 class GuidingPage():
     def __init__(self, datahandler):
         self.plots = Plots('Guiding Performance',datahandler.focalplane_source)
-        self.description = Div(text='These plots show the behavior of the GFA cameras during a given time or exposure.', width=800, style=self.plots.text_style)
+        self.description = Div(text='These plots show the behavior of the GFA cameras during a given time or exposure.', 
+                                width=800, style=self.plots.text_style)
         self.btn = Button(label='OK', button_type='primary', width=200)
         self.details = PreText(text=' ', width=500)
         self.data_source = self.plots.data_source
-        self.default_options = ['datetime','EXPOSURE','meanx', 'meany', 'meanx2', 'meany2', 'meanxy', 'maxx', 'maxy','guider_centroids', 'combined_x', 'combined_y'
-                                'airmass', 'domeaz', 'moonra','moondec', 
+        self.default_options = ['datetime','EXPOSURE','meanx', 'meany', 'meanx2', 'meany2', 'meanxy', 'maxx', 'maxy',
+                                'guider_centroids', 'combined_x', 'combined_y', 'airmass', 'domeaz', 'moonra','moondec', 
                                 'air_temp',  'mirror_temp', 'wind_speed','wind_direction', 'humidity', 'pressure', 'temperature',
                                 'dewpoint', 'fan_on', 'temp_degc', 'exptime_sec', 'psf_pixels', 'guider_summary', 'duration','seeing.1', ]
 

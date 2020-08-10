@@ -1,7 +1,7 @@
 
 from bokeh.layouts import column, layout
 from bokeh.models.widgets import Panel
-from bokeh.models import ColumnDataSource, Select
+from bokeh.models import CustomJS, ColumnDataSource, Select
 from bokeh.models import Button, CheckboxButtonGroup, PreText, Select
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
@@ -13,7 +13,8 @@ from static.plots import Plots
 class FocalPlanePage():
     def __init__(self, datahandler):
         self.plots = Plots('Focal Plane Performance', datahandler.focalplane_source)
-        self.description = Div(text='These plots show the average behavior across the whole focal plate for a given time or exposure.', width=800, style=self.plots.text_style)
+        self.description = Div(text='These plots show the average behavior across the whole focal plate for a given time or exposure.', 
+                                width=800, style=self.plots.text_style)
         self.details = PreText(text=' ', width=500)
         self.cov = PreText(text=' ', width=500)
         self.data_source = self.plots.data_source
@@ -31,10 +32,11 @@ class FocalPlanePage():
         self.fp_tooltips = None
 
     def get_data(self, attr1, attr2, update=False):
+        
         data = pd.DataFrame(self.data_source.data)[['datetime',attr1,attr2,'EXPOSURE']]
-        dd = data[['datetime', attr1, attr2]]
-        self.details.text = 'Data Overview: \n ' + str(dd.describe())
-        self.cov.text = 'Covariance of Option 1 & 2: \n' + str(dd.cov())
+        self.dd = ColumnDataSource(data[['datetime', attr1, attr2]])
+        self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.dd.data).describe())
+        self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(self.dd.data).cov())
         data_ = data.rename(columns={attr1:'attr1', attr2:'attr2'}) 
         if update:
             self.plot_source.data = data_
@@ -45,8 +47,7 @@ class FocalPlanePage():
             ("exposure","@EXPOSURE"),
             ("{}".format(attr1),"@attr1"),
             ("{}".format(attr2),"@attr2"),
-            ("(x,y)", "($x, $y)"),
-            ]
+            ("(x,y)", "($x, $y)")]
 
     def page_layout(self):
         this_layout = layout([[self.plots.header],
@@ -66,6 +67,20 @@ class FocalPlanePage():
             self.plots.corr_plot(self.corr, x='attr1',y='attr2', source=self.plot_source)
             self.plots.circle_plot(self.ts1, x='datetime',y='attr1',source=self.plot_source)
             self.plots.circle_plot(self.ts2, x='datetime',y='attr2',source=self.plot_source)
+
+        self.plot_source.selected.js_on_change('indices', CustomJS(args=dict(s1=self.plot_source, s2=self.dd, x=self.x_select, y=self.y_select, code="""
+        var inds = cb_obj.indices;
+        var d1 = s1.data;
+        var d2 = s2.data;
+        var x = x;
+        var y = y;
+        d2[x] = []
+        d2[y] = []
+        for (var i = 0; i < inds.length; i++) {
+            d2[x].push(d1[x][inds[i]])
+            d2[y].push(d1[y][inds[i]])
+        }
+        s2.change.emit();""")))
 
     def update(self):
         self.get_data(self.x_select.value, self.y_select.value, update=True)

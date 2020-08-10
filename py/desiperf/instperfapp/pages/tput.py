@@ -53,9 +53,12 @@ class TputPage():
 		return tab
 
 	def time_series_plot(self):
-		self.corr = self.plots.figure(width=450, height=450, tooltips=self.tooltips, x_axis_label='attr1', y_axis_label='attr2', title='Option 1 vs. Option 2')
-		self.ts1 = self.plots.figure(x_axis_label='expid', tooltips=self.tooltips, y_axis_label='attr1', title='Exposure vs. Option 1')
-		self.ts2 = self.plots.figure(x_axis_label='expid', tooltips=self.tooltips, y_axis_label='attr2', title='Exposure vs. Option 2')
+		self.corr = self.plots.figure(width=450, height=450, tooltips=self.tooltips, x_axis_label='attr1', 
+										y_axis_label='attr2', title='Option 1 vs. Option 2')
+		self.ts1 = self.plots.figure(x_axis_label='expid', tooltips=self.tooltips, y_axis_label='attr1', 
+										title='Exposure vs. Option 1')
+		self.ts2 = self.plots.figure(x_axis_label='expid', tooltips=self.tooltips, y_axis_label='attr2', 
+										title='Exposure vs. Option 2')
 		if self.data_source is not None:
 			self.plots.corr_plot(self.corr, x='attr1', y='attr2', source=self.plot_source)
 			self.plots.circle_plot(self.ts1, x='expid', y='attr1', source=self.plot_source)
