@@ -3,6 +3,7 @@ from bokeh.layouts import layout
 from bokeh.models.widgets import Panel
 from bokeh.models import ColumnDataSource, Select, CDSView, GroupFilter
 from bokeh.models import Button, CheckboxButtonGroup, PreText, Select
+from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 import pandas as pd
 
@@ -12,17 +13,17 @@ from static.plots import Plots
 class DetectorPage():
     def __init__(self, datahandler):
         self.plots = Plots('Detector Noise Performance', datahandler.detector_source)
-        self.details = PreText(text=' ', width=500)
+        self.description = Div(text='These plots show the behavior of the detectors in each spectrograph over time.', width=800, style=self.plots.text_style)
+        self.details = PreText(text='Data Overview: \n ', width=500)
         self.data_source = self.plots.data_source
         self.y_default_options = ['READNOISE', 'BIAS', 'COSMICS_RATE']
         self.x_default_options = ['EXPID','TIME_RECORDED','CAMERA_TEMP','CAMERA_HUMIDITY','BENCH_CRYO_TEMP','BENCH_COLL_TEMP','BENCH_NIR_TEMP']
-# 'NIGHT','EXPID','SPECTRO','CAM','AMP',
         self.spectro_options = ['ALL', '0', '1', '2', '3', '4', '5', '6', '7',
                                 '8', '9']
 
-        self.y_select = Select(value='READNOISE', options=self.y_default_options)
-        self.x_select = Select(value='EXPID',options=self.x_default_options)
-        self.sp_select = Select(value='ALL', options=self.spectro_options)
+        self.y_select = Select(title='Option 1', value='READNOISE', options=self.y_default_options)
+        self.x_select = Select(title='Option 2', value='EXPID',options=self.x_default_options)
+        self.sp_select = Select(title='Spectrograph', value='ALL', options=self.spectro_options)
         self.btn = Button(label='Plot', button_type='primary',width=200)
 
     def get_camera_attributes(self,attr):
@@ -50,7 +51,7 @@ class DetectorPage():
             data_ = data.rename(columns={attr1: 'attrb', attr2: 'attr2'})
             same = True
 
-        self.details.text = str(data.describe())
+        self.details.text = 'Data Overview: \n ' + str(data.describe())
         
         if update:
             self.plot_source.data = data_
@@ -64,16 +65,21 @@ class DetectorPage():
 
     def page_layout(self):
         this_layout = layout([[self.plots.header],
+                              [self.description],
                               [self.x_select, self.y_select, self.sp_select, self.btn],
                               [self.details],
                               [self.tsb], [self.tsr], [self.tsz]])
+
         tab = Panel(child=this_layout, title=self.plots.title)
         return tab
 
     def time_series_plot(self, same=True):
-        self.tsb = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
-        self.tsr = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
-        self.tsz = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value)
+        self.tsb = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips, 
+                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Blue Detectors')
+        self.tsr = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  
+                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Red Detectors')
+        self.tsz = figure(plot_width=900, plot_height=200, tools=self.plots.tools, tooltips=self.plots.default_tooltips,  
+                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Infrared Detectors')
         if self.data_source is not None:
             self.tsb.circle(x='attrb', y='attr2', size=5, source=self.plot_source, selection_color="cyan", view=self.viewb)
             if same:
