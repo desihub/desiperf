@@ -64,6 +64,13 @@ class PosAccPage():
         data_ = data.rename(columns={self.x_select.value:'attr1',self.y_select.value:'attr2'}) 
         if update:
             self.pos_source.data = data_
+            self.corr.xaxis.axis_label = self.x_select.value
+            self.corr.yaxis.axis_label = self.y_select.value
+            self.ts1.yaxis.axis_label = self.x_select.value
+            self.ts2.yaxis.axis_label = self.y_select.value
+            self.corr.title.text  = '{} vs. {} for POS {}'.format(self.x_select.value, self.y_select.value, self.pos)
+            self.ts1.title.text = 'Time vs. {}'.format(self.x_select.value)
+            self.ts2.title.text = 'Time vs. {}'.format(self.y_select.value)
         else:
             self.pos_source = ColumnDataSource(data_)
 
@@ -79,12 +86,12 @@ class PosAccPage():
 
 
     def time_series_plot(self):
-        self.corr = self.plots.figure(width=450, height=450, tooltips=self.tooltips, x_axis_label='attr1', 
-                                    y_axis_label='attr2', title='Option 1 vs. Option 2 for POS {}'.format(self.pos))
-        self.ts1 = self.plots.figure(x_axis_label='EXPID', tooltips=self.tooltips, y_axis_label='attr1', 
-                                    title='Exposure vs. Option 1 for POS {}'.format(self.pos))
-        self.ts2 = self.plots.figure(x_axis_label='EXPID', tooltips=self.tooltips, y_axis_label='attr2', 
-                                    title='Exposure vs. Option 2 for POS {}'.format(self.pos))
+        self.corr = self.plots.figure(width=450, height=450, tooltips=self.tooltips, x_axis_label=self.x_select.value, 
+                                    y_axis_label=self.y_select.value, title='{} vs. {} for POS {}'.format(self.x_select.value, self.y_select.value, self.pos))
+        self.ts1 = self.plots.figure(x_axis_label='EXPID', tooltips=self.tooltips, y_axis_label=self.x_select.value, 
+                                    title='Exposure vs. {} for POS {}'.format(self.x_select.value, self.pos))
+        self.ts2 = self.plots.figure(x_axis_label='EXPID', tooltips=self.tooltips, y_axis_label=self.y_select.value, 
+                                    title='Exposure vs. {} for POS {}'.format(self.y_select.value, self.pos))
         if self.pos_source is not None:
             self.plots.corr_plot(self.corr, x='attr1',y='attr2', source=self.pos_source)
             self.plots.circle_plot(self.ts1, x='EXPID',y='attr1',source=self.pos_source)

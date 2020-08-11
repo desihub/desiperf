@@ -33,6 +33,13 @@ class GuidingPage():
         data_ = data.rename(columns={attr1:'attr1',attr2:'attr2'}) 
         if update:
             self.plot_source.data = data_
+            self.corr.xaxis.axis_label = attr1
+            self.corr.yaxis.axis_label = attr2
+            self.ts1.yaxis.axis_label = attr1
+            self.ts2.yaxis.axis_label = attr2
+            self.corr.title.text  = '{} vs {}'.format(attr1, attr2)
+            self.ts1.title.text = 'Time vs. {}'.format(attr1)
+            self.ts2.title.text = 'Time vs. {}'.format(attr2)
         else:
             self.plot_source = ColumnDataSource(data_)
         self.time_series_plot()
@@ -55,9 +62,9 @@ class GuidingPage():
         return tab
 
     def time_series_plot(self):
-        self.corr = self.plots.figure(width=450, height=450, tooltips=self.tooltips, x_axis_label='attr1', y_axis_label='attr2', title='Option 1 vs. Option 2')
-        self.ts1 = self.plots.figure(x_axis_label='datetime', tooltips=self.tooltips, y_axis_label='attr1', title='Time vs. Option 1')
-        self.ts2 = self.plots.figure(x_axis_label='datetime', tooltips=self.tooltips, y_axis_label='attr2', title='Time vs. Option 2')
+        self.corr = self.plots.figure(width=450, height=450, tooltips=self.tooltips, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='{} vs. {}'.format(self.x_select.value, self.y_select.value))
+        self.ts1 = self.plots.figure(x_axis_label='datetime', tooltips=self.tooltips, y_axis_label=self.x_select.value, title='Time vs. {}'.format(self.x_select.value))
+        self.ts2 = self.plots.figure(x_axis_label='datetime', tooltips=self.tooltips, y_axis_label=self.y_select.value, title='Time vs. {}'.format(self.y_select.value))
         if self.data_source is not None:
             self.plots.corr_plot(self.corr, x='attr1',y='attr2', source=self.plot_source)
             self.plots.circle_plot(self.ts1, x='datetime',y='attr1',source=self.plot_source)
@@ -65,7 +72,6 @@ class GuidingPage():
 
     def update(self):
         self.get_data(self.x_select.value, self.y_select.value, update=True)
-        self.time_series_plot()
 
     def run(self):
         self.get_data(self.x_select.value, self.y_select.value)

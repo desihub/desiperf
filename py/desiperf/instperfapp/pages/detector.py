@@ -21,8 +21,9 @@ class DetectorPage():
         self.spectro_options = ['ALL', '0', '1', '2', '3', '4', '5', '6', '7',
                                 '8', '9']
 
-        self.y_select = Select(title='Option 1', value='READNOISE', options=self.y_default_options)
-        self.x_select = Select(title='Option 2', value='EXPID',options=self.x_default_options)
+        self.x_select = Select(title='Option 1', value='EXPID',options=self.x_default_options)
+        self.y_select = Select(title='Option 2', value='READNOISE', options=self.y_default_options)
+        
         self.sp_select = Select(title='Spectrograph', value='ALL', options=self.spectro_options)
         self.btn = Button(label='Plot', button_type='primary',width=200)
 
@@ -55,6 +56,13 @@ class DetectorPage():
         
         if update:
             self.plot_source.data = data_
+            self.tsb.xaxis.axis_label = self.x_select.value
+            self.tsb.yaxis.axis_label = self.y_select.value
+            self.tsr.xaxis.axis_label = self.x_select.value
+            self.tsr.yaxis.axis_label = self.y_select.value
+            self.tsz.xaxis.axis_label = self.x_select.value
+            self.tsz.yaxis.axis_label = self.y_select.value
+
         else:
             self.plot_source = ColumnDataSource(data_)
             self.viewb = CDSView(source=self.plot_source, filters=[GroupFilter(column_name='CAM', group='B')])
