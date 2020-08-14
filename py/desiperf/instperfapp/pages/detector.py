@@ -97,8 +97,8 @@ class DetectorPage(Plots):
         
 
     def run(self):
-        self.y_options = ['READNOISE', 'BIAS', 'COSMICS_RATE']
-        self.x_options = ['EXPID','TIME_RECORDED','CAMERA_TEMP','CAMERA_HUMIDITY','BENCH_CRYO_TEMP','BENCH_COLL_TEMP','BENCH_NIR_TEMP']
+        self.x_options = ['READNOISE', 'BIAS', 'COSMICS_RATE']
+        self.y_options = ['EXPID','TIME_RECORDED','CAMERA_TEMP','CAMERA_HUMIDITY','BENCH_CRYO_TEMP','BENCH_COLL_TEMP','BENCH_NIR_TEMP']
         self.prepare_layout()
         self.x_select.value = 'READNOISE'
         self.y_select.value = 'EXPID'
