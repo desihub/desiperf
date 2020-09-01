@@ -49,8 +49,9 @@ class PosAccPage(Plots):
         self.dev = int(np.unique(data.DEVICE_LOC)[0])
         self.petal = int(np.unique(data.PETAL_LOC)[0])
         data['air_mirror_temp_diff'] = np.abs(data['air_temp'] - data['mirror_temp'])
-        data_ = data[['EXPID','datetime',self.x_select.value, self.y_select.value]]
-        data_ = data.rename(columns={self.x_select.value:'attr1',self.y_select.value:'attr2'}) 
+        data_ = data[['datetime',self.x_select.value, self.y_select.value]]
+        data_ = data_[pd.notnull(data_['datetime'])] #temporary
+        data_ = data_.rename(columns={self.x_select.value:'attr1',self.y_select.value:'attr2'}) 
         if update:
             self.plot_source.data = data_
             self.corr.xaxis.axis_label = self.x_select.value
@@ -60,13 +61,16 @@ class PosAccPage(Plots):
             self.corr.title.text  = '{} vs. {} for POS {}'.format(self.x_select.value, self.y_select.value, self.pos)
             self.ts1.title.text = 'Time vs. {}'.format(self.x_select.value)
             self.ts2.title.text = 'Time vs. {}'.format(self.y_select.value)
-            self.update_binned_data()
+            self.bin_data.data = self.update_binned_data('attr1','attr2')
+            self.bin_data1.data = self.update_binned_data('datetime','attr1')
+            self.bin_data2.data = self.update_binned_data('datetime','attr2')
         else:
             self.plot_source = ColumnDataSource(data_)
             self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
 
-            bd = self.update_binned_data()
-            self.bin_data = ColumnDataSource(bd)
+            self.bin_data = ColumnDataSource(self.update_binned_data('attr1','attr2'))
+            self.bin_data1 = ColumnDataSource(self.update_binned_data('datetime','attr1'))
+            self.bin_data2 = ColumnDataSource(self.update_binned_data('datetime','attr2'))
 
         self.pos_loc_plot()
 
@@ -89,11 +93,11 @@ class PosAccPage(Plots):
     def run(self):
         #- docstring
         self.y_options = ['OFFSET_0','OFFSET_FINAL']
-        self.x_options = ['datetime','EXPOSURE','TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X', 'FIBERASSIGN_Y',
+        self.x_options = ['datetime','EXPID','TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X', 'FIBERASSIGN_Y',
                         'total_move_sequences','mirror_temp','truss_temp','air_mirror_temp_diff','wind_speed','wind_direction','ctrl_enabled',]
-        self.xx = 'EXPID'
+        self.xx = 'datetime'
         self.prepare_layout()
-        self.x_select.value = 'EXPOSURE'
+        self.x_select.value = 'EXPID'
         self.y_select.value = 'OFFSET_0'
         self.page_tooltips = [
             ("exposure","@EXPID"),
@@ -105,19 +109,7 @@ class PosAccPage(Plots):
         self.time_series_plot()
         self.btn.on_click(self.pos_update)
         self.bin_plot('new',[0],[0])
-        self.replot_btn.on_click(self.update_binned_data)
+        self.replot_btn.on_click(self.plot_binned_data)
         self.bin_option.on_change('active',self.bin_plot)
         self.save_btn.on_click(self.save_data)
-        self.plot_source.selected.js_on_change('indices', CustomJS(args=dict(s1=self.plot_source, s2=self.sel_data), code="""
-                                                var inds = cb_obj.indices;
-                                                var d1 = s1.data;
-                                                var d2 = s2.data;
-                                                d2['attr1'] = []
-                                                d2['attr2'] = []
-                                                for (var i = 0; i < inds.length; i++) {
-                                                    d2['attr1'].push(d1['attr1'][inds[i]])
-                                                    d2['attr2'].push(d1['attr2'][inds[i]])
-                                                }
-                                                s2.change.emit();
-                                                s2.data = d2 """))
-
+        self.plot_source.selected.on_change('indices', self.update_selected_data)

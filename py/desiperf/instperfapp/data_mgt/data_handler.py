@@ -54,7 +54,7 @@ class DataHandler(object):
 
     def get_focalplane_data(self):
         if self.option == 'no_update':
-            files = glob.glob(os.path.join(self.fp_dir, 'fp_data_*.csv')) 
+            files = glob.glob(os.path.join(self.fp_dir, 'fpa_data_*.csv')) 
             fp_df = pd.concat([pd.read_csv(f) for f in files])
             fp_df = self.get_datetime(fp_df)
             self.focalplane_source = ColumnDataSource(fp_df)
@@ -83,7 +83,7 @@ class DataHandler(object):
             fp_df = pd.concat([exp_df, pos_df,telescope_df,tower_df,fvc_df,guide1_df,guide2_df],axis=1)
             dfs = np.array_split(fp_df,4) #How small??
             for i, df_ in enumerate(dfs):
-                df_.to_csv(os.path.join(self.fp_dir, 'fp_data_{}.csv'.format(i)), index=False)
+                df_.to_csv(os.path.join(self.fp_dir, 'fpa_data_{}.csv'.format(i)), index=False)
             self.focalplane_source = ColumnDataSource(fp_df)
 
 
@@ -96,7 +96,7 @@ class DataHandler(object):
         Don't know how to split up data yet. Will just start with a few files and go from there
         """
         if self.option == 'no_update':
-            files = glob.glob(os.path.join(self.det_dir, 'det_qa_*.csv'))
+            files = glob.glob(os.path.join(self.det_dir, 'qa_data_*.csv'))
             df = pd.concat([pd.read_csv(f) for f in files])
             df = self.get_datetime(df)
             self.detector_source = ColumnDataSource(df)
@@ -112,7 +112,7 @@ class DataHandler(object):
             df = pd.merge(left=qa_df, right=new_spec_df, left_on = 'EXPID', right_on='EXPID',how='inner')
             dfs = np.array_split(df,4) #How small??
             for i, df_ in enumerate(dfs):
-                df_.to_csv(os.path.join(self.det_dir,'det_qa_{}.csv'.format(i)))
+                df_.to_csv(os.path.join(self.det_dir,'qa_data_{}.csv'.format(i)))
             self.detector_source = ColumnDataSource(df)
 
         elif self.option == 'update':
@@ -125,7 +125,9 @@ class DataHandler(object):
             #make new file
 
     def get_datetime(self, df):
-        if 'mjd_obs' in list(df.columns):
+        if 'date_obs' in list(df.columns):
+            datetimes = pd.to_datetime(df.date_obs)
+        elif 'mjd_obs' in list(df.columns):
             dt = [Time(t, format='mjd', scale='utc').datetime for t in list(df.mjd_obs)]
             datetimes = pd.to_datetime(dt)
         elif 'time_recorded' in list(df.columns):

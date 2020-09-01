@@ -74,7 +74,7 @@ page_logo = Div(text="<img src='instperfapp/static/logo.png'>", width=350, heigh
 #- Landing page widgets
 ds = pd.DataFrame(DH.detector_source.data)
 fps = pd.DataFrame(DH.focalplane_source.data)
-data_info = PreText(text="Data is available for the dates listed below.\n Detector Data: {} - {} (Exposures {} - {}) \n Focalplane Data: {} - {} (Exposures {} - {})".format(int(min(ds.NIGHT)), int(max(ds.NIGHT)), int(min(ds.EXPID)), int(max(ds.EXPID)), int(min(fps.night)), int(max(fps.night)), int(min(fps.EXPOSURE)), int(max(fps.EXPOSURE))),width=800,style={'font-family':'serif', 'font-size':'150%'})
+data_info = PreText(text="Data is available for the dates listed below.\n Detector Data: {} - {} (Exposures {} - {}) \n Focalplane Data: {} - {} (Exposures {} - {})".format(int(min(ds.NIGHT)), int(max(ds.NIGHT)), int(min(ds.EXPID)), int(max(ds.EXPID)), int(min(fps.night)), int(max(fps.night)), int(min(fps.EXPID)), int(max(fps.EXPID))),width=800,style={'font-family':'serif', 'font-size':'150%'})
 
 #start_date = TextInput(title='Start Date', value=DH.start_date)
 #end_date = TextInput(title='End Date', value=DH.start_date)

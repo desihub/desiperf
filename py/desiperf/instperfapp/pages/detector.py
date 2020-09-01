@@ -24,7 +24,7 @@ class DetectorPage(Plots):
 
     def get_camera_attributes(self,attr):
         attr = str(attr).lower()
-        attrs = [pre+'_'+attr for pre in ['blue','red','nir']]
+        attrs = [pre+'_'+attr+'_mean' for pre in ['blue','red','nir']]
         return attrs
 
     def spectro_data(self, attr1, attr2, spectro, update=False):
@@ -32,7 +32,7 @@ class DetectorPage(Plots):
 
         # Convert CAM from byte encoding
         #camdf = data['CAM'].str.decode('utf-8')
-        data['CAM'] = [x[2] for x in list(data['CAM'])]  #Something odd going on with teh pandas data :(
+        #data['CAM'] = [x[2] for x in list(data['CAM'])]  #Something odd going on with teh pandas data :(
         # Filter by sp_select if not 'ALL'
         if spectro != 'ALL':
             data = data.loc[data['SPECTRO'] == int(spectro)]
@@ -93,12 +93,16 @@ class DetectorPage(Plots):
                 self.tsz.circle(x='attrz', y='attr2', size=5, source=self.plot_source, selection_color="gray", view=self.viewz)
 
     def spec_update(self):
-        self.get_data(self.x_select.value, self.y_select.value, self.sp_select.value, update=True)
+        self.spectro_data(self.x_select.value, self.y_select.value, self.sp_select.value, update=True)
         
 
     def run(self):
-        self.y_options = ['READNOISE', 'BIAS', 'COSMICS_RATE']
-        self.x_options = ['EXPID','TIME_RECORDED','CAMERA_TEMP','CAMERA_HUMIDITY','BENCH_CRYO_TEMP','BENCH_COLL_TEMP','BENCH_NIR_TEMP']
+        self.x_options = ['READNOISE', 'BIAS', 'COSMICS_RATE', 'MEANDX', 'MINDX', 'MAXDX',
+       'MEANDY', 'MINDY', 'MAXDY', 'MEANXSIG', 'MINXSIG', 'MAXXSIG',
+       'MEANYSIG', 'MINYSIG', 'MAXYSIG', 'INTEG_RAW_FLUX',
+       'MEDIAN_RAW_FLUX', 'MEDIAN_RAW_SNR', 'FLUX', 'SNR', 'SPECFLUX',
+       'THRU']
+        self.y_options = ['EXPID','TIME_RECORDED','CAMERA_TEMP','CAMERA_HUMIDITY','BENCH_CRYO_TEMP','BENCH_COLL_TEMP','BENCH_NIR_TEMP']
         self.prepare_layout()
         self.x_select.value = 'READNOISE'
         self.y_select.value = 'EXPID'

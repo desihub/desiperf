@@ -1,11 +1,12 @@
 from bokeh.io import curdoc
-from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, Slider, CheckboxGroup, ColumnDataSource
+from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, Slider, CheckboxGroup, ColumnDataSource, RadioGroup
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 from scipy import stats
 import pandas as pd 
 import numpy as np 
 from datetime import datetime
+from astropy.time import Time 
 
 
 class Plots:
@@ -34,6 +35,7 @@ class Plots:
 
         self.replot_btn = Button(label='Replot',button_type='primary',width=200)
         self.bin_option = CheckboxGroup(labels=["Raw Data","Binned Data"], active=[0])
+        self.data_det_option = RadioGroup(labels=["All Data","Selected Data"], active=0)
         self.fp_tooltips = None
         self.bin_data = None
 
@@ -60,18 +62,18 @@ class Plots:
         dd = dd.rename(columns={'attr1':self.x_select.value, 'attr2':self.y_select.value})
         dd.to_csv('{}_data_selected.csv'.format(datetime.now().strftime('%Y%m%d_%H:%M:%S.%f')),index=False)
 
-        self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(dd).describe())
-        self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(dd).cov())
 
-    def update_binned_data(self):
-        data = self.plot_source.data
-        try:
-            x = np.array(data['attr1'])[(np.isfinite(data['attr1']))&(np.isfinite(data['attr2']))]
-            y = np.array(data['attr2'])[(np.isfinite(data['attr1']))&(np.isfinite(data['attr2']))]
-        except:
-            nat = np.where((data['attr1'] !='NaT')|(data['attr2'] != 'NaT'))
-            x = np.array(data['attr1'])[nat]
-            y = np.array(data['attr2'])[nat]
+
+    def update_binned_data(self,attr1, attr2):
+        data = pd.DataFrame(self.plot_source.data)
+        dd = data[pd.notnull(data[attr1])]
+        dd = dd[pd.notnull(dd[attr2])]
+        x = np.array(dd[attr1])
+        y = np.array(dd[attr2])
+        
+        if attr1 == 'datetime':
+            x = [Time(xx).mjd for xx in x]
+    
         bin_means, bin_edges, binnumber = stats.binned_statistic(x, y, statistic='mean', bins=self.bin_slider.value)
         bin_std, bin_edges2, binnumber2 = stats.binned_statistic(x, y, statistic='std', bins=self.bin_slider.value)
         bin_width = (bin_edges[1] - bin_edges[0])
@@ -81,12 +83,16 @@ class Plots:
         for x, y, yerr in zip(bin_centers, bin_means, bin_std):
             lower.append(y - yerr)
             upper.append(y + yerr)
+        if attr1 == 'datetime':
+            bc = [Time(b, format='mjd').datetime for b in bin_centers]
+            bin_centers = [pd.Timestamp(b) for b in bc]
         bd = pd.DataFrame(np.column_stack([bin_centers, bin_means, bin_std, upper, lower]), columns = ['centers','means','std','upper','lower'])
+
         bd = bd.fillna(np.nan)
-        if self.bin_data is not None:
-            self.bin_data.data = bd 
-        else:
-            return bd
+        #if self.bin_data is not None:
+        #    self.bin_data.data = bd 
+        #else:
+        return bd
 
     def get_data(self, xx, attr1, attr2, other_attr = [],update=False):
         self.xx = xx
@@ -105,16 +111,20 @@ class Plots:
             self.corr.title.text  = '{} vs {}'.format(attr1, attr2)
             self.ts1.title.text = 'Time vs. {}'.format(attr1)
             self.ts2.title.text = 'Time vs. {}'.format(attr2)
-            self.update_binned_data()
+            self.bin_data.data = self.update_binned_data('attr1','attr2')
+            self.bin_data1.data = self.update_binned_data(self.xx,'attr1')
+            self.bin_data2.data = self.update_binned_data(self.xx,'attr2')
         else:
             self.plot_source = ColumnDataSource(data_)
             self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
 
-            bd = self.update_binned_data()
-            self.bin_data = ColumnDataSource(bd)
+            self.bin_data = ColumnDataSource(self.update_binned_data('attr1','attr2'))
+            self.bin_data1 = ColumnDataSource(self.update_binned_data(self.xx,'attr1'))
+            self.bin_data2 = ColumnDataSource(self.update_binned_data(self.xx,'attr2'))
 
-        self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.dd.data).describe())
-        self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(self.dd.data).cov())
+        if self.data_det_option.active == 0:
+            self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.dd.data).describe())
+            self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(self.dd.data).cov())
 
 
 
@@ -162,15 +172,47 @@ class Plots:
             self.c1 = self.corr_plot(self.corr, x='attr1',y='attr2', source=self.plot_source)
             self.c2 = self.corr.circle(x='centers',y='means',color='red',source=self.bin_data)
             self.c3 = self.corr.varea(x='centers',y1='upper',y2='lower',source=self.bin_data,alpha=0.4,color='red')
-            self.circle_plot(self.ts1, x=self.xx,y='attr1',source=self.plot_source)
-            self.circle_plot(self.ts2, x=self.xx,y='attr2',source=self.plot_source)
+            self.c4 = self.circle_plot(self.ts1, x=self.xx,y='attr1',source=self.plot_source)
+            self.c5 = self.ts1.circle(x='centers',y='means',color='red',source=self.bin_data1)
+            self.c6 = self.ts1.varea(x='centers',y1='upper',y2='lower',source=self.bin_data1,alpha=0.4,color='red')
+            self.c7 = self.circle_plot(self.ts2, x=self.xx,y='attr2',source=self.plot_source)
+            self.c8 = self.ts2.circle(x='centers',y='means',color='red',source=self.bin_data2)
+            self.c9 = self.ts2.varea(x='centers',y1='upper',y2='lower',source=self.bin_data2,alpha=0.4,color='red')
 
     def bin_plot(self, attr, old, new):
-        self.c1.visible = False
-        self.c2.visible = False
-        self.c3.visible = False
+        for page in [self.c1, self.c2, self.c3, self.c4, self.c5, self.c6, self.c7, self.c8, self.c9]:
+            page.visible = False
         if 0 in new:
-            self.c1.visible = True
+            for page in [self.c1, self.c4, self.c7]:
+                page.visible = True
         if 1 in new:
-            self.c2.visible = True
-            self.c3.visible = True
+            for page in [self.c2, self.c3, self.c5, self.c6, self.c8, self.c9]:
+                page.visible = True
+
+    def update_selected_data(self, attr, old, new):
+        data = self.plot_source.data
+        selected = pd.DataFrame(data)
+        selected = selected.iloc[new,:][['attr1','attr2']]
+        self.sel_data.data = selected.rename(columns={'attr1':self.x_select.value, 'attr2':self.y_select.value}) 
+        if self.data_det_option.active == 1:
+            self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.sel_data.data).describe())
+            self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(self.sel_data.data).cov())
+
+    def plot_binned_data(self):
+        self.bin_data.data = self.update_binned_data('attr1','attr2')
+        self.bin_data1.data = self.update_binned_data(self.xx, 'attr1')
+        self.bin_data2.data = self.update_binned_data(self.xx,'attr2')
+
+
+    def data_det_type(self, attr, old, new):
+        if new == 0:
+            self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.dd.data).describe())
+            self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(self.dd.data).cov())
+        if new == 1:
+            self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.sel_data.data).describe())
+            self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(self.sel_data.data).cov())
+
+
+
+
+
