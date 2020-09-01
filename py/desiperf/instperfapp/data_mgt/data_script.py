@@ -58,6 +58,9 @@ for i, df in enumerate(new_dfs):
     df = df.reset_index(drop=True)  
     new_dfs[i] = df 
 
+gfa_df = pd.concat(new_dfs, axis=1)
+gfa_df.to_csv('gfa_by_unit.csv')
+
 gfa_mean_df = exp_df_base.copy()
 for attr in ['ccdtemp','hotpeltier','coldpeltier','filter','humid2','humid3','fpga','camerahumid','cameratemp']: 
     x = [] 
@@ -66,13 +69,11 @@ for attr in ['ccdtemp','hotpeltier','coldpeltier','filter','humid2','humid3','fp
         x.append(df[attr+'_{}'.format(i)]) 
     gfa_mean_df[attr+'_mean'] = np.mean(x, axis=0) 
 
-all_dfs = [gfa_mean_df]
-for df in new_dfs:
-    all_dfs.append(df)
+del gfa_mean_df['EXPID']
+del gfa_mean_df['date_obs']
 
-gfa_df_final = pd.concat(all_dfs, axis=1)
-del gfa_df_final['EXPID']
-del gfa_df_final['date_obs']
+gfa_df_final = gfa_mean_df #pd.concat(all_dfs, axis=1)
+
 #GUIDER SUMMARY
 gs_df = pd.read_sql_query(f"SELECT * FROM guider_summary WHERE time_recorded >= '{start_date}' AND time_recorded <'{end_date}'", conn)
 
@@ -171,53 +172,53 @@ hex_df = pd.DataFrame.from_dict(dd)
 # SPECT Data
 spec_cols = ['nir_camera_temp', 'nir_camera_humidity','red_camera_temp', 'red_camera_humidity', 'blue_camera_temp','blue_camera_humidity', 'bench_cryo_temp', 'bench_nir_temp','bench_coll_temp', 'ieb_temp', 'time_recorded', 'unit']
 
-gfa_df = pd.read_sql_query(f"SELECT * FROM gfa_telemetry WHERE time_recorded >= '{start_date}' AND time_recorded <'{end_date}'", conn)
-gfa_df_new = gfa_df[gfa_cols]
+spec_df = pd.read_sql_query(f"SELECT * FROM spectrographs_sensors WHERE time_recorded >= '{start_date}' AND time_recorded <'{end_date}'", conn)
+spec_df_new = spec_df[spec_cols]
 
 dfs = []
 for un in range(10):
-    df = gfa_df_new[gfa_df_new.unit == un]
+    df = spec_df_new[spec_df_new.unit == un]
     dfs.append(df)
 
-    for i, df in enumerate(dfs):
-        cold = {}
-        for col in df.columns:
-            new_col = col + '_' + str(i)
-            cold[col] = new_col
-            df = df.rename(columns=cold)
-            dfs[i] = df
+for i, df in enumerate(dfs):
+    cold = {}
+    for col in df.columns:
+        new_col = col + '_' + str(i)
+        cold[col] = new_col
+        df = df.rename(columns=cold)
+        dfs[i] = df
 
-            new_dfs = []
-            for i, df in enumerate(dfs):
-                idx = []
-                for time in exp_df_base.date_obs:
-                    ix = np.argmin(np.abs(df['time_recorded_{}'.format(i)] - time))
-                idx.append(ix)
-                df = df.iloc[idx]
-                new_cols = df.columns[1:-1]
-                df = df[new_cols]
-                new_dfs.append(df)
+new_dfs = []
+for i, df in enumerate(dfs):
+    idx = []
+    for time in exp_df_base.date_obs:
+        ix = np.argmin(np.abs(df['time_recorded_{}'.format(i)] - time))
+        idx.append(ix)
+    df = df.iloc[idx]
+    #new_cols = df.columns[1:-1]
+    #df = df[new_cols]
+    new_dfs.append(df)
 
-            for i, df in enumerate(new_dfs):
-                df = df.reset_index(drop=True)
-                new_dfs[i] = df
+for i, df in enumerate(new_dfs):
+    df = df.reset_index(drop=True)
+    new_dfs[i] = df
 
-            gfa_mean_df = exp_df_base.copy()
-            for attr in ['ccdtemp','hotpeltier','coldpeltier','filter','humid2','humid3','fpga','camerahumid','cameratemp']:
-                x = []
-                for i in range(10):
-                    df = new_dfs[i]
-                    x.append(df[attr+'_{}'.format(i)])
-                gfa_mean_df[attr+'_mean'] = np.mean(x, axis=0)
+spec_df = pd.concat(new_dfs, axis=1)
+spec_df.to_csv('spec_by_unit.csv')
 
-             all_dfs = [gfa_mean_df]
-            for df in new_dfs:
-                 all_dfs.append(df)
+spec_mean_df = exp_df_base.copy()
+for attr in ['nir_camera_temp', 'nir_camera_humidity','red_camera_temp', 'red_camera_humidity', 'blue_camera_temp','blue_camera_humidity', 'bench_cryo_temp', 'bench_nir_temp','bench_coll_temp', 'ieb_temp']:
+    x = []
+    for i in range(10):
+        df = new_dfs[i]
+        x.append(df[attr+'_{}'.format(i)])
+    spec_mean_df[attr+'_mean'] = np.mean(x, axis=0)
 
-            gfa_df_final =  pd.concat(all_dfs, axis=1)
+del spec_mean_df['EXPID']
+del spec_mean_df['date_obs']
 
+spec_df_final =  spec_mean_df
 
-# Shack Data
 
 #FVC Data
 fvc_df = pd.read_sql_query(f"SELECT * FROM fvc_camerastatus WHERE time_recorded >= '{start_date}' AND time_recorded <'{end_date}'", conn)
@@ -237,7 +238,7 @@ fvc_df_final = fvc_df_new.reset_index(drop=True)
 for col in ['telescope','tower','dome','hexapod','adc']:
     del exp_df_new[col]
 
-all_dfs = {'exp_df':exp_df_new, 'gfa_df':gfa_df_final, 'gc_df':gc_df_final, 'gs_df':gs_df_final, 'telem_df':telem_df, 'hex_df':hex_df, 'adc_df':adc_df, 'fvc_df':fvc_df_final}
+all_dfs = {'exp_df':exp_df_new, 'gfa_df':gfa_df_final, 'gc_df':gc_df_final, 'gs_df':gs_df_final, 'telem_df':telem_df, 'hex_df':hex_df, 'adc_df':adc_df, 'fvc_df':fvc_df_final, 'spec_df_final': spec_df_final}
 for name, df in all_dfs.items():
     df.reset_index(drop=True, inplace=True)
     print(name)
