@@ -93,14 +93,14 @@ class PosAccPage(Plots):
     def run(self):
         #- docstring
         self.y_options = ['OFFSET_0','OFFSET_FINAL']
-        self.x_options = ['datetime','EXPOSURE','TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X', 'FIBERASSIGN_Y',
+        self.x_options = ['datetime','EXPID','TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X', 'FIBERASSIGN_Y',
                         'total_move_sequences','mirror_temp','truss_temp','air_mirror_temp_diff','wind_speed','wind_direction','ctrl_enabled',]
         self.xx = 'datetime'
         self.prepare_layout()
-        self.x_select.value = 'EXPOSURE'
+        self.x_select.value = 'EXPID'
         self.y_select.value = 'OFFSET_0'
         self.page_tooltips = [
-            ("exposure","@EXPOSURE"),
+            ("exposure","@EXPID"),
             ("{}".format(self.x_select.value),"@attr1"),
             ("{}".format(self.y_select.value),"@attr2"),
             ("(x,y)", "($x, $y)"),

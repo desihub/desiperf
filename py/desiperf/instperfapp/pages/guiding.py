@@ -14,7 +14,7 @@ class GuidingPage(Plots):
         self.description = Div(text='These plots show the behavior of the GFA cameras during a given time or exposure.', 
                                 width=800, style=self.text_style)
 
-        self.default_options = ['datetime','EXPOSURE','meanx', 'meany', 'meanx2', 'meany2', 'meanxy', 'maxx', 'maxy',
+        self.default_options = ['datetime','EXPID','meanx', 'meany', 'meanx2', 'meany2', 'meanxy', 'maxx', 'maxy',
                                 'guider_centroids', 'combined_x', 'combined_y', 'airmass', 'domeaz', 'moonra','moondec', 
                                 'air_temp',  'mirror_temp', 'wind_speed','wind_direction', 'humidity', 'pressure', 'temperature',
                                 'dewpoint', 'fan_on', 'temp_degc', 'exptime_sec', 'psf_pixels', 'guider_summary', 'duration','seeing.1', ]
@@ -39,9 +39,9 @@ class GuidingPage(Plots):
         self.prepare_layout()
         self.x_select.value = 'meanx'
         self.y_select.value = 'airmass'
-        self.get_data('datetime',self.x_select.value, self.y_select.value, other_attr=['EXPOSURE'])
+        self.get_data('datetime',self.x_select.value, self.y_select.value, other_attr=['EXPID'])
         self.page_tooltips = [
-            ("exposure","@EXPOSURE"),
+            ("exposure","@EXPID"),
             ("{}".format(self.x_select.value),"@attr1"),
             ("{}".format(self.y_select.value),"@attr2"),
             ("(x,y)", "($x, $y)")]
