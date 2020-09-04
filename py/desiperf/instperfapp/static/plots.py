@@ -1,5 +1,5 @@
 from bokeh.io import curdoc
-from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, Slider, CheckboxGroup, ColumnDataSource, RadioGroup
+from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, Slider, CheckboxGroup, ColumnDataSource, RadioGroup, CustomJS
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 from scipy import stats
@@ -51,8 +51,29 @@ class Plots:
                     ("(x,y)", "($x, $y)")]
 
     def prepare_layout(self):
-        self.x_select = Select(title='Option 1', options=self.x_options)
-        self.y_select = Select(title='Option 2', options=self.y_options)
+        self.x_select = Select(title='X Attribute', options=self.x_options)
+        self.y_select = Select(title='Y Attribute', options=self.y_options)
+
+    def prepare_layout_two_menus(self):
+        self.x_cat_select = Select(title='X Catagory',options=self.x_cat_options)
+        self.y_cat_select = Select(title='Y Catagory',options=self.y_cat_options)
+        self.x_select = Select(title='X Attribute', options=self.x_options[self.x_cat_options[0]])
+        self.y_select = Select(title='Y Attribute', options=self.y_options[self.y_cat_options[1]])  
+        x_attribute_callback = CustomJS(args=dict(x_select=self.x_select),code = """
+            const opts = %s
+            console.log('changed selected options',cb_obj.value)
+            x_select.options = opts[cb_obj.value]
+            """ %self.x_options)
+
+        self.x_cat_select.js_on_change('value',x_attribute_callback)
+
+        y_attribute_callback = CustomJS(args=dict(y_select=self.y_select),code = """
+            const opts = %s
+            console.log('changed selected options',cb_obj.value)
+            y_select.options = opts[cb_obj.value]
+            """ %self.y_options)
+
+        self.y_cat_select.js_on_change('value',y_attribute_callback)
 
     def update(self):
         self.get_data(self.xx, self.x_select.value, self.y_select.value, self.other_attr, update=True)

@@ -10,6 +10,7 @@ import numpy as np
 from datetime import datetime
 
 from static.plots import Plots
+from static.attributes import attributes
 from scipy import stats
 
 
@@ -19,19 +20,14 @@ class FocalPlanePage(Plots):
         self.description = Div(text='These plots show the average behavior across the whole focal plate for a given time or exposure.', 
                                 width=800, style=self.text_style)
 
-        self.default_options = ['datetime','EXPID', 'max_blind', 'MAX_BLIND', 'MAX_BLIND_95',
-                                'RMS_BLIND', 'RMS_BLIND_95', 'MAX_CORR', 'MAX_CORR_95', 'RMS_CORR',
-                                'RMS_CORR_95',
-                                'targtra','targtdec', 'exptime', 'airmass', 'mountha', 'mountaz',
-                                'domeaz',  'moonra','moondec',   'mirror_avg_temp', 
-                                'air_temp', 'air_dewpoint', 'air_flow', 'mirror_temp', 'truss_temp', 'wind_speed',
-                                'wind_direction', 'humidity', 'pressure', 'temperature','dewpoint',  'gust', 'fan_on', 
-                                'temp_degc', 'exptime_sec', 'psf_pixels', 'seeing']
+        self.default_catagories = list(attributes.keys())
 
+        self.default_options = attributes
 
     def page_layout(self):
         this_layout = layout([[self.header],
                               [self.description],
+                              [self.x_cat_select, self.y_cat_select],
                               [self.x_select, self.y_select, self.btn],
                               [self.bin_option, self.save_btn],
                               [self.bin_slider, self.replot_btn, self.data_det_option],
@@ -44,9 +40,13 @@ class FocalPlanePage(Plots):
     def run(self):
         self.x_options = self.default_options
         self.y_options = self.default_options
-        self.prepare_layout()
-        self.x_select.value = 'MAX_BLIND'
-        self.y_select.value = 'airmass'
+        self.x_cat_options = self.default_catagories
+        self.y_cat_options = self.default_catagories
+        self.prepare_layout_two_menus()
+        self.x_cat_select.value = self.default_catagories[0]
+        self.y_cat_select.value = self.default_catagories[1]
+        self.x_select.value = self.default_options[self.default_catagories[0]][0]
+        self.y_select.value = self.default_options[self.default_catagories[1]][0]
         self.get_data('datetime',self.x_select.value, self.y_select.value, other_attr = ['EXPID'])
         self.page_tooltips = [
             ("exposure","@EXPID"),

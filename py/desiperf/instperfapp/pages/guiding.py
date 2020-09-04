@@ -7,6 +7,7 @@ from bokeh.plotting import figure
 import pandas as pd 
 
 from static.plots import Plots
+from static.attributes import attributes
 
 class GuidingPage(Plots):
     def __init__(self, datahandler):
@@ -14,15 +15,15 @@ class GuidingPage(Plots):
         self.description = Div(text='These plots show the behavior of the GFA cameras during a given time or exposure.', 
                                 width=800, style=self.text_style)
 
-        self.default_options = ['datetime','EXPID','meanx', 'meany', 'meanx2', 'meany2', 'meanxy', 'maxx', 'maxy',
-                                'guider_centroids', 'combined_x', 'combined_y', 'airmass', 'domeaz', 'moonra','moondec', 
-                                'air_temp',  'mirror_temp', 'wind_speed','wind_direction', 'humidity', 'pressure', 'temperature',
-                                'dewpoint', 'fan_on', 'temp_degc', 'exptime_sec', 'psf_pixels', 'guider_summary', 'duration','seeing.1', ]
+        self.default_catagories = list(attributes.keys())
+
+        self.default_options = attributes
 
 
     def page_layout(self):
         this_layout = layout([[self.header],
                       [self.description],
+                      [self.x_cat_select, self.y_cat_select],
                       [self.x_select, self.y_select, self.btn],
                       [self.bin_option, self.save_btn],
                       [self.bin_slider, self.replot_btn, self.data_det_option],
@@ -36,9 +37,13 @@ class GuidingPage(Plots):
     def run(self):
         self.x_options = self.default_options
         self.y_options = self.default_options
-        self.prepare_layout()
-        self.x_select.value = 'meanx'
-        self.y_select.value = 'airmass'
+        self.x_cat_options = self.default_catagories
+        self.y_cat_options = self.default_catagories
+        self.prepare_layout_two_menus()
+        self.x_cat_select.value = self.default_catagories[0]
+        self.y_cat_select.value = self.default_catagories[1]
+        self.x_select.value = self.default_options[self.default_catagories[0]][0]
+        self.y_select.value = self.default_options[self.default_catagories[1]][0]
         self.get_data('datetime',self.x_select.value, self.y_select.value, other_attr=['EXPID'])
         self.page_tooltips = [
             ("exposure","@EXPID"),
