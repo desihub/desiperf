@@ -55,7 +55,7 @@ class DataHandler(object):
     def get_focalplane_data(self):
         if self.option == 'no_update':
             files = glob.glob(os.path.join(self.fp_dir, 'fpa_data_*.csv')) 
-            fp_df = pd.concat([pd.read_csv(f) for f in files])
+            fp_df = pd.concat([pd.read_csv(f, low_memory=False) for f in files])
             fp_df = self.get_datetime(fp_df)
             self.focalplane_source = ColumnDataSource(fp_df)
 
@@ -97,7 +97,7 @@ class DataHandler(object):
         """
         if self.option == 'no_update':
             files = glob.glob(os.path.join(self.det_dir, 'qa_data_*.csv'))
-            df = pd.concat([pd.read_csv(f) for f in files])
+            df = pd.concat([pd.read_csv(f, low_memory=False) for f in files])
             df = self.get_datetime(df)
             self.detector_source = ColumnDataSource(df)
 
