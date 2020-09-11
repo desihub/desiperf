@@ -18,8 +18,7 @@ class DetectorPage(Plots):
 
         
         self.spectro_options = ['ALL', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-        self.amps = ['A','B','C','D']
-        self.colors = ['red','blue','green','yellow']
+        self.colors = {'A':'red','B':'blue','C':'green','D':'yellow'}
         self.sp_select = Select(title='Spectrograph', value='ALL', options=self.spectro_options)
 
         self.x_options = ['EXPID','datetime','CAMERA_TEMP','CAMERA_HUMIDITY','BENCH_CRYO_TEMP','BENCH_COLL_TEMP','BENCH_NIR_TEMP', 'IEB_TEMP',
@@ -72,10 +71,13 @@ class DetectorPage(Plots):
             del data_[attr1]
             del data_[attr2]
 
+        data_['color'] = [self.colors[i] for i in list(data_.AMP)]
         self.details.text = 'Data Overview: \n ' + str(data.describe())
         
         if update:
-            self.plot_source.data = data_
+            self.blue_source.data = data_[data_.CAM == 'B']
+            self.red_source.data = data_[data_.CAM == 'R']
+            self.zed_source.data = data_[data_.CAM == 'Z']
             self.tsb.xaxis.axis_label = self.x_select.value
             self.tsb.yaxis.axis_label = self.y_select.value
             self.tsr.xaxis.axis_label = self.x_select.value
@@ -84,16 +86,9 @@ class DetectorPage(Plots):
             self.tsz.yaxis.axis_label = self.y_select.value
 
         else:
-            self.plot_source = ColumnDataSource(data_)
-            self.viewb = []
-            self.viewr = []
-            self.viewz = []
-            for amp in self.amps:
-                self.viewb.append(CDSView(source=self.plot_source, filters=[GroupFilter(column_name='CAM', group='B'), GroupFilter(column_name='AMP', group=amp)]))
-                self.viewr.append(CDSView(source=self.plot_source, filters=[GroupFilter(column_name='CAM', group='R'), GroupFilter(column_name='AMP', group=amp)]))
-                self.viewz.append(CDSView(source=self.plot_source, filters=[GroupFilter(column_name='CAM', group='Z'), GroupFilter(column_name='AMP', group=amp)]))
-
-        self.time_series_plot()
+            self.blue_source = ColumnDataSource(data_[data_.CAM == 'B'])
+            self.red_source = ColumnDataSource(data_[data_.CAM == 'R'])
+            self.zed_source = ColumnDataSource(data_[data_.CAM == 'Z'])
 
     def page_layout(self):
         this_layout = layout([[self.header],
@@ -108,33 +103,25 @@ class DetectorPage(Plots):
     def time_series_plot(self):
         
         if self.x_select.value == 'datetime':
-            self.tsb = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips, 
-                                x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type = 'datetime',title='Blue Detectors (note: select Amp to hide)')
-            self.tsr = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips,  
-                                x_axis_label=self.x_select.value, y_axis_label=self.y_select.value,  x_axis_type = 'datetime',title='Red Detectors (note: select Amp to hide)')
-            self.tsz = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips,  
-                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value,  x_axis_type = 'datetime',title='Infrared Detectors (note: select Amp to hide)')
+            axistype = 'datetime'
         else:
-            self.tsb = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips, 
-                                x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Blue Detectors (note: select Amp to hide)')
-            self.tsr = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips,  
-                                x_axis_label=self.x_select.value, y_axis_label=self.y_select.value,  title='Red Detectors (note: select Amp to hide)')
-            self.tsz = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips,  
-                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Infrared Detectors (note: select Amp to hide)')
+            axistype = None
+        self.tsb = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips, 
+                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Blue Detectors')
+        self.tsr = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips,  
+                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Red Detectors')
+        self.tsz = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips,  
+                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Infrared Detectors')
 
-        for i, view in enumerate(self.viewb):
-            self.tsb.circle(x='attrbx', y='attrby', color=self.colors[i], size=5, source=self.plot_source, selection_color="cyan", legend = "{}".format(self.amps[i]), view=view)
-        for i, view in enumerate(self.viewr):
-            self.tsr.circle(x='attrrx', y='attrry',  color=self.colors[i], size=5, source=self.plot_source, selection_color="orange", legend = "{}".format(self.amps[i]), view=view)
-        for i, view in enumerate(self.viewz):
-            self.tsz.circle(x='attrzx', y='attrzy',  color=self.colors[i], size=5, source=self.plot_source, selection_color="gray", legend = "{}".format(self.amps[i]), view=view)
+        self.tsb.circle(x='attrbx', y='attrby', color='color', size=5, source=self.blue_source, selection_color="gray", legend = 'AMP')
+        self.tsr.circle(x='attrrx', y='attrry',  color='color', size=5, source=self.red_source, selection_color="gray", legend = 'AMP')
+        self.tsz.circle(x='attrzx', y='attrzy',  color='color', size=5, source=self.zed_source, selection_color="gray", legend = 'AMP')
 
         
         for p in [self.tsb, self.tsr, self.tsz]:
             p.legend.title = "Amp"
             p.legend.location = "top_right"
-            p.legend.orientation = "horizontal"
-            p.legend.click_policy="hide"   
+            p.legend.orientation = "horizontal" 
 
     def spec_update(self):
         self.spectro_data(self.x_select.value, self.y_select.value, self.sp_select.value, update=True)
