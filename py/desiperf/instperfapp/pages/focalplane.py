@@ -10,7 +10,7 @@ import numpy as np
 from datetime import datetime
 
 from static.plots import Plots
-from static.attributes import attributes
+from static.attributes import Focalplane_attributes
 from scipy import stats
 
 
@@ -20,9 +20,9 @@ class FocalPlanePage(Plots):
         self.description = Div(text='These plots show the average behavior across the whole focal plate for a given time or exposure.', 
                                 width=800, style=self.text_style)
 
-        self.default_catagories = list(attributes.keys())
+        self.default_catagories = list(Focalplane_attributes.keys())
 
-        self.default_options = attributes
+        self.default_options = Focalplane_attributes
 
     def page_layout(self):
         this_layout = layout([[self.header],
