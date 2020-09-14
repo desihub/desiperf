@@ -1,24 +1,8 @@
 .connect_button button.bk.bk-btn.bk-btn-default {
     color: black;
-    width: 300px;
-    font-size:12pt;
+    width: 200px;
+    font-size:10pt;
     background-color: mediumturquoise;
-    border-color: black;
-}
-
-.init_button button.bk.bk-btn.bk-btn-default {
-    color: black;
-    width: 300px;
-    font-size:12pt;
-    background-color: mediumorchid;
-    border-color: black;
-}
-
-.add_button button.bk.bk-btn.bk-btn-default {
-    color: black;
-    width: 300px;
-    font-size:12pt;
-    background-color: indianred;
     border-color: black;
 }
 
@@ -32,7 +16,10 @@
 }
 
 .bk-root .inst-style {
+	font-family: sans-serif;
+	width: 800px;
 	color: black;
+	white-space: pre-line;
 	font-size:12pt;
 }
 
@@ -47,7 +34,6 @@
 .bk-root .title-style {
 	color: black;
 	text-decoration: underline;
-	text-align: center;
 	font-size:18pt;
 	font-style: bold;
 }
@@ -64,6 +50,7 @@
     font-size:10pt;
     text-align: center;
 }
+
 .bk-root .bk-tabs-header .bk-tab.bk-active{
 	background-color: cornflowerblue;
 	color: white;
