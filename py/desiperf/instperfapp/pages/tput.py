@@ -9,16 +9,16 @@ import pandas as pd
 
 
 from static.plots import Plots
-from static.attributes	import attributes
+from static.attributes	import Focalplane_attributes
 
 class TputPage(Plots):
     def __init__(self, datahandler):
         Plots.__init__(self,'Throughput Performance', source=datahandler.focalplane_source)
         self.description = Div(text='These plots show the throughput over time.', width=800, style=self.text_style)
 
-        self.default_catagories = list(attributes.keys())
+        self.default_catagories = list(Focalplane_attributes.keys())
 
-        self.default_options = attributes #['expid', 'estimated_snr', 'goal_snr', 'seeing', 'transparency', 'skylevel', 'max_exposure_time']
+        self.default_options = Focalplane_attributes #['expid', 'estimated_snr', 'goal_snr', 'seeing', 'transparency', 'skylevel', 'max_exposure_time']
 
 
     def page_layout(self):

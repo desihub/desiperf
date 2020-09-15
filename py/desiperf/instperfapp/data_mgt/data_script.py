@@ -250,6 +250,12 @@ for name, df in all_dfs.items():
     all_dfs[name] = df
 
 final_df = pd.concat(list(all_dfs.values()), axis=1)
+
+# REMOVE USELESS ATTR
+bad_attr = ['chimney_ib_temp','chimney_im_temp','chimney_it_temp','chimney_os_temp','chimney_ow_temp','probe1_temp','probe2_temp','probe1_humidity','probe2_humidity','lights_high','lights_low','mirror_status','mirror_covers','shutter_uppper','shutter_low']
+final_df.drop(bad_attr, axis=1, inplace=True)
+
+
 final_df.to_csv('fp_telemetry.csv',index=False)
 print(datetime.now() - start)
 

@@ -1,16 +1,16 @@
-attributes = {
-	'Exposures':['EXPID','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec',
+Focalplane_attributes = {
+	'Observation':['EXPID','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec',
 	'reqtime','exptime','flavor','program','lead','focus','airmass','mountha','zd','mountaz','domeaz',
 	'spectrographs','s2n','transpar','skylevel','zenith','mjd_obs','date_obs','night','moonra','moondec',
 	'parallactic','mountel','sequence','obstype'],
 
-	'GFA data':['ccdtemp_mean','hotpeltier_mean','coldpeltier_mean','filter_mean','humid2_mean','humid3_mean',
+	'GFA':['ccdtemp_mean','hotpeltier_mean','coldpeltier_mean','filter_mean','humid2_mean','humid3_mean',
 	'fpga_mean','camerahumid_mean','cameratemp_mean'],
 
 	'Guider':['combined_x','combined_y','guider_time_recorded','duration','expid','seeing','frames','meanx','meany',
 	'meanx2','meany2','meanxy','maxx','maxy'],
 
-	'Telemetry':['air_flow','air_temp','truss_temp','air_in_temp','flowrate_in','mirror_temp','air_dewpoint',
+	'Telescope':['air_flow','air_temp','truss_temp','air_in_temp','flowrate_in','mirror_temp','air_dewpoint',
 	'air_out_temp','decbore_temp','flowrate_out','hinge_s_temp','hinge_w_temp','glycol_in_temp','servo_setpoint',
 	'topring_s_temp','topring_w_temp','truss_etb_temp','truss_ett_temp','truss_ntb_temp','truss_ntt_temp',
 	'truss_stb_temp','truss_sts_temp','truss_stt_temp','truss_tsb_temp','truss_tsm_temp','truss_tst_temp',
@@ -26,15 +26,28 @@ attributes = {
 	'dome_left_lower','dome_left_upper','SCR_E_wall_coude','SCR_roof_ambient','dome_right_lower','dome_right_upper',
 	'LCR_N_wall_inside','LCR_W_wall_inside','LCR_N_wall_outside','LCR_W_wall_outside','SCR_E_wall_computer'],
 
-	'Hexapod':['rot_rate','hex_status','rot_offset','rot_enabled','rot_interval','hex_trim_0','hex_position_0',
+	'Corrector':['rot_rate','hex_status','rot_offset','rot_enabled','rot_interval','hex_trim_0','hex_position_0',
 	'hex_trim_1','hex_position_1','hex_trim_2','hex_position_2','hex_trim_3','hex_position_3','hex_trim_4',
-	'hex_position_4','hex_trim_5','hex_position_5','hex_tweak'],
-
-	'ADC':['adc_home1','adc_home2','adc_nrev1','adc_nrev2','adc_angle1','adc_angle2'],
+	'hex_position_4','hex_trim_5','hex_position_5','hex_tweak','adc_home1','adc_home2','adc_nrev1','adc_nrev2',
+	'adc_angle1','adc_angle2'],
 
 	'FVC':['shutter_open','fan_on','temp_degc','exptime_sec','psf_pixels','fvc_time_recorded'],
 
+	'Positioner':['MAX_BLIND','MAX_BLIND_95','RMS_BLIND','RMS_BLIND_95','MAX_CORR','MAX_CORR_95','RMS_CORR','RMS_CORR_95']
+
+}
+
+Spectrograph_attributes = {
+	'Observation':['EXPID','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec',
+	'reqtime','exptime','flavor','program','lead','focus','airmass','mountha','zd','mountaz','domeaz',
+	'spectrographs','s2n','transpar','skylevel','zenith','mjd_obs','date_obs','night','moonra','moondec',
+	'parallactic','mountel','sequence','obstype'],
+
 	'Spectrograph':['nir_camera_temp_mean','nir_camera_humidity_mean','red_camera_temp_mean',
 	'red_camera_humidity_mean','blue_camera_temp_mean','blue_camera_humidity_mean','bench_cryo_temp_mean',
-	'bench_nir_temp_mean','bench_coll_temp_mean','ieb_temp_mean']
+	'bench_nir_temp_mean','bench_coll_temp_mean','ieb_temp_mean'],
+
+	'Camera':['READNOISE','BIAS','COSMICS_RATE','MEANDX','MINDX','MAXDX','MEANDY','MINDY','MAXDY','MEANXSIG',
+	'MINXSIG','MAXXSIG','MEANYSIG','MINYSIG','MAXYSIG','INTEG_RAW_FLUX','MEDIAN_RAW_FLUX','MEDIAN_RAW_SNR','FLUX',
+ 	'SNR','SPECFLUX','THRU']
 }
