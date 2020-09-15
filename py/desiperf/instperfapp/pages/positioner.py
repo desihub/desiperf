@@ -11,7 +11,7 @@ from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, CustomJS
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 
-from static.attributes import Focalplane_attributes
+from static.attributes import Positioner_attributes
 from static.plots import Plots
 
 class PosAccPage(Plots):
@@ -21,8 +21,8 @@ class PosAccPage(Plots):
         self.description = Div(text='These plots show behavior for a single (selected) positioner over time.', 
                                 width=800, style=self.text_style)
 
-        self.default_categories = list(Focalplane_attributes.keys())
-        self.default_options = Focalplane_attributes
+        self.default_categories = list(Positioner_attributes.keys())
+        self.default_options = Positioner_attributes
 
         self.pos = str(1235)
         posfiles = glob.glob(os.path.join(self.DH.pos_dir, '*.csv'))
@@ -36,7 +36,7 @@ class PosAccPage(Plots):
         this_layout = layout([[self.header],
                         [self.description],
                         [ self.x_cat_select, self.y_cat_select, self.pos_select],
-                        [self.x_select, self.y_select, self.btn]
+                        [self.x_select, self.y_select, self.btn],
                         [self.bin_option, self.save_btn],
                         [self.bin_slider, self.replot_btn],
                         [self.corr,self.scatt],
@@ -47,6 +47,7 @@ class PosAccPage(Plots):
 
     def get_pos_data(self, update=False):
         #- docstring
+        self.xx = 'datetime'
         pos_file = os.path.join(self.DH.pos_dir, '{}.csv'.format(self.pos))
         data = pd.read_csv(pos_file)
         data = self.DH.get_datetime(data)

@@ -99,7 +99,7 @@ class SpectrographPage(Plots):
         this_layout = layout([[self.header],
                               [self.description],
                               [self.x_cat_select, self.y_cat_select, self.sp_select],
-                              [self.x_select, self.y_select, self.btn]
+                              [self.x_select, self.y_select, self.btn],
                               [self.details],
                               [self.tsb], [self.tsr], [self.tsz]])
 
