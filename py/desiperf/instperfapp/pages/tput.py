@@ -9,18 +9,22 @@ import pandas as pd
 
 
 from static.plots import Plots
+from static.attributes	import Focalplane_attributes
 
 class TputPage(Plots):
     def __init__(self, datahandler):
-        Plots.__init__(self,'Throughput Performance', source=datahandler.etc_source)
+        Plots.__init__(self,'Throughput Performance', source=datahandler.focalplane_source)
         self.description = Div(text='These plots show the throughput over time.', width=800, style=self.text_style)
 
-        self.default_options = ['expid', 'estimated_snr', 'goal_snr', 'seeing', 'transparency', 'skylevel', 'max_exposure_time']
+        self.default_catagories = list(Focalplane_attributes.keys())
+
+        self.default_options = Focalplane_attributes #['expid', 'estimated_snr', 'goal_snr', 'seeing', 'transparency', 'skylevel', 'max_exposure_time']
 
 
     def page_layout(self):
         this_layout = layout([[self.header],
                               [self.description],
+                              [self.x_cat_select,self.y_cat_select],
                               [self.x_select, self.y_select, self.btn],
                               [self.bin_option, self.save_btn],
                               [self.bin_slider, self.replot_btn, self.data_det_option],
@@ -33,10 +37,14 @@ class TputPage(Plots):
     def run(self):
         self.x_options = self.default_options
         self.y_options = self.default_options 
-        self.prepare_layout()
-        self.x_select.value = 'seeing'
-        self.y_select.value = 'transparency'
-        self.get_data('expid',self.x_select.value, self.y_select.value)
+        self.x_cat_options = self.default_catagories
+        self.y_cat_options = self.default_catagories
+        self.prepare_layout_two_menus()
+        self.x_cat_select.value = self.default_catagories[0]
+        self.y_cat_select.value = self.default_catagories[1]
+        self.x_select.value = self.default_options[self.default_catagories[0]][0]
+        self.y_select.value = self.default_options[self.default_catagories[1]][0]
+        self.get_data('datetime',self.x_select.value, self.y_select.value)
 
         self.page_tooltips = [
             ("{}".format(self.x_select.value),"@attr1"),

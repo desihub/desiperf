@@ -1,6 +1,8 @@
 # desiperf
 Tools for monitoring DESI Instrument Performance
 
+See google doc for more description: https://docs.google.com/document/d/1I7UqqHTs2U1vuIGsLK8OrTWVK29r0CoDxNgy69c8Zc8/edit
+
 ## Directory structure for (most) modules in desihub
 
   * **bin/**: executable scripts; should be added to `$PATH`

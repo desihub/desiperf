@@ -7,7 +7,7 @@ from bokeh.plotting import figure
 import pandas as pd 
 
 from static.plots import Plots
-from static.attributes import attributes
+from static.attributes import Focalplane_attributes
 
 class GuidingPage(Plots):
     def __init__(self, datahandler):
@@ -15,9 +15,9 @@ class GuidingPage(Plots):
         self.description = Div(text='These plots show the behavior of the GFA cameras during a given time or exposure.', 
                                 width=800, style=self.text_style)
 
-        self.default_catagories = list(attributes.keys())
+        self.default_catagories = list(Focalplane_attributes.keys())
 
-        self.default_options = attributes
+        self.default_options = Focalplane_attributes
 
 
     def page_layout(self):
