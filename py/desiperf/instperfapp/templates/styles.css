@@ -6,6 +6,14 @@
     border-color: black;
 }
 
+.save_button button.bk.bk-btn.bk-btn-default {
+    color: black;
+    width: 200px;
+    font-size:10pt;
+    background-color: #BA55D3;
+    border-color: black;
+}
+
 .bk-root .h1-title-style {
 	color: black;
 	width: 800px;

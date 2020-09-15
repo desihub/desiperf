@@ -14,7 +14,7 @@ from static.attributes import Spectrograph_attributes
 
 class SpectrographPage(Plots):
     def __init__(self, datahandler):
-        Plots.__init__(self,'Detector Noise Performance', datahandler.detector_source)
+        Plots.__init__(self,'Spectrograph', datahandler.detector_source)
         self.description = Div(text='These plots show the behavior of the detectors in each spectrograph over time.', width=800, style=self.text_style)
 
         

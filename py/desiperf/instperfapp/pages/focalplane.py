@@ -1,5 +1,5 @@
 
-from bokeh.layouts import column, layout
+from bokeh.layouts import column, layout, row, gridplot
 from bokeh.models.widgets import Panel
 from bokeh.models import CustomJS, ColumnDataSource, Select, Slider, CheckboxGroup
 from bokeh.models import Button, PreText, Select
@@ -16,12 +16,12 @@ from scipy import stats
 
 class FocalPlanePage(Plots):
     def __init__(self, datahandler):
-        Plots.__init__(self,'Focal Plane Performance', source=datahandler.focalplane_source)
-        self.description = Div(text='These plots show the average behavior across the whole focal plate for a given time or exposure.', 
-                                width=800, style=self.text_style)
+        Plots.__init__(self,'Focal Plane', source=datahandler.focalplane_source)
+        desc = """ These plots show the average behavior across the whole focal plate for a given time or exposure.
+            """
+        self.description = Div(text=desc, width=800, style=self.text_style)
 
         self.default_categories = list(Focalplane_attributes.keys())
-
         self.default_options = Focalplane_attributes
 
     def page_layout(self):
@@ -29,9 +29,8 @@ class FocalPlanePage(Plots):
                               [self.description],
                               [self.x_cat_select, self.y_cat_select],
                               [self.x_select, self.y_select, self.btn],
-                              [self.bin_option, self.save_btn],
-                              [self.bin_slider, self.replot_btn, self.data_det_option],
-                              [self.corr, self.details, self.cov],
+                              [[self.main_plot], column([self.data_det_option, self.save_btn, self.bin_slider, self.bin_option, self.replot_btn])],
+                              [self.details, self.cov],
                               [self.ts1],
                               [self.ts2]])
         tab = Panel(child=this_layout, title=self.title)

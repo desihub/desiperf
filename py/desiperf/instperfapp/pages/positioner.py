@@ -4,7 +4,7 @@ import glob
 import pandas as pd
 import numpy as np
 
-from bokeh.layouts import column, layout
+from bokeh.layouts import column, layout, row
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.models import ColumnDataSource
 from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, CustomJS
@@ -16,10 +16,12 @@ from static.plots import Plots
 
 class PosAccPage(Plots):
     def __init__(self, datahandler):
-        Plots.__init__(self,'Positioner Accuracy Performance',source=None)
+        Plots.__init__(self,'Positioner',source=None)
         self.DH = datahandler
-        self.description = Div(text='These plots show behavior for a single (selected) positioner over time.', 
-                                width=800, style=self.text_style)
+
+        desc = """These plots show behavior for a single (selected) positioner over time.
+            """
+        self.description = Div(text=desc, width=800, css_classes=['inst-style'])
 
         self.default_categories = list(Positioner_attributes.keys())
         self.default_options = Positioner_attributes
@@ -29,17 +31,18 @@ class PosAccPage(Plots):
         self.pos_list = [os.path.splitext(os.path.split(posf)[1])[0] for posf in posfiles] #np.linspace(0,4999,5000)
         
         self.pos_select = Select(title='Select POS', value=self.pos, options=self.pos_list)
+        self.can_select = Select(title='Select CAN', value='10', options=['10','11','12','13','14','15','16','17','20','21'])
+        self.petal_select = Select(title='Select PETAL', value='0', options=['0','1','2','3','4','5','6','7','8','9'])
 
 
     def page_layout(self):
         #docstring
         this_layout = layout([[self.header],
                         [self.description],
-                        [ self.x_cat_select, self.y_cat_select, self.pos_select],
+                        [ self.x_cat_select, self.y_cat_select],
                         [self.x_select, self.y_select, self.btn],
-                        [self.bin_option, self.save_btn],
-                        [self.bin_slider, self.replot_btn],
-                        [self.corr,self.scatt],
+                        [column([self.pos_select, self.can_select, self.petal_select]), self.scatt],
+                        [column([self.data_det_option, self.save_btn, self.bin_slider, self.bin_option, self.replot_btn]), [self.main_plot]],
                         [self.ts1],
                         [self.ts2]])
         tab = Panel(child=this_layout, title=self.title)
@@ -59,11 +62,11 @@ class PosAccPage(Plots):
         data_ = data_.rename(columns={self.x_select.value:'attr1',self.y_select.value:'attr2'}) 
         if update:
             self.plot_source.data = data_
-            self.corr.xaxis.axis_label = self.x_select.value
-            self.corr.yaxis.axis_label = self.y_select.value
+            self.main_plot.xaxis.axis_label = self.x_select.value
+            self.main_plot.yaxis.axis_label = self.y_select.value
             self.ts1.yaxis.axis_label = self.x_select.value
             self.ts2.yaxis.axis_label = self.y_select.value
-            self.corr.title.text  = '{} vs. {} for POS {}'.format(self.x_select.value, self.y_select.value, self.pos)
+            self.main_plot.title.text  = '{} vs. {} for POS {}'.format(self.x_select.value, self.y_select.value, self.pos)
             self.ts1.title.text = 'Time vs. {}'.format(self.x_select.value)
             self.ts2.title.text = 'Time vs. {}'.format(self.y_select.value)
             self.bin_data.data = self.update_binned_data('attr1','attr2')

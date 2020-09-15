@@ -25,15 +25,15 @@ class Plots:
         self.header = Div(text="{}".format(title), width=500, style = self.subt_style)
         self.data_source = source  # Here it will pick up the latest
         self.tools = 'pan,wheel_zoom,lasso_select,reset,undo,save,hover'
-        self.bin_slider = Slider(start=1, end = 100, value=100, step=1, title="# of Bins",direction="rtl")
+        self.bin_slider = Slider(start=1, end = 100, value=100, step=1, title="# of Bins", direction="rtl", width=200)
 
         self.details = PreText(text=' ', width=500)
-        self.cov = PreText(text=' ', width=500)
+        self.cov = PreText(text=' ', width=400)
 
-        self.btn = Button(label='Plot', button_type='primary', width=200)
-        self.save_btn = Button(label='Save selection', button_type='primary',width=200)
+        self.btn = Button(label='Plot Selection', button_type='primary', width=200)
+        self.save_btn = Button(label='Save Selected Data', width=200, css_classes=['save_button'])
 
-        self.replot_btn = Button(label='Replot',button_type='primary',width=200)
+        self.replot_btn = Button(label='Replot', width=200, css_classes=['save_button'])
         self.bin_option = CheckboxGroup(labels=["Raw Data","Binned Data"], active=[0])
         self.data_det_option = RadioGroup(labels=["All Data","Selected Data"], active=0)
         self.fp_tooltips = None
@@ -125,11 +125,11 @@ class Plots:
         data_ = data.rename(columns={attr1:'attr1', attr2:'attr2'}) 
         if update:
             self.plot_source.data = data_
-            self.corr.xaxis.axis_label = attr1
-            self.corr.yaxis.axis_label = attr2
+            self.main_plot.xaxis.axis_label = attr1
+            self.main_plot.yaxis.axis_label = attr2
             self.ts1.yaxis.axis_label = attr1
             self.ts2.yaxis.axis_label = attr2
-            self.corr.title.text  = '{} vs {}'.format(attr1, attr2)
+            self.main_plot.title.text  = '{} vs {}'.format(attr1, attr2)
             self.ts1.title.text = 'Time vs. {}'.format(attr1)
             self.ts2.title.text = 'Time vs. {}'.format(attr2)
             self.bin_data.data = self.update_binned_data('attr1','attr2')
@@ -186,13 +186,13 @@ class Plots:
         return p
 
     def time_series_plot(self):
-        self.corr = self.figure(width=450, height=450, tooltips=self.page_tooltips, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='{} vs {}'.format(self.x_select.value, self.y_select.value))
+        self.main_plot = self.figure(width=450, height=450, tooltips=self.page_tooltips, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='{} vs {}'.format(self.x_select.value, self.y_select.value))
         self.ts1 = self.figure(x_axis_label=self.xx, tooltips=self.page_tooltips, y_axis_label=self.x_select.value, title='Time vs. {}'.format(self.x_select.value))
         self.ts2 = self.figure(x_axis_label=self.xx, tooltips=self.page_tooltips, y_axis_label=self.y_select.value, title='Time vs. {}'.format(self.y_select.value))
         if self.plot_source is not None:
-            self.c1 = self.corr_plot(self.corr, x='attr1',y='attr2', source=self.plot_source)
-            self.c2 = self.corr.circle(x='centers',y='means',color='red',source=self.bin_data)
-            self.c3 = self.corr.varea(x='centers',y1='upper',y2='lower',source=self.bin_data,alpha=0.4,color='red')
+            self.c1 = self.corr_plot(self.main_plot, x='attr1',y='attr2', source=self.plot_source)
+            self.c2 = self.main_plot.circle(x='centers',y='means',color='red',source=self.bin_data)
+            self.c3 = self.main_plot.varea(x='centers',y1='upper',y2='lower',source=self.bin_data,alpha=0.4,color='red')
             self.c4 = self.circle_plot(self.ts1, x=self.xx,y='attr1',source=self.plot_source)
             self.c5 = self.ts1.circle(x='centers',y='means',color='red',source=self.bin_data1)
             self.c6 = self.ts1.varea(x='centers',y1='upper',y2='lower',source=self.bin_data1,alpha=0.4,color='red')
