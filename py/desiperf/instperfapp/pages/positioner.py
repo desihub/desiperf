@@ -11,7 +11,7 @@ from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, CustomJS
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 
-
+from static.attributes import Focalplane_attributes
 from static.plots import Plots
 
 class PosAccPage(Plots):
@@ -20,6 +20,9 @@ class PosAccPage(Plots):
         self.DH = datahandler
         self.description = Div(text='These plots show behavior for a single (selected) positioner over time.', 
                                 width=800, style=self.text_style)
+
+        self.default_categories = list(Focalplane_attributes.keys())
+        self.default_options = Focalplane_attributes
 
         self.pos = str(1235)
         posfiles = glob.glob(os.path.join(self.DH.pos_dir, '*.csv'))
@@ -32,7 +35,8 @@ class PosAccPage(Plots):
         #docstring
         this_layout = layout([[self.header],
                         [self.description],
-                        [self.pos_select, self.x_select, self.y_select, self.btn],
+                        [ self.x_cat_select, self.y_cat_select, self.pos_select],
+                        [self.x_select, self.y_select, self.btn]
                         [self.bin_option, self.save_btn],
                         [self.bin_slider, self.replot_btn],
                         [self.corr,self.scatt],
@@ -91,14 +95,15 @@ class PosAccPage(Plots):
         self.get_pos_data(update=True)
 
     def run(self):
-        #- docstring
-        self.y_options = ['OFFSET_0','OFFSET_FINAL']
-        self.x_options = ['datetime','EXPID','TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X', 'FIBERASSIGN_Y',
-                        'total_move_sequences','mirror_temp','truss_temp','air_mirror_temp_diff','wind_speed','wind_direction','ctrl_enabled',]
-        self.xx = 'datetime'
-        self.prepare_layout()
-        self.x_select.value = 'EXPID'
-        self.y_select.value = 'OFFSET_0'
+        self.x_options = self.default_options
+        self.y_options = self.default_options
+        self.x_cat_options = self.default_categories
+        self.y_cat_options = self.default_categories
+        self.prepare_layout_two_menus()
+        self.x_cat_select.value = self.default_categories[0]
+        self.y_cat_select.value = self.default_categories[1]
+        self.x_select.value = self.default_options[self.default_categories[0]][0]
+        self.y_select.value = self.default_options[self.default_categories[1]][0]
         self.page_tooltips = [
             ("exposure","@EXPID"),
             ("{}".format(self.x_select.value),"@attr1"),

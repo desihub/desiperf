@@ -55,8 +55,8 @@ class Plots:
         self.y_select = Select(title='Y Attribute', options=self.y_options)
 
     def prepare_layout_two_menus(self):
-        self.x_cat_select = Select(title='X Catagory',options=self.x_cat_options)
-        self.y_cat_select = Select(title='Y Catagory',options=self.y_cat_options)
+        self.x_cat_select = Select(title='X Category',options=self.x_cat_options)
+        self.y_cat_select = Select(title='Y Category',options=self.y_cat_options)
         self.x_select = Select(title='X Attribute', options=self.x_options[self.x_cat_options[0]])
         self.y_select = Select(title='Y Attribute', options=self.y_options[self.y_cat_options[1]])  
         x_attribute_callback = CustomJS(args=dict(x_select=self.x_select),code = """

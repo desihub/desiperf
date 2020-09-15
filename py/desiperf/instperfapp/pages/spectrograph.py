@@ -9,6 +9,7 @@ from bokeh.transform import factor_cmap
 import pandas as pd
 
 from static.plots import Plots
+from static.attributes import Spectrograph_attributes
 
 
 class SpectrographPage(Plots):
@@ -20,6 +21,10 @@ class SpectrographPage(Plots):
         self.spectro_options = ['ALL', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
         self.colors = {'A':'red','B':'blue','C':'green','D':'yellow'}
         self.sp_select = Select(title='Spectrograph', value='ALL', options=self.spectro_options)
+
+        self.default_categories = list(Spectrograph_attributes.keys())
+
+        self.default_options = Spectrograph_attributes
 
         self.x_options = ['EXPID','datetime','CAMERA_TEMP','CAMERA_HUMIDITY','BENCH_CRYO_TEMP','BENCH_COLL_TEMP','BENCH_NIR_TEMP', 'IEB_TEMP',
                             'READNOISE', 'BIAS', 'COSMICS_RATE', 'MEANDX', 'MINDX', 'MAXDX',
@@ -93,7 +98,8 @@ class SpectrographPage(Plots):
     def page_layout(self):
         this_layout = layout([[self.header],
                               [self.description],
-                              [self.x_select, self.y_select, self.sp_select, self.btn],
+                              [self.x_cat_select, self.y_cat_select, self.sp_select],
+                              [self.x_select, self.y_select, self.btn]
                               [self.details],
                               [self.tsb], [self.tsr], [self.tsz]])
 
@@ -127,10 +133,15 @@ class SpectrographPage(Plots):
         self.spectro_data(self.x_select.value, self.y_select.value, self.sp_select.value, update=True)
 
     def run(self):
-
-        self.prepare_layout()
-        self.x_select.value = 'datetime'
-        self.y_select.value = 'READNOISE'
+        self.x_options = self.default_options
+        self.y_options = self.default_options
+        self.x_cat_options = self.default_categories
+        self.y_cat_options = self.default_categories
+        self.prepare_layout_two_menus()
+        self.x_cat_select.value = self.default_categories[0]
+        self.y_cat_select.value = self.default_categories[1]
+        self.x_select.value = self.default_options[self.default_categories[0]][0]
+        self.y_select.value = self.default_options[self.default_categories[1]][0]
         self.spectro_data(self.x_select.value, self.y_select.value, self.sp_select.value)
         self.time_series_plot()
         self.btn.on_click(self.spec_update)

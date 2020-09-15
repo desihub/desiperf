@@ -20,7 +20,7 @@ class FocalPlanePage(Plots):
         self.description = Div(text='These plots show the average behavior across the whole focal plate for a given time or exposure.', 
                                 width=800, style=self.text_style)
 
-        self.default_catagories = list(Focalplane_attributes.keys())
+        self.default_categories = list(Focalplane_attributes.keys())
 
         self.default_options = Focalplane_attributes
 
@@ -40,13 +40,13 @@ class FocalPlanePage(Plots):
     def run(self):
         self.x_options = self.default_options
         self.y_options = self.default_options
-        self.x_cat_options = self.default_catagories
-        self.y_cat_options = self.default_catagories
+        self.x_cat_options = self.default_categories
+        self.y_cat_options = self.default_categories
         self.prepare_layout_two_menus()
-        self.x_cat_select.value = self.default_catagories[0]
-        self.y_cat_select.value = self.default_catagories[1]
-        self.x_select.value = self.default_options[self.default_catagories[0]][0]
-        self.y_select.value = self.default_options[self.default_catagories[1]][0]
+        self.x_cat_select.value = self.default_categories[0]
+        self.y_cat_select.value = self.default_categories[1]
+        self.x_select.value = self.default_options[self.default_categories[0]][0]
+        self.y_select.value = self.default_options[self.default_categories[1]][0]
         self.get_data('datetime',self.x_select.value, self.y_select.value, other_attr = ['EXPID'])
         self.page_tooltips = [
             ("exposure","@EXPID"),
