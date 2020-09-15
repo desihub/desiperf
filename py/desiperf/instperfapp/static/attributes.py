@@ -33,12 +33,21 @@ Focalplane_attributes = {
 
 	'FVC':['shutter_open','fan_on','temp_degc','exptime_sec','psf_pixels','fvc_time_recorded'],
 
-	'Positioned':['MAX_BLIND','MAX_BLIND_95','RMS_BLIND','RMS_BLIND_95','MAX_CORR','MAX_CORR_95','RMS_CORR','RMS_CORR_95']
+	'Positioner':['MAX_BLIND','MAX_BLIND_95','RMS_BLIND','RMS_BLIND_95','MAX_CORR','MAX_CORR_95','RMS_CORR','RMS_CORR_95']
 
 }
 
 Spectrograph_attributes = {
+	'Observation':['EXPID','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec',
+	'reqtime','exptime','flavor','program','lead','focus','airmass','mountha','zd','mountaz','domeaz',
+	'spectrographs','s2n','transpar','skylevel','zenith','mjd_obs','date_obs','night','moonra','moondec',
+	'parallactic','mountel','sequence','obstype'],
+
 	'Spectrograph':['nir_camera_temp_mean','nir_camera_humidity_mean','red_camera_temp_mean',
 	'red_camera_humidity_mean','blue_camera_temp_mean','blue_camera_humidity_mean','bench_cryo_temp_mean',
-	'bench_nir_temp_mean','bench_coll_temp_mean','ieb_temp_mean']
+	'bench_nir_temp_mean','bench_coll_temp_mean','ieb_temp_mean'],
+
+	'Camera':['READNOISE','BIAS','COSMICS_RATE','MEANDX','MINDX','MAXDX','MEANDY','MINDY','MAXDY','MEANXSIG',
+	'MINXSIG','MAXXSIG','MEANYSIG','MINYSIG','MAXYSIG','INTEG_RAW_FLUX','MEDIAN_RAW_FLUX','MEDIAN_RAW_SNR','FLUX',
+ 	'SNR','SPECFLUX','THRU']
 }
