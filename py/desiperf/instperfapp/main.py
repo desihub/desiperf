@@ -19,9 +19,7 @@ from bokeh.models.widgets.markups import Div
 
 from pages.focalplane import FocalPlanePage
 from pages.positioner import PosAccPage
-from pages.tput import TputPage
-from pages.detector import DetectorPage
-from pages.guiding import GuidingPage
+from pages.spectrograph import SpectrographPage
 from bokeh.models.callbacks import CustomJS
 
 from data_mgt.data_handler import DataHandler
@@ -36,20 +34,18 @@ def init_pages(datahandler):
     '''
     FP = FocalPlanePage(datahandler)
     PP = PosAccPage(datahandler) #Has its own data
-    TP = TputPage(datahandler)#Data not available yet
-    DP = DetectorPage(datahandler)
-    GP = GuidingPage(datahandler)
-    for page in [FP, PP, TP, DP, GP]:
+    SP = SpectrographPage(datahandler)
+    for page in [FP, PP, SP]:
         page.run()
 
-    return FP.page_layout(), PP.page_layout(), GP.page_layout(), TP.page_layout(), DP.page_layout()
+    return FP.page_layout(), PP.page_layout(), SP.page_layout()
 
 def update_data():
     print('Updating data')
     date_btn.label = 'Updating'
     DH = DataHandler(start_date=str(start_date.value), end_date=str(end_date.value), option='no_update')
     DH.run()
-    fp_tab, pp_tab, gp_tab, tp_tab, dp_tab = init_pages(DH)
+    fp_tab, pp_tab, sp_tab = init_pages(DH)
     ds = pd.DataFrame(DH.detector_source.data)
     fps = pd.DataFrame(DH.focalplane_source.data)
     data_source.data = data_text(ds, fps)
@@ -67,7 +63,7 @@ def data_text(ds, fps):
 #- Initialize data & pages
 DH = DataHandler()
 DH.run()
-fp_tab, pp_tab, gp_tab, tp_tab, dp_tab = init_pages(DH)
+fp_tab, pp_tab, sp_tab = init_pages(DH)
 
 #- Welcome Page
 title_1 = Div(text="DESI Instrument Peformance Analysis Tool", width=800, css_classes=['h1-title-style'])
@@ -139,11 +135,9 @@ tab1 = Panel(child=layout1, title="Welcome")
 
 tab2 = fp_tab
 tab3 = pp_tab
-tab4 = gp_tab
-tab5 = tp_tab
-tab6 = dp_tab
+tab4 = sp_tab
 
-tabs = Tabs(tabs=[tab1, tab2, tab3, tab4, tab5, tab6])
+tabs = Tabs(tabs=[tab1, tab2, tab3, tab4])
 
 date_btn.on_click(update_data)
 

@@ -37,6 +37,32 @@ Focalplane_attributes = {
 
 }
 
+Positioner_attributes = {
+	'Observation':['EXPOSURE', 'move_cmd','move_val1','move_val2','obs_x','obs_y','petal_id','pos_id','pos_move_index',
+ 	'pos_p','pos_t','primarycell_i_temp','primarycell_o_temp','probe1_humidity','probe1_temp','probe2_humidity',
+ 	'probe2_temp','ptl_x','ptl_y','ptl_z','last_meas_fwhm','last_meas_obs_x','last_meas_obs_y','last_meas_peak',],
+
+	'Telescope':['air_flow','air_temp','truss_temp','air_in_temp','flowrate_in','mirror_temp','air_dewpoint',
+	'air_out_temp','decbore_temp','flowrate_out','hinge_s_temp','hinge_w_temp','glycol_in_temp','servo_setpoint',
+	'topring_s_temp','topring_w_temp','truss_etb_temp','truss_ett_temp','truss_ntb_temp','truss_ntt_temp',
+	'truss_stb_temp','truss_sts_temp','truss_stt_temp','truss_tsb_temp','truss_tsm_temp','truss_tst_temp',
+	'truss_wtb_temp','truss_wtt_temp','casscage_i_temp','casscage_o_temp','glycol_out_temp','mirror_avg_temp',
+	'mirror_eib_temp','mirror_eit_temp','mirror_eob_temp','mirror_eot_temp','mirror_nib_temp','mirror_nit_temp',
+	'mirror_nob_temp','mirror_not_temp','mirror_rtd_temp','mirror_sib_temp','mirror_sit_temp','mirror_sob_temp',
+	'mirror_sot_temp','mirror_wib_temp','mirror_wit_temp','mirror_wob_temp','mirror_wot_temp','primarycell_i_temp',
+	'primarycell_o_temp','mirror_desired_temp','telescope_timestamp','centersection_i_temp','centersection_o_temp',
+	'gust','split','dewpoint','humidity','pressure','wind_speed','temperature','wind_direction','tower_timstamp',
+	'C_floor','SCR_roof','platform','wind_direction','LCR_floor','shack_wall','stairs_mid','LCR_ceiling',
+	'stairs_lower','stairs_upper','utility_room','LCR_ambient_N','LCR_ambient_S','shack_ceiling','shutter_lower',
+	'shutter_upper','dome_timestamp','telescope_base','utility_N_wall','dome_back_lower','dome_back_upper',
+	'dome_left_lower','dome_left_upper','SCR_E_wall_coude','SCR_roof_ambient','dome_right_lower','dome_right_upper',
+	'LCR_N_wall_inside','LCR_W_wall_inside','LCR_N_wall_outside','LCR_W_wall_outside','SCR_E_wall_computer'],
+
+	'Positioner':['FIBERASSIGN_X','FIBERASSIGN_Y','OFFSET_0','OFFSET_2','PETAL_LOC','TARGET_DEC','TARGET_RA','topring_s_temp',
+	'topring_w_temp','total_creep_moves_p','total_creep_moves_t', 'total_cruise_moves_p','total_cruise_moves_t','total_move_sequences',]
+
+}
+
 Spectrograph_attributes = {
 	'Observation':['EXPID','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec',
 	'reqtime','exptime','flavor','program','lead','focus','airmass','mountha','zd','mountaz','domeaz',
