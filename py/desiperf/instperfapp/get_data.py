@@ -1,12 +1,11 @@
-from data_mgt.data_handler import DataHandler 
+from data_mgt.get_fp_data import FPData 
+from data_mgt.get_spec_data import SPECData
 import argparse
 
-parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('--option','-o',help='Option for getting data',choices=('no_update','init','update'))
 
-args = parser.parse_args()
-print(args)
-option = args.option
+start_date = '20200121'
+end_date = '20200317'
 
-DH = DataHandler(option=option)
-DH.run()
+fpd = FPData(start_date, end_date)
+specd = SPECData(start_date, end_date)
+
