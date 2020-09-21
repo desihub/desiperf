@@ -75,5 +75,8 @@ Spectrograph_attributes = {
 
 	'Camera':['READNOISE','BIAS','COSMICS_RATE','MEANDX','MINDX','MAXDX','MEANDY','MINDY','MAXDY','MEANXSIG',
 	'MINXSIG','MAXXSIG','MEANYSIG','MINYSIG','MAXYSIG','INTEG_RAW_FLUX','MEDIAN_RAW_FLUX','MEDIAN_RAW_SNR','FLUX',
- 	'SNR','SPECFLUX','THRU']
+ 	'SNR','SPECFLUX','THRU'],
+
+ 	'Shack':['room_pressure','space_temp1', 'reheat_temp', 'space_humidity','time_recorded', 'heater_output', 
+ 	'space_temp2', 'space_temp4','space_temp_avg', 'space_temp3', 'cooling_coil_temp','chilled_water_output']
 }
