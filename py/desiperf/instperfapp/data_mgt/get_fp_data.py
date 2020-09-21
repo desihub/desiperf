@@ -25,7 +25,7 @@ class FPData():
         exp_df = pd.read_sql_query(f"SELECT * FROM exposure WHERE date_obs >= '{self.start_date}' AND date_obs < '{self.end_date}'", self.conn)
 
         exp_df_new = exp_df[exp_cols]
-        self.exp_df_new = self.exp_df_new.rename(columns={'id':'EXPID'})
+        self.exp_df_new = exp_df_new.rename(columns={'id':'EXPID'})
 
         self.exp_df_base = self.exp_df_new[['EXPID','date_obs']]
 
@@ -41,12 +41,12 @@ class FPData():
             df = gfa_df_new[gfa_df_new.unit == un]
             cold = {}
             for col in df.columns:
-                new_col = col + '_' + str(i)
+                new_col = col + '_' + str(un)
                 cold[col] = new_col
             df = df.rename(columns=cold)
             idx = []
             for time in self.exp_df_base.date_obs:
-                ix = np.argmin(np.abs(df['time_recorded_{}'.format(i)] - time))
+                ix = np.argmin(np.abs(df['time_recorded_{}'.format(un)] - time))
                 idx.append(ix)
             df = df.iloc[idx]
             new_cols = df.columns[1:-1]
@@ -92,7 +92,7 @@ class FPData():
         gc_df_new = gc_df_new.rename(columns={'time_recorded':'guider_time_recorded'})
         self.gc_df_final = gc_df_new.reset_index(drop=True)
 
-    def get_fvc_data(self):
+    def get_fvc_df(self):
         fvc_cols = ['shutter_open','fan_on','temp_degc','exptime_sec','psf_pixels','time_recorded']
 
         fvc_df = pd.read_sql_query(f"SELECT * FROM fvc_camerastatus WHERE time_recorded >= '{self.start_date}' AND time_recorded <'{self.end_date}'", self.conn)
@@ -155,11 +155,14 @@ class FPData():
     def get_telem_df(self):
         dfs = []
         for d in ['telescope','tower','dome']:
-            t_keys = list(self.exp_df_new.iloc[0][d].keys())
+            try:
+                t_keys = list(self.exp_df_new.iloc[0][d].keys())
+            except:
+                t_keys = list(self.exp_df_new.iloc[1][d].keys())
             dd = {}
             for t in t_keys:
                 dd[t] = []
-            for item in exp_df_new[d]:
+            for item in self.exp_df_new[d]:
                 if item is not None:
                     for key, val in item.items():
                         dd[key].append(val)
@@ -180,7 +183,7 @@ class FPData():
 
         bad_attr = ['chimney_ib_temp','chimney_im_temp','chimney_it_temp','chimney_os_temp','chimney_ow_temp','probe1_temp','probe2_temp',
         'probe1_humidity','probe2_humidity','lights_high','lights_low','mirror_status','mirror_covers','shutter_uppper','shutter_low']
-        df.drop(bad_attr, axis=1, inplace=True)
+        df.drop(bad_attr, axis=1, inplace=True, errors='ignore')
         return df
 
     def remove_repeats(self, df):
@@ -253,28 +256,42 @@ class FPData():
         self.pos_df_final = self.remove_repeats(pos_df_final)
 
     def run(self):
+        start = datetime.now()
+        print('Start: {}'.format(start))
         self.get_exp_df()
+        print('Exp: {}'.format(datetime.now()))
         self.get_guider_df()
+        print('Guider: {}'.format(datetime.now()))
         self.get_fvc_df()
+        print('FVC: {}'.format(datetime.now()))
         self.get_gfa_df()
+        print('GFA: {}'.format(datetime.now()))
         self.get_hex_df()
+        print('Hex: {}'.format(datetime.now()))
         self.get_adc_df()
+        print('ADC: {}'.format(datetime.now()))
         self.get_telem_df()
+        print('Telemetry: {}'.format(datetime.now()))
 
         self.get_pos_df()
+        print('POS: {}'.format(datetime.now()))
         
         all_dfs = [self.exp_df_new, self.gfa_df_final, self.gc_df_final, self.gs_df_final, self.telem_df, self.hex_df, self.adc_df, self.fvc_df_final, self.pos_df_final]
         for i, df in enumerate(all_dfs):
             df.reset_index(drop=True, inplace=True)
+            print(df.shape)
             all_dfs[i] = df
 
-        final_df = pd.concat(list(all_dfs, axis=1))
+        final_df = pd.concat(all_dfs, axis=1)
+        print(final_df.shape)
         final_df = self.remove_bad_attr(final_df)
+        print(final_df.shape)
 
         save_dir = './data/focalplane/'
         dfs = np.array_split(final_df, 10)
         for i, df in enumerate(dfs):
-            df.to_csv(save_dir+'fp_data_{}.csv'.format(i),index=False)
+            df.to_csv(save_dir+'fpa_data_{}.csv'.format(i),index=False)
+        print("FP Done")
 
 
 
