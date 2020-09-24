@@ -18,7 +18,8 @@ class POSData():
 
         self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev", user="desi_reader", password="reader")
 
-        self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
+        #self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
+        self.POSITIONERS = [6205, 6828, 4804, 4946, 6830, 4374, 3770, 7403, 3239, 7545, 3963]
 
         self.petal_loc_to_id = {0:'4',1:'5',2:'6',3:'3',4:'8',5:'10',6:'11',7:'2',8:'7',9:'9'}
 
@@ -36,16 +37,14 @@ class POSData():
 
         self.exp_df_base = self.exp_df_new[['EXPID','date_obs']]
 
-    def get_fiberpos_data(self, fib):
-        init_df = self.fiberpos[self.fiberpos.FIBER == fib]
+    def get_fiberpos_data(self, pos):
+        init_df = self.fiberpos[self.fiberpos.CAN_ID == pos]
         self.ptl_loc = int(np.unique(init_df.PETAL))
         self.ptl = self.petal_loc_to_id[self.ptl_loc]
         self.dev = int(np.unique(init_df.DEVICE))
         self.pos_df = pd.merge(self.coord_df, init_df, how='inner',left_on=['PETAL_LOC','DEVICE_LOC'], right_on=['PETAL','DEVICE'])
 
-
-    def add_posmove_telemetry(self, fib):
-        
+    def add_posmove_telemetry(self):
         df = pd.read_sql_query("SELECT * FROM positioner_moves_p{} WHERE device_loc = {} AND time_recorded >= '{}' AND time_recorded < '{}'".format(self.ptl, self.dev, self.start_date, self.end_date),self.conn)
         idx = []
         for time in self.exp_df_base.date_obs:
@@ -88,10 +87,10 @@ class POSData():
         print('Exp: {}'.format(datetime.now()))
         self.get_coord_data()
         print('Coord: {}'.format(datetime.now()))
-        for fib in self.FIBERS:
-            self.get_fiberpos_data(fib)
-            self.add_posmove_telemetry(fib)
-            self.final_fib_df = pd.merge(self.pos_df, self.pos_telem, on=['EXPID'], how='left')
-            print('Fib {} Done: {}'.format(fib, datetime.now()))
-            self.final_fib_df.to_csv(self.save_dir+'{}.csv'.format(fib), index=False) 
+        for pos in self.POSITIONERS:
+            self.get_fiberpos_data(pos)
+            self.add_posmove_telemetry()
+            self.final_pos_df = pd.merge(self.pos_df, self.pos_telem, on=['EXPID'], how='left')
+            print('Pos {} Done: {}'.format(pos, datetime.now()))
+            self.final_pos_df.to_csv(self.save_dir+'{}.csv'.format(pos), index=False) 
 
