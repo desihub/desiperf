@@ -1,70 +1,71 @@
 Focalplane_attributes = {
-	'Observation':['EXPID','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec',
-	'reqtime','exptime','flavor','program','lead','focus','airmass','mountha','zd','mountaz','domeaz',
-	'spectrographs','s2n','transpar','skylevel','zenith','mjd_obs','date_obs','night','moonra','moondec',
-	'parallactic','mountel','sequence','obstype'],
+'Observation': ['EXPID','DATE_OBS','TARGTRA','TARGTDEC','SKYRA','SKYDEC','DELTARA','DELTADEC',
+        'REQTIME','EXPTIME','FOCUS','AIRMASS','MOUNTHA','ZD','MOUNTAZ','DOMEAZ','S2N','TRANSPAR',
+        'SKYLEVEL','ZENITH','NIGHT','MOONRA','MOONDEC','PARALLACTIC','MOUNTEL'],
 
-	'GFA':['ccdtemp_mean','hotpeltier_mean','coldpeltier_mean','filter_mean','humid2_mean','humid3_mean',
-	'fpga_mean','camerahumid_mean','cameratemp_mean'],
+'GFA': ['CCDTEMP_MEAN','HOTPELTIER_MEAN','COLDPELTIER_MEAN','FILTER_MEAN','HUMID2_MEAN',
+        'HUMID3_MEAN','FPGA_MEAN','CAMERAHUMID_MEAN','CAMERATEMP_MEAN'],
 
-	'Guider':['combined_x','combined_y','guider_time_recorded','duration','expid','seeing','frames','meanx','meany',
-	'meanx2','meany2','meanxy','maxx','maxy'],
+'Guider': ['COMBINED_X','COMBINED_Y','DURATION','SEEING','FRAMES','MEANX','MEANY',
+        'MEANX2','MEANY2','MEANXY','MAXX','MAXY'],
 
-	'Telescope':['air_flow','air_temp','truss_temp','air_in_temp','flowrate_in','mirror_temp','air_dewpoint',
-	'air_out_temp','decbore_temp','flowrate_out','hinge_s_temp','hinge_w_temp','glycol_in_temp','servo_setpoint',
-	'topring_s_temp','topring_w_temp','truss_etb_temp','truss_ett_temp','truss_ntb_temp','truss_ntt_temp',
-	'truss_stb_temp','truss_sts_temp','truss_stt_temp','truss_tsb_temp','truss_tsm_temp','truss_tst_temp',
-	'truss_wtb_temp','truss_wtt_temp','casscage_i_temp','casscage_o_temp','glycol_out_temp','mirror_avg_temp',
-	'mirror_eib_temp','mirror_eit_temp','mirror_eob_temp','mirror_eot_temp','mirror_nib_temp','mirror_nit_temp',
-	'mirror_nob_temp','mirror_not_temp','mirror_rtd_temp','mirror_sib_temp','mirror_sit_temp','mirror_sob_temp',
-	'mirror_sot_temp','mirror_wib_temp','mirror_wit_temp','mirror_wob_temp','mirror_wot_temp','primarycell_i_temp',
-	'primarycell_o_temp','mirror_desired_temp','telescope_timestamp','centersection_i_temp','centersection_o_temp',
-	'gust','split','dewpoint','humidity','pressure','wind_speed','temperature','wind_direction','tower_timstamp',
-	'C_floor','SCR_roof','platform','wind_direction','LCR_floor','shack_wall','stairs_mid','LCR_ceiling',
-	'stairs_lower','stairs_upper','utility_room','LCR_ambient_N','LCR_ambient_S','shack_ceiling','shutter_lower',
-	'shutter_upper','dome_timestamp','telescope_base','utility_N_wall','dome_back_lower','dome_back_upper',
-	'dome_left_lower','dome_left_upper','SCR_E_wall_coude','SCR_roof_ambient','dome_right_lower','dome_right_upper',
-	'LCR_N_wall_inside','LCR_W_wall_inside','LCR_N_wall_outside','LCR_W_wall_outside','SCR_E_wall_computer'],
+'Telescope': ['AIR_FLOW','AIR_TEMP','TRUSS_TEMP','AIR_IN_TEMP','FLOWRATE_IN','MIRROR_TEMP',
+        'AIR_DEWPOINT','AIR_OUT_TEMP','DECBORE_TEMP','FLOWRATE_OUT','HINGE_S_TEMP','HINGE_W_TEMP',
+        'GLYCOL_IN_TEMP','SERVO_SETPOINT','TOPRING_S_TEMP','TOPRING_W_TEMP','TRUSS_ETB_TEMP',
+        'TRUSS_ETT_TEMP','TRUSS_NTB_TEMP','TRUSS_NTT_TEMP', 'TRUSS_STB_TEMP','TRUSS_STS_TEMP',
+        'TRUSS_STT_TEMP','TRUSS_TSB_TEMP','TRUSS_TSM_TEMP','TRUSS_TST_TEMP','TRUSS_WTB_TEMP',
+        'TRUSS_WTT_TEMP','CASSCAGE_I_TEMP','CASSCAGE_O_TEMP','GLYCOL_OUT_TEMP','MIRROR_AVG_TEMP',
+        'MIRROR_EIB_TEMP','MIRROR_EIT_TEMP','MIRROR_EOB_TEMP','MIRROR_EOT_TEMP','MIRROR_NIB_TEMP',
+        'MIRROR_NIT_TEMP','MIRROR_NOB_TEMP','MIRROR_NOT_TEMP','MIRROR_RTD_TEMP','MIRROR_SIB_TEMP',
+        'MIRROR_SIT_TEMP','MIRROR_SOB_TEMP','MIRROR_SOT_TEMP','MIRROR_WIB_TEMP','MIRROR_WIT_TEMP',
+        'MIRROR_WOB_TEMP','MIRROR_WOT_TEMP','PRIMARYCELL_I_TEMP','PRIMARYCELL_O_TEMP','MIRROR_DESIRED_TEMP',
+        'CENTERSECTION_I_TEMP','CENTERSECTION_O_TEMP','GUST','SPLIT','DEWPOINT','HUMIDITY','PRESSURE',
+        'WIND_SPEED','TEMPERATURE','WIND_DIRECTION','TOWER_TIMSTAMP','C_FLOOR','SCR_ROOF','PLATFORM',
+        'WIND_DIRECTION','LCR_FLOOR','SHACK_WALL','STAIRS_MID','LCR_CEILING', 'STAIRS_LOWER','STAIRS_UPPER',
+        'UTILITY_ROOM','LCR_AMBIENT_N','LCR_AMBIENT_S','SHACK_CEILING','SHUTTER_LOWER','SHUTTER_UPPER',
+        'TELESCOPE_BASE','UTILITY_N_WALL','DOME_BACK_LOWER','DOME_BACK_UPPER','DOME_LEFT_LOWER',
+        'DOME_LEFT_UPPER','SCR_E_WALL_COUDE','SCR_ROOF_AMBIENT','DOME_RIGHT_LOWER','DOME_RIGHT_UPPER',
+        'LCR_N_WALL_INSIDE','LCR_W_WALL_INSIDE','LCR_N_WALL_OUTSIDE','LCR_W_WALL_OUTSIDE','SCR_E_WALL_COMPUTER'],
+        'Corrector': ['ROT_RATE','HEX_STATUS','ROT_OFFSET','ROT_ENABLED','ROT_INTERVAL','HEX_TRIM_0',
+        'HEX_POSITION_0','HEX_TRIM_1','HEX_POSITION_1','HEX_TRIM_2','HEX_POSITION_2','HEX_TRIM_3',
+        'HEX_POSITION_3','HEX_TRIM_4', 'HEX_POSITION_4','HEX_TRIM_5','HEX_POSITION_5', 'HEX_TWEAK',
+        'ADC_HOME1','ADC_HOME2','ADC_NREV1','ADC_NREV2','ADC_ANGLE1','ADC_ANGLE2'],
 
-	'Corrector':['rot_rate','hex_status','rot_offset','rot_enabled','rot_interval','hex_trim_0','hex_position_0',
-	'hex_trim_1','hex_position_1','hex_trim_2','hex_position_2','hex_trim_3','hex_position_3','hex_trim_4',
-	'hex_position_4','hex_trim_5','hex_position_5','hex_tweak','adc_home1','adc_home2','adc_nrev1','adc_nrev2',
-	'adc_angle1','adc_angle2'],
+'FVC': ['SHUTTER_OPEN', 'FAN_ON', 'TEMP_DEGC', 'EXPTIME_SEC', 'PSF_PIXELS'],
 
-	'FVC':['shutter_open','fan_on','temp_degc','exptime_sec','psf_pixels','fvc_time_recorded'],
+'Positioner': ['MAX_BLIND','MAX_BLIND_95','RMS_BLIND','RMS_BLIND_95','MAX_CORR','MAX_CORR_95',
+        'RMS_CORR','RMS_CORR_95']}
 
-	'Positioner':['MAX_BLIND','MAX_BLIND_95','RMS_BLIND','RMS_BLIND_95','MAX_CORR','MAX_CORR_95','RMS_CORR','RMS_CORR_95']
-
-}
 
 Positioner_attributes = {
-	'Observation':['EXPID', 'move_cmd','move_val1','move_val2','obs_x','obs_y','petal_id','pos_id','pos_move_index',
- 	'pos_p','pos_t','primarycell_i_temp','primarycell_o_temp','probe1_humidity','probe1_temp','probe2_humidity',
- 	'probe2_temp','ptl_x','ptl_y','ptl_z','last_meas_fwhm','last_meas_obs_x','last_meas_obs_y','last_meas_peak',],
+'Observation': ['EXPID','OBS_X','OBS_Y','PETAL_ID','POS_P','POS_T','PRIMARYCELL_I_TEMP','PRIMARYCELL_O_TEMP',
+        'PROBE1_HUMIDITY','PROBE1_TEMP','PROBE2_HUMIDITY','PROBE2_TEMP','PTL_X','PTL_Y', 'PTL_Z',
+        'LAST_MEAS_FWHM','LAST_MEAS_OBS_X','LAST_MEAS_OBS_Y','LAST_MEAS_PEAK'],
 
-	'Telescope':['air_mirror_temp_diff','air_flow','air_temp','truss_temp','air_in_temp','flowrate_in','mirror_temp','air_dewpoint',
-	'air_out_temp','decbore_temp','flowrate_out','hinge_s_temp','hinge_w_temp','glycol_in_temp','servo_setpoint',
-	'gust','split','dewpoint','humidity','pressure','wind_speed','temperature','wind_direction',
-	'telescope_base','utility_N_wall','dome_back_lower','dome_back_upper',
-	'dome_left_lower','dome_left_upper','dome_right_lower','dome_right_upper'],
+'Telescope': ['AIR_MIRROR_TEMP_DIFF','AIR_FLOW','AIR_TEMP','TRUSS_TEMP','AIR_IN_TEMP','FLOWRATE_IN',
+        'MIRROR_TEMP','AIR_DEWPOINT','AIR_OUT_TEMP','DECBORE_TEMP','FLOWRATE_OUT','HINGE_S_TEMP',
+        'HINGE_W_TEMP','GLYCOL_IN_TEMP','SERVO_SETPOINT','GUST','SPLIT','DEWPOINT','HUMIDITY',
+        'PRESSURE','WIND_SPEED','TEMPERATURE','WIND_DIRECTION','TELESCOPE_BASE','UTILITY_N_WALL',
+        'DOME_BACK_LOWER','DOME_BACK_UPPER','DOME_LEFT_LOWER','DOME_LEFT_UPPER','DOME_RIGHT_LOWER',
+        'DOME_RIGHT_UPPER'],
 
-	'Positioner':['FIBERASSIGN_X','FIBERASSIGN_Y','OFFSET_0','OFFSET_FINAL','PETAL_LOC','TARGET_DEC','TARGET_RA','topring_s_temp',
-	'topring_w_temp','total_creep_moves_p','total_creep_moves_t', 'total_cruise_moves_p','total_cruise_moves_t','total_move_sequences',]
+'Positioner': ['FIBERASSIGN_X','FIBERASSIGN_Y','OFFSET_0','OFFSET_FINAL','PETAL_LOC','TARGET_DEC',
+        'TARGET_RA','TOPRING_S_TEMP', 'TOPRING_W_TEMP','TOTAL_CREEP_MOVES_P','TOTAL_CREEP_MOVES_T',
+        'TOTAL_CRUISE_MOVES_P','TOTAL_CRUISE_MOVES_T','TOTAL_MOVE_SEQUENCES']
 
 }
 
 Spectrograph_attributes = {
-	'Observation':['EXPID','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec',
-	'reqtime','exptime','flavor','program','lead','focus','airmass','mountha','zd','mountaz','domeaz',
-	'spectrographs','s2n','transpar','skylevel','zenith','mjd_obs','date_obs','night','moonra','moondec',
-	'parallactic','mountel','sequence','obstype'],
+'Observation': ['EXPID','DATE_OBS','TARGTRA','TARGTDEC','SKYRA','SKYDEC','DELTARA','DELTADEC',
+        'REQTIME','EXPTIME','FOCUS','AIRMASS','MOUNTHA','ZD','MOUNTAZ','DOMEAZ','S2N','TRANSPAR',
+        'SKYLEVEL','ZENITH','NIGHT','MOONRA','MOONDEC','PARALLACTIC','MOUNTEL'],
 
-	'Spectrograph':['CAMERA_TEMP','CAMERA_HUMIDITY','bench_cryo_temp','bench_nir_temp','bench_coll_temp','ieb_temp'],
+'Spectrograph': ['CAMERA_TEMP','CAMERA_HUMIDITY','BENCH_CRYO_TEMP','BENCH_NIR_TEMP','BENCH_COLL_TEMP',
+        'IEB_TEMP'],
 
-	'Camera':['READNOISE','BIAS','COSMICS_RATE','MEANDX','MINDX','MAXDX','MEANDY','MINDY','MAXDY','MEANXSIG',
-	'MINXSIG','MAXXSIG','MEANYSIG','MINYSIG','MAXYSIG','INTEG_RAW_FLUX','MEDIAN_RAW_FLUX','MEDIAN_RAW_SNR','FLUX',
- 	'SNR','SPECFLUX','THRU'],
+'Camera': ['READNOISE','BIAS','COSMICS_RATE','MEANDX','MINDX','MAXDX','MEANDY','MINDY','MAXDY',
+        'MEANXSIG', 'MINXSIG', 'MAXXSIG','MEANYSIG','MINYSIG','MAXYSIG','INTEG_RAW_FLUX','MEDIAN_RAW_FLUX','THRU'],
 
- 	'Shack':['room_pressure','space_temp1', 'reheat_temp', 'space_humidity','time_recorded', 'heater_output', 
- 	'space_temp2', 'space_temp4','space_temp_avg', 'space_temp3', 'cooling_coil_temp','chilled_water_output']
+'Shack': ['ROOM_PRESSURE','SPACE_TEMP1','REHEAT_TEMP','SPACE_HUMIDITY','HEATER_OUTPUT','SPACE_TEMP2','SPACE_TEMP4',
+        'SPACE_TEMP_AVG','SPACE_TEMP3','COOLING_COIL_TEMP','CHILLED_WATER_OUTPUT']
 }
