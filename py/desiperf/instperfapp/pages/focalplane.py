@@ -19,7 +19,7 @@ class FocalPlanePage(Plots):
         Plots.__init__(self,'Focal Plane', source=datahandler.focalplane_source)
         desc = """ These plots show the average behavior across the whole focal plate for a given time or exposure.
             """
-        self.description = Div(text=desc, width=800, style=self.text_style)
+        self.description = Div(text=desc, width=800, css_classes=['inst-style'])
 
         self.default_categories = list(Focalplane_attributes.keys())
         self.default_options = Focalplane_attributes
@@ -31,8 +31,11 @@ class FocalPlanePage(Plots):
                               [self.x_select, self.y_select, self.btn],
                               [self.obstype_option],
                               [self.attr_header],
-                              [[self.main_plot], column([Div(text=' ',height=100), self.data_det_option, self.bin_option, self.bin_slider, self.save_btn])],
-                              [self.details, self.cov],
+                              [self.bin_option, self.bin_slider, self.save_btn],
+                              [Div(text=" ",width=200), self.main_plot],
+                              [self.desc_header],
+                              [self.data_det_option, self.details],
+                              [Div(text=" ",width=150), self.cov],
                               [self.time_header],
                               [self.ts1],
                               [self.ts2]])
@@ -49,7 +52,7 @@ class FocalPlanePage(Plots):
         self.y_cat_select.value = self.default_categories[1]
         self.x_select.value = self.default_options[self.default_categories[0]][0]
         self.y_select.value = self.default_options[self.default_categories[1]][0]
-        self.get_data('datetime',self.x_select.value, self.y_select.value) #, other_attr = ['EXPID']
+        self.get_data('DATETIME',self.x_select.value, self.y_select.value) #, other_attr = ['EXPID']
         self.page_tooltips = [
             ("exposure","@EXPID"),
             ("{}".format(self.x_select.value),"@attr1"),

@@ -57,7 +57,7 @@ def update_data():
 
 def data_text(ds, fps):
     sp = ['Spectrograph Data', int(min(ds.NIGHT)), int(max(ds.NIGHT)), int(min(ds.EXPID)), int(max(ds.EXPID))]
-    fp = ['FocalPlane Data', int(min(fps.night)), int(max(fps.night)), int(min(fps.EXPID)), int(max(fps.EXPID))]
+    fp = ['FocalPlane Data', int(min(fps.NIGHT)), int(max(fps.NIGHT)), int(min(fps.EXPID)), int(max(fps.EXPID))]
     df = pd.DataFrame([sp,fp], columns = ['type','date_start','date_end','exp_start','exp_end'])
     return df
 

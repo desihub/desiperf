@@ -54,7 +54,10 @@ class PosAccPage(Plots):
                         [self.select_header], 
                         [column([Div(text=' ',height=50), self.pos_enter, self.enter_pos_option, self.petal_select, self.can_select, self.pos_select]), self.scatt],
                         [self.attr_header],
-                        [column([Div(text=' ',height=50), self.data_det_option, self.bin_option, self.bin_slider, self.save_btn]), [self.main_plot]],
+                        [self.bin_option, self.bin_slider, self.save_btn],
+                        [Div(text=' ',height=200),self.main_plot],
+                        [self.desc_header],
+                        [self.data_det_option, self.details],
                         [self.time_header],
                         [self.ts1],
                         [self.ts2]])
@@ -109,7 +112,7 @@ class PosAccPage(Plots):
 
     def get_pos_data(self, update=False):
         #- docstring
-        self.xx = 'datetime'
+        self.xx = 'DATETIME'
         dd = []
         for f in self.pos_files:
             try:
@@ -118,10 +121,12 @@ class PosAccPage(Plots):
                 pass
 
         data = pd.concat(dd)
-        data = self.DH.get_datetime(data)
         data['air_mirror_temp_diff'] = np.abs(data['air_temp'] - data['mirror_temp'])
-        data_ = data[['datetime',self.x_select.value, self.y_select.value]]
-        data_ = data_[pd.notnull(data_['datetime'])] #temporary
+        
+        data = self.DH.get_datetime(data)
+        data.columns = [x.upper() for x in data.columns]
+        data_ = data[['DATETIME',self.x_select.value, self.y_select.value]]
+        data_ = data_[pd.notnull(data_['DATETIME'])] #temporary
         data_ = data_.rename(columns={self.x_select.value:'attr1',self.y_select.value:'attr2'}) 
         if update:
             self.plot_source.data = data_
@@ -133,8 +138,8 @@ class PosAccPage(Plots):
             self.ts1.title.text = 'Time vs. {}'.format(self.x_select.value)
             self.ts2.title.text = 'Time vs. {}'.format(self.y_select.value)
             self.bin_data.data = self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data))
-            self.bin_data1.data = self.update_binned_data('datetime','attr1', pd.DataFrame(self.plot_source.data))
-            self.bin_data2.data = self.update_binned_data('datetime','attr2', pd.DataFrame(self.plot_source.data))
+            self.bin_data1.data = self.update_binned_data('DATETIME','attr1', pd.DataFrame(self.plot_source.data))
+            self.bin_data2.data = self.update_binned_data('DATETIME','attr2', pd.DataFrame(self.plot_source.data))
 
             fp = self.DH.fiberpos
             fp['COLOR'] = 'white'
@@ -150,8 +155,8 @@ class PosAccPage(Plots):
             self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
 
             self.bin_data = ColumnDataSource(self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data)))
-            self.bin_data1 = ColumnDataSource(self.update_binned_data('datetime','attr1', pd.DataFrame(self.plot_source.data)))
-            self.bin_data2 = ColumnDataSource(self.update_binned_data('datetime','attr2', pd.DataFrame(self.plot_source.data)))
+            self.bin_data1 = ColumnDataSource(self.update_binned_data('DATETIME','attr1', pd.DataFrame(self.plot_source.data)))
+            self.bin_data2 = ColumnDataSource(self.update_binned_data('DATETIME','attr2', pd.DataFrame(self.plot_source.data)))
 
     def pos_loc_plot(self):
         self.scatt = self.figure(width=450, height=450, x_axis_label='obsX / mm', y_axis_label='obsY / mm', 

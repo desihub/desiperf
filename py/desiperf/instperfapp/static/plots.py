@@ -11,10 +11,8 @@ from astropy.time import Time
 
 class Plots:
     def __init__(self, title, source=None):
-        self.subt_style = {'font-family':'serif', 'font-size':'200%'}
-        self.text_style = {'font-family':'serif', 'font-size':'125%'}
         self.title = title
-        self.header = Div(text="{}".format(title), width=500, css_classes=['title-style'])
+        self.header = Div(text="{}".format(title), width=500, css_classes=['h1-title-style'])
         self.data_source = source  # Here it will pick up the latest
         self.tools = 'pan,wheel_zoom,lasso_select,reset,undo,save,hover'
         self.bin_slider = Slider(start=1, end = 100, value=100, step=1, title="# of Bins", direction="rtl", width=300)
@@ -25,9 +23,8 @@ class Plots:
         self.btn = Button(label='Re-Plot', css_classes=['connect_button'])
         self.save_btn = Button(label='Save Selected Data', width=200, css_classes=['save_button'])
 
-        #self.replot_btn = Button(label='Re-bin Data', width=200, css_classes=['save_button'])
-        self.bin_option = CheckboxGroup(labels=["Raw Data","Binned Data"], active=[0])
-        self.data_det_option = RadioGroup(labels=["All Data","Selected Data"], active=0)
+        self.bin_option = CheckboxButtonGroup(labels=["Raw Data","Binned Data"], active=[0], orientation='horizontal')
+        self.data_det_option = RadioGroup(labels=["All Data","Selected Data"], active=0, width=150)
         self.sequence_option = CheckboxGroup(labels=['ALL','Action','DESI','FVC','GFA','Guide','Loops','Spectrographs'], active=[0])
         self.obstype_option = CheckboxButtonGroup(name='ObsType', labels=['ALL','SCIENCE','DARK','ZERO','FLAT','TWILIGHT','OTHER'], active=[0], orientation='horizontal')
         self.obstype = ['ALL']
@@ -36,6 +33,7 @@ class Plots:
 
         self.time_header = Div(text="Time Plots", width=1000, css_classes=['subt-style'])
         self.attr_header = Div(text="Attribute Plot", width=1000, css_classes=['subt-style'])
+        self.desc_header = Div(text="Data Description", width=1000, css_classes=['subt-style'])
 
         self.default_tooltips = [
                     ("index", "$index"),
@@ -85,7 +83,7 @@ class Plots:
         x = np.array(dd[attr1])
         y = np.array(dd[attr2])
         
-        if attr1 == 'datetime':
+        if attr1 == 'DATETIME':
             x = [Time(xx).mjd for xx in x]
     
         bin_means, bin_edges, binnumber = stats.binned_statistic(x, y, statistic='mean', bins=self.bin_slider.value)
@@ -97,7 +95,7 @@ class Plots:
         for x, y, yerr in zip(bin_centers, bin_means, bin_std):
             lower.append(y - yerr)
             upper.append(y + yerr)
-        if attr1 == 'datetime':
+        if attr1 == 'DATETIME':
             bc = [Time(b, format='mjd').datetime for b in bin_centers]
             bin_centers = [pd.Timestamp(b) for b in bc]
         bd = pd.DataFrame(np.column_stack([bin_centers, bin_means, bin_std, upper, lower]), columns = ['centers','means','std','upper','lower'])
@@ -151,14 +149,14 @@ class Plots:
 
         if self.data_det_option.active == 0:
             self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.dd.data).describe())
-            self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(self.dd.data).cov())
+            self.cov.text = 'Covariance of {} & {}: \n{}'.format(self.x_select.value, self.y_select.value, str(pd.DataFrame(self.dd.data).cov()))
 
     def figure(self, width=900, height=300, x_axis_label=None, 
                  y_axis_label=None, tooltips=None, title=None):
         if tooltips is None:
             tooltips = self.default_tooltips
 
-        if x_axis_label == 'datetime':
+        if x_axis_label == 'DATETIME':
             fig = figure(plot_width=width, plot_height=height, 
                         tools=self.tools, tooltips=tooltips, toolbar_location="below",
                         x_axis_label=x_axis_label, y_axis_label=y_axis_label, x_axis_type='datetime', title=title)
@@ -221,7 +219,7 @@ class Plots:
         self.sel_data.data = selected.rename(columns={'attr1':self.x_select.value, 'attr2':self.y_select.value}) 
         if self.data_det_option.active == 1:
             self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.sel_data.data).describe())
-            self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(self.sel_data.data).cov())
+            self.cov.text = 'Covariance of {} & {}: \n{}'.format(self.x_select.value, self.y_select.value, str(pd.DataFrame(self.sel_data.data).cov()))
     def plot_binned_data(self):
         self.bin_data.data = self.update_binned_data('attr1','attr2')
         self.bin_data1.data = self.update_binned_data(self.xx, 'attr1')
