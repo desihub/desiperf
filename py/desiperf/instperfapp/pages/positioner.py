@@ -42,7 +42,7 @@ class PosAccPage(Plots):
                         [ self.x_cat_select, self.y_cat_select],
                         [self.x_select, self.y_select, self.btn],
                         [column([self.pos_select, self.can_select, self.petal_select]), self.scatt],
-                        [column([self.data_det_option, self.save_btn, self.bin_slider, self.bin_option, self.replot_btn]), [self.main_plot]],
+                        [column([self.data_det_option, self.save_btn, self.bin_slider, self.bin_option, self.replot_btn, self.plot_trend_option]), [self.main_plot]],
                         [self.ts1],
                         [self.ts2]])
         tab = Panel(child=this_layout, title=self.title)
@@ -72,6 +72,14 @@ class PosAccPage(Plots):
             self.bin_data.data = self.update_binned_data('attr1','attr2')
             self.bin_data1.data = self.update_binned_data('datetime','attr1')
             self.bin_data2.data = self.update_binned_data('datetime','attr2')
+
+            self.mp_tl_source.data = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])
+            self.ts1_tl_source.data = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1'])
+            self.ts2_tl_source.data = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2'])
+
+            self.mp_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])
+            self.ts1_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])
+            self.ts2_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])
         else:
             self.plot_source = ColumnDataSource(data_)
             self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
@@ -79,6 +87,14 @@ class PosAccPage(Plots):
             self.bin_data = ColumnDataSource(self.update_binned_data('attr1','attr2'))
             self.bin_data1 = ColumnDataSource(self.update_binned_data('datetime','attr1'))
             self.bin_data2 = ColumnDataSource(self.update_binned_data('datetime','attr2'))
+
+            self.mp_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2']))
+            self.ts1_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1']))
+            self.ts2_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2']))
+
+            self.mp_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means']))
+            self.ts1_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means']))
+            self.ts2_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means']))
 
         self.pos_loc_plot()
 
@@ -122,3 +138,4 @@ class PosAccPage(Plots):
         self.bin_option.on_change('active',self.bin_plot)
         self.save_btn.on_click(self.save_data)
         self.plot_source.selected.on_change('indices', self.update_selected_data)
+        self.plot_trend_option.on_change('active',self.plot_trend_line)

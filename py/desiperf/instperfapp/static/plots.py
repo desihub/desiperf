@@ -1,5 +1,4 @@
-from bokeh.io import curdoc
-from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, Slider, CheckboxGroup, ColumnDataSource, RadioGroup, CustomJS
+from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, Slider, CheckboxGroup, ColumnDataSource, RadioGroup, CustomJS, Line
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 from scipy import stats
@@ -7,7 +6,7 @@ import pandas as pd
 import numpy as np 
 from datetime import datetime
 from astropy.time import Time 
-
+import matplotlib.dates as mdates
 
 class Plots:
     def __init__(self, title, source=None):
@@ -38,6 +37,8 @@ class Plots:
         self.data_det_option = RadioGroup(labels=["All Data","Selected Data"], active=0)
         self.fp_tooltips = None
         self.bin_data = None
+
+        self.plot_trend_option = CheckboxGroup(labels=['Plot Trend Line'])
 
         self.pos_tooltips = [
                     ("fiber","@FIBER"),
@@ -82,8 +83,6 @@ class Plots:
         dd = pd.DataFrame(self.sel_data.data)
         dd = dd.rename(columns={'attr1':self.x_select.value, 'attr2':self.y_select.value})
         dd.to_csv('{}_data_selected.csv'.format(datetime.now().strftime('%Y%m%d_%H:%M:%S.%f')),index=False)
-
-
 
     def update_binned_data(self,attr1, attr2):
         data = pd.DataFrame(self.plot_source.data)
@@ -135,6 +134,14 @@ class Plots:
             self.bin_data.data = self.update_binned_data('attr1','attr2')
             self.bin_data1.data = self.update_binned_data(self.xx,'attr1')
             self.bin_data2.data = self.update_binned_data(self.xx,'attr2')
+
+            self.mp_tl_source.data = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])
+            self.ts1_tl_source.data = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1'])
+            self.ts2_tl_source.data = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2'])
+
+            self.mp_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])
+            self.ts1_binned_tl_source.data = self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means'])
+            self.ts2_binned_tl_source.data = self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means'])
         else:
             self.plot_source = ColumnDataSource(data_)
             self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
@@ -143,12 +150,17 @@ class Plots:
             self.bin_data1 = ColumnDataSource(self.update_binned_data(self.xx,'attr1'))
             self.bin_data2 = ColumnDataSource(self.update_binned_data(self.xx,'attr2'))
 
+            self.mp_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2']))
+            self.ts1_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1']))
+            self.ts2_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2']))
+
+            self.mp_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means']))
+            self.ts1_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means']))
+            self.ts2_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means']))
+
         if self.data_det_option.active == 0:
             self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.dd.data).describe())
             self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(self.dd.data).cov())
-
-
-
 
     def figure(self, width=900, height=300, x_axis_label=None, 
                  y_axis_label=None, tooltips=None, title=None):
@@ -182,7 +194,6 @@ class Plots:
 
     def pos_scatter(self, fig, df, attr, size=5):
         p = fig.circle(x='X', y='Y', size=size, source=df, fill_color={'field': attr})
-
         return p
 
     def time_series_plot(self):
@@ -200,15 +211,37 @@ class Plots:
             self.c8 = self.ts2.circle(x='centers',y='means',color='red',source=self.bin_data2)
             self.c9 = self.ts2.varea(x='centers',y1='upper',y2='lower',source=self.bin_data2,alpha=0.4,color='red')
 
+            trend_line = Line(x='attr',y='trend_line',line_width=6,line_alpha=0.4,line_color='blue')
+            self.l1 = self.main_plot.add_glyph(self.mp_tl_source,trend_line)
+            self.l2 = self.ts1.add_glyph(self.ts1_tl_source,trend_line)
+            self.l3 = self.ts2.add_glyph(self.ts2_tl_source,trend_line)
+            binned_trend_line = Line(x='attr',y='trend_line',line_width=6,line_alpha=0.4,line_color='blue')
+            self.l4 = self.main_plot.add_glyph(self.mp_binned_tl_source,binned_trend_line)
+            self.l5 = self.ts1.add_glyph(self.ts1_binned_tl_source,binned_trend_line)
+            self.l6 = self.ts2.add_glyph(self.ts2_binned_tl_source,binned_trend_line)
+
+            for page in [self.l1,self.l2,self.l3,self.l4,self.l5,self.l6]:
+            	page.visible = False
+
     def bin_plot(self, attr, old, new):
         for page in [self.c1, self.c2, self.c3, self.c4, self.c5, self.c6, self.c7, self.c8, self.c9]:
             page.visible = False
         if 0 in new:
-            for page in [self.c1, self.c4, self.c7]:
-                page.visible = True
+        	for page in [self.c1, self.c4, self.c7]:
+        		page.visible = True
+        		if self.plot_trend_option.active == [0]:
+        			for line in [self.l1,self.l2,self.l3]:
+        				line.visible  = True
+        			for line in [self.l4,self.l5,self.l6]:
+        				line.visible = False
         if 1 in new:
-            for page in [self.c2, self.c3, self.c5, self.c6, self.c8, self.c9]:
-                page.visible = True
+        	for page in [self.c2, self.c3, self.c5, self.c6, self.c8, self.c9]:
+        		page.visible = True
+        		if self.plot_trend_option.active == [0]:
+        			for line in [self.l1,self.l2,self.l3]:
+        				line.visible = False
+        			for line in [self.l4,self.l5,self.l6]:
+        				line.visible = True
 
     def update_selected_data(self, attr, old, new):
         data = self.plot_source.data
@@ -224,6 +257,14 @@ class Plots:
         self.bin_data1.data = self.update_binned_data(self.xx, 'attr1')
         self.bin_data2.data = self.update_binned_data(self.xx,'attr2')
 
+        for page in [self.l1,self.l2,self.l3,self.l4,self.l5,self.l6]:
+        	page.visible = False
+
+        if self.plot_trend_option.active == [0]:
+        	binned_trend_line = Line(x='attr',y='trend_line',line_width=6,line_alpha=0.4,line_color='blue')
+        	self.l4 = self.main_plot.add_glyph(self.mp_binned_tl_source,binned_trend_line)
+        	self.l5 = self.ts1.add_glyph(self.ts1_binned_tl_source,binned_trend_line)
+        	self.l6 = self.ts2.add_glyph(self.ts2_binned_tl_source,binned_trend_line)
 
     def data_det_type(self, attr, old, new):
         if new == 0:
@@ -233,7 +274,33 @@ class Plots:
             self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.sel_data.data).describe())
             self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(self.sel_data.data).cov())
 
+    def calc_trend_line(self,x_attr,y_attr):
+    	df = pd.DataFrame(data = dict(attr1 = x_attr,attr2 = y_attr))
+    	df = df.dropna(thresh=2)
 
+    	try:
+    		x = mdates.date2num(df['attr1'])
+    	except:
+    		x = df['attr1']
 
+    	try:
+    		y = mdates.date2num(df['attr2'])
+    	except:
+    		y = df['attr2']
 
+    	trend = np.polyfit(x,y,1,full=True)
 
+    	predicted = [trend[0][0]*i + trend[0][1] for i in x]
+
+    	return pd.DataFrame(data=dict(attr=df['attr1'],trend_line=predicted))
+
+    def plot_trend_line(self, attr, old, new):
+    	for page in [self.l1,self.l2,self.l3,self.l4,self.l5,self.l6]:
+    		page.visible = False
+    	if 0 in new:
+    		if self.bin_option.active == [0]:
+    			for page in [self.l1,self.l2,self.l3]:
+    				page.visible = True
+    		if self.bin_option.active == [0,1] or self.bin_option.active == [1]:
+    			for page in [self.l4,self.l5,self.l6]:
+    				page.visible = True
