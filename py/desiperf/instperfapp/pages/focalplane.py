@@ -52,16 +52,17 @@ class FocalPlanePage(Plots):
         self.y_cat_select.value = self.default_categories[1]
         self.x_select.value = self.default_options[self.default_categories[0]][0]
         self.y_select.value = self.default_options[self.default_categories[1]][0]
-        self.get_data('DATETIME',self.x_select.value, self.y_select.value) #, other_attr = ['EXPID']
+        self.get_data('DATETIME',self.x_select.value, self.y_select.value, other_attr = ['EXPID','OBSTYPE','PROGRAM'])
         self.page_tooltips = [
             ("exposure","@EXPID"),
+            ("obstime","@DATETIME{%F}"),
+            ("obstype","@OBSTYPE"),
+            ("program","@PROGRAM"),
             ("{}".format(self.x_select.value),"@attr1"),
-            ("{}".format(self.y_select.value),"@attr2"),
-            ("(x,y)", "($x, $y)")]
+            ("{}".format(self.y_select.value),"@attr2"),]
         self.time_series_plot()
         self.bin_plot('new',[0],[0])
         self.btn.on_click(self.update)
-        #self.replot_btn.on_click(self.update)
         self.bin_option.on_change('active',self.bin_plot)
         self.obstype_option.on_change('active',self.obstype_selection)
         self.save_btn.on_click(self.save_data)

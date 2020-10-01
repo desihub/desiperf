@@ -26,7 +26,7 @@ class PosAccPage(Plots):
         self.default_categories = list(Positioner_attributes.keys())
         self.default_options = Positioner_attributes
 
-        self.pos = str(6205)
+        self.pos = str(6830)
 
         self.select_header = Div(text="Select Positioner(s) to Plot", width=1000, css_classes=['subt-style'])
         self.enter_pos_option = RadioGroup(labels=["Enter POS ID","OR Select from lists"], active=0)
