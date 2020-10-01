@@ -90,8 +90,8 @@ class SpectrographPage(Plots):
             self.red_source = ColumnDataSource(data_[data_.CAM == 'R'])
             self.zed_source = ColumnDataSource(data_[data_.CAM == 'Z'])
             self.bin_data = ColumnDataSource(self.update_binned_data('attrbx','attrby', pd.DataFrame(self.blue_source.data)))
-            self.bin_data1 = ColumnDataSource(self.update_binned_data('attrrx','attrry', pd.DataFrame(self.blue_source.data)))
-            self.bin_data2 = ColumnDataSource(self.update_binned_data('attrzx','attrzy', pd.DataFrame(self.blue_source.data)))
+            self.bin_data1 = ColumnDataSource(self.update_binned_data('attrrx','attrry', pd.DataFrame(self.red_source.data)))
+            self.bin_data2 = ColumnDataSource(self.update_binned_data('attrzx','attrzy', pd.DataFrame(self.zed_source.data)))
 
     def page_layout(self):
         this_layout = layout([[self.header],
