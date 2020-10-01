@@ -29,9 +29,12 @@ class FocalPlanePage(Plots):
                               [self.description],
                               [self.x_cat_select, self.y_cat_select],
                               [self.x_select, self.y_select, self.btn],
+
                               [self.obstype_option],
                               [self.attr_header],
                               [[self.main_plot], column([Div(text=' ',height=100), self.data_det_option, self.bin_option, self.bin_slider, self.save_btn])],
+                              [self.replot_btn, self.plot_trend_option, self.mp_tl_det, self.ts1_tl_det, self.ts2_tl_det]
+
                               [self.details, self.cov],
                               [self.time_header],
                               [self.ts1],
@@ -64,3 +67,4 @@ class FocalPlanePage(Plots):
         self.save_btn.on_click(self.save_data)
         self.data_det_option.on_change('active',self.data_det_type)
         self.plot_source.selected.on_change('indices', self.update_selected_data)
+        self.plot_trend_option.on_change('active',self.plot_trend_line)
