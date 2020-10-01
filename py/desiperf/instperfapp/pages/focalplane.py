@@ -29,7 +29,7 @@ class FocalPlanePage(Plots):
                               [self.description],
                               [self.x_cat_select, self.y_cat_select],
                               [self.x_select, self.y_select, self.btn],
-                              [[self.main_plot], column([self.data_det_option, self.save_btn, self.bin_slider, self.bin_option, self.replot_btn, self.plot_trend_option])],
+                              [[self.main_plot], column([self.data_det_option, self.save_btn, self.bin_slider, self.bin_option, self.replot_btn, self.plot_trend_option, self.mp_tl_det, self.ts1_tl_det, self.ts2_tl_det])],
                               [self.details, self.cov],
                               [self.ts1],
                               [self.ts2]])

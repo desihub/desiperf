@@ -39,6 +39,9 @@ class Plots:
         self.bin_data = None
 
         self.plot_trend_option = CheckboxGroup(labels=['Plot Trend Line'])
+        self.mp_tl_det = PreText(text=' ',width=250)
+        self.ts1_tl_det = PreText(text=' ',width=250)
+        self.ts2_tl_det = PreText(text=' ',width=250)
 
         self.pos_tooltips = [
                     ("fiber","@FIBER"),
@@ -117,8 +120,8 @@ class Plots:
     def get_data(self, xx, attr1, attr2, other_attr = [],update=False):
         self.xx = xx
         self.other_attr = other_attr
-        attr_list = np.hstack([[xx, attr1, attr2],other_attr])
-        data = pd.DataFrame(self.data_source.data)[attr_list]
+        self.attr_list = np.hstack([[xx, attr1, attr2],other_attr])
+        data = pd.DataFrame(self.data_source.data)[self.attr_list]
         self.dd = ColumnDataSource(data[[xx, attr1, attr2]])
 
         data_ = data.rename(columns={attr1:'attr1', attr2:'attr2'}) 
@@ -135,13 +138,22 @@ class Plots:
             self.bin_data1.data = self.update_binned_data(self.xx,'attr1')
             self.bin_data2.data = self.update_binned_data(self.xx,'attr2')
 
-            self.mp_tl_source.data = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])
-            self.ts1_tl_source.data = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1'])
-            self.ts2_tl_source.data = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2'])
+            self.mp_tl_source.data = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[0]
+            self.ts1_tl_source.data = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1'])[0]
+            self.ts2_tl_source.data = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2'])[0]
 
-            self.mp_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])
-            self.ts1_binned_tl_source.data = self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means'])
-            self.ts2_binned_tl_source.data = self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means'])
+            self.mp_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])[0]
+            self.ts1_binned_tl_source.data = self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means'])[0]
+            self.ts2_binned_tl_source.data = self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means'])[0]
+
+            self.mp_tl_values = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[1]
+            self.ts1_tl_values = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1'])[1]
+            self.ts2_tl_values = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2'])[1]
+
+            self.mp_binned_tl_values = self.calc_trend_line(self.bin_data.data['centers'],self.plot_source.data['means'])[1]
+            self.ts1_binned_tl_values = self.calc_trend_line(self.bin_data1.data['centers'],self.plot_source.data['means'])[1]
+            self.ts2_binned_tl_values = self.calc_trend_line(self.bin_data2.data['centers'],self.plot_source.data['means'])[1] 
+
         else:
             self.plot_source = ColumnDataSource(data_)
             self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
@@ -150,17 +162,43 @@ class Plots:
             self.bin_data1 = ColumnDataSource(self.update_binned_data(self.xx,'attr1'))
             self.bin_data2 = ColumnDataSource(self.update_binned_data(self.xx,'attr2'))
 
-            self.mp_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2']))
-            self.ts1_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1']))
-            self.ts2_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2']))
+            self.mp_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[0])
+            self.ts1_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1'])[0])
+            self.ts2_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2'])[0])
 
-            self.mp_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means']))
-            self.ts1_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means']))
-            self.ts2_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means']))
+            self.mp_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])[0])
+            self.ts1_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means'])[0])
+            self.ts2_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means'])[0])
+
+            self.mp_tl_values = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[1]
+            self.ts1_tl_values = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1'])[1]
+            self.ts2_tl_values = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2'])[1]
+
+            self.mp_binned_tl_values = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])[1]
+            self.ts1_binned_tl_values = self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means'])[1]
+            self.ts2_binned_tl_values = self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means'])[1]  
 
         if self.data_det_option.active == 0:
             self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.dd.data).describe())
             self.cov.text = 'Covariance of Option 1 & 2: \n' + str(pd.DataFrame(self.dd.data).cov())
+
+        if self.plot_trend_option.active == [0]:
+        	if self.bin_option.active == [0]:
+        		self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.mp_tl_values[0]) + ' Y-Int: ' + np.str(self.mp_tl_values[1])
+        		self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: ' + np.str(self.ts1_tl_values[0]) + ' Y-Int: ' + np.str(self.ts1_tl_values[1])
+        		self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_tl_values[0]) + ' Y-Int: ' + np.str(self.ts2_tl_values[1])
+        	elif self.bin_option.active == [0,1] or self.bin_option.active == [1]:
+        		self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.mp_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.mp_binned_tl_values[1])
+        		self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: ' + np.str(self.ts1_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.ts1_binned_tl_values[1])
+        		self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.ts2_binned_tl_values[1])       		
+        	elif self.bin_option.active == []:
+        		self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: NA Y-Int: NA'
+        		self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: NA Y-Int: NA'
+        		self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: NA Y-Int: NA'
+       	elif self.plot_trend_option.active == []:
+       		self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: NA Y-Int: NA'
+        	self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: NA Y-Int: NA'
+        	self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: NA Y-Int: NA'
 
     def figure(self, width=900, height=300, x_axis_label=None, 
                  y_axis_label=None, tooltips=None, title=None):
@@ -211,14 +249,12 @@ class Plots:
             self.c8 = self.ts2.circle(x='centers',y='means',color='red',source=self.bin_data2)
             self.c9 = self.ts2.varea(x='centers',y1='upper',y2='lower',source=self.bin_data2,alpha=0.4,color='red')
 
-            trend_line = Line(x='attr',y='trend_line',line_width=6,line_alpha=0.4,line_color='blue')
-            self.l1 = self.main_plot.add_glyph(self.mp_tl_source,trend_line)
-            self.l2 = self.ts1.add_glyph(self.ts1_tl_source,trend_line)
-            self.l3 = self.ts2.add_glyph(self.ts2_tl_source,trend_line)
-            binned_trend_line = Line(x='attr',y='trend_line',line_width=6,line_alpha=0.4,line_color='blue')
-            self.l4 = self.main_plot.add_glyph(self.mp_binned_tl_source,binned_trend_line)
-            self.l5 = self.ts1.add_glyph(self.ts1_binned_tl_source,binned_trend_line)
-            self.l6 = self.ts2.add_glyph(self.ts2_binned_tl_source,binned_trend_line)
+            self.l1 = self.main_plot.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.mp_tl_source)
+            self.l2 = self.ts1.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts1_tl_source)
+            self.l3 = self.ts2.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts2_tl_source)
+            self.l4 = self.main_plot.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.mp_binned_tl_source)
+            self.l5 = self.ts1.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts1_binned_tl_source)
+            self.l6 = self.ts2.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts2_binned_tl_source)
 
             for page in [self.l1,self.l2,self.l3,self.l4,self.l5,self.l6]:
             	page.visible = False
@@ -234,6 +270,9 @@ class Plots:
         				line.visible  = True
         			for line in [self.l4,self.l5,self.l6]:
         				line.visible = False
+        			self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.mp_tl_values[0]) + ' Y-Int: ' + np.str(self.mp_tl_values[1])
+        			self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: ' + np.str(self.ts1_tl_values[0]) + ' Y-Int: ' + np.str(self.ts1_tl_values[1])
+        			self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_tl_values[0]) + ' Y-Int: ' + np.str(self.ts2_tl_values[1])
         if 1 in new:
         	for page in [self.c2, self.c3, self.c5, self.c6, self.c8, self.c9]:
         		page.visible = True
@@ -242,6 +281,9 @@ class Plots:
         				line.visible = False
         			for line in [self.l4,self.l5,self.l6]:
         				line.visible = True
+        			self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.mp_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.mp_binned_tl_values[1])
+        			self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: ' + np.str(self.ts1_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.ts1_binned_tl_values[1])
+        			self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.ts2_binned_tl_values[1])
 
     def update_selected_data(self, attr, old, new):
         data = self.plot_source.data
@@ -261,10 +303,9 @@ class Plots:
         	page.visible = False
 
         if self.plot_trend_option.active == [0]:
-        	binned_trend_line = Line(x='attr',y='trend_line',line_width=6,line_alpha=0.4,line_color='blue')
-        	self.l4 = self.main_plot.add_glyph(self.mp_binned_tl_source,binned_trend_line)
-        	self.l5 = self.ts1.add_glyph(self.ts1_binned_tl_source,binned_trend_line)
-        	self.l6 = self.ts2.add_glyph(self.ts2_binned_tl_source,binned_trend_line)
+        	self.l4 = self.main_plot.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.mp_binned_tl_source)
+        	self.l5 = self.ts1.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts1_binned_tl_source)
+        	self.l6 = self.ts2.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts2_binned_tl_source)
 
     def data_det_type(self, attr, old, new):
         if new == 0:
@@ -289,18 +330,31 @@ class Plots:
     		y = df['attr2']
 
     	trend = np.polyfit(x,y,1,full=True)
-
     	predicted = [trend[0][0]*i + trend[0][1] for i in x]
+    	slope = np.float("{:.2e}".format(trend[0][0]))
+    	y_int = np.float("{:.2e}".format(trend[0][1]))
 
-    	return pd.DataFrame(data=dict(attr=df['attr1'],trend_line=predicted))
+    	print(trend[0][0])
+    	print(slope)
+
+    	return pd.DataFrame(data=dict(attr=df['attr1'],trend_line=predicted)), [slope, y_int]
 
     def plot_trend_line(self, attr, old, new):
     	for page in [self.l1,self.l2,self.l3,self.l4,self.l5,self.l6]:
     		page.visible = False
+    	self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: NA Y-Int: NA'
+    	self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: NA Y-Int: NA'
+    	self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: NA Y-Int: NA'
     	if 0 in new:
     		if self.bin_option.active == [0]:
     			for page in [self.l1,self.l2,self.l3]:
     				page.visible = True
+    			self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.mp_tl_values[0]) + ' Y-Int: ' + np.str(self.mp_tl_values[1])
+    			self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: ' + np.str(self.ts1_tl_values[0]) + ' Y-Int: ' + np.str(self.ts1_tl_values[1])
+    			self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_tl_values[0]) + ' Y-Int: ' + np.str(self.ts2_tl_values[1])	
     		if self.bin_option.active == [0,1] or self.bin_option.active == [1]:
     			for page in [self.l4,self.l5,self.l6]:
     				page.visible = True
+    			self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.mp_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.mp_binned_tl_values[1])
+    			self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: ' + np.str(self.ts1_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.ts1_binned_tl_values[1])
+    			self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.ts2_binned_tl_values[1])
