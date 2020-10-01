@@ -29,8 +29,11 @@ class FocalPlanePage(Plots):
                               [self.description],
                               [self.x_cat_select, self.y_cat_select],
                               [self.x_select, self.y_select, self.btn],
-                              [[self.main_plot], column([self.data_det_option, self.save_btn, self.bin_slider, self.bin_option, self.replot_btn])],
+                              [self.obstype_option],
+                              [self.attr_header],
+                              [[self.main_plot], column([Div(text=' ',height=100), self.data_det_option, self.bin_option, self.bin_slider, self.save_btn])],
                               [self.details, self.cov],
+                              [self.time_header],
                               [self.ts1],
                               [self.ts2]])
         tab = Panel(child=this_layout, title=self.title)
@@ -46,7 +49,7 @@ class FocalPlanePage(Plots):
         self.y_cat_select.value = self.default_categories[1]
         self.x_select.value = self.default_options[self.default_categories[0]][0]
         self.y_select.value = self.default_options[self.default_categories[1]][0]
-        self.get_data('datetime',self.x_select.value, self.y_select.value, other_attr = ['EXPID'])
+        self.get_data('datetime',self.x_select.value, self.y_select.value) #, other_attr = ['EXPID']
         self.page_tooltips = [
             ("exposure","@EXPID"),
             ("{}".format(self.x_select.value),"@attr1"),
@@ -55,8 +58,9 @@ class FocalPlanePage(Plots):
         self.time_series_plot()
         self.bin_plot('new',[0],[0])
         self.btn.on_click(self.update)
-        self.replot_btn.on_click(self.plot_binned_data)
+        #self.replot_btn.on_click(self.update)
         self.bin_option.on_change('active',self.bin_plot)
+        self.obstype_option.on_change('active',self.obstype_selection)
         self.save_btn.on_click(self.save_data)
         self.data_det_option.on_change('active',self.data_det_type)
         self.plot_source.selected.on_change('indices', self.update_selected_data)
