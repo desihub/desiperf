@@ -7,7 +7,7 @@ import numpy as np
 from bokeh.layouts import column, layout, row
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.models import ColumnDataSource
-from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, CustomJS
+from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, CustomJS, TextInput, RadioGroup
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 
@@ -26,14 +26,24 @@ class PosAccPage(Plots):
         self.default_categories = list(Positioner_attributes.keys())
         self.default_options = Positioner_attributes
 
-        self.pos = str(1235)
-        posfiles = glob.glob(os.path.join(self.DH.pos_dir, '*.csv'))
-        self.pos_list = [os.path.splitext(os.path.split(posf)[1])[0] for posf in posfiles] #np.linspace(0,4999,5000)
-        
-        self.pos_select = Select(title='Select POS', value=self.pos, options=self.pos_list)
-        self.can_select = Select(title='Select CAN', value='10', options=['10','11','12','13','14','15','16','17','20','21'])
-        self.petal_select = Select(title='Select PETAL', value='0', options=['0','1','2','3','4','5','6','7','8','9'])
+        self.pos = str(6205)
 
+        self.select_header = Div(text="Select Positioner(s) to Plot", width=1000, css_classes=['subt-style'])
+        self.enter_pos_option = RadioGroup(labels=["Enter POS ID","OR Select from lists"], active=0)
+        self.pos_enter = TextInput(title="POS",value=self.pos)
+        self.pos_select = Select(title='Select POS', value='ALL')
+        self.can_select = Select(title='Select CAN', value='ALL', options=['ALL','10','11','12','13','14','15','16','17','20','21'])
+        self.petal_select = Select(title='Select PETAL', value='ALL', options=['ALL','0','1','2','3','4','5','6','7','8','9'])
+
+        self.fp = self.DH.fiberpos
+
+        self.pos_tooltips = [
+            ("POS ID","@CAN_ID"),
+            ("Petal","@PETAL"),
+            ("CAN","@BUS_ID"),
+            ("DEV LOC","@DEVICE"),
+            ("FIBER No.","@FIBER"),
+            ("(x,y,z)","(@X,@Y,@Z)")]
 
     def page_layout(self):
         #docstring
@@ -41,22 +51,77 @@ class PosAccPage(Plots):
                         [self.description],
                         [ self.x_cat_select, self.y_cat_select],
                         [self.x_select, self.y_select, self.btn],
-                        [column([self.pos_select, self.can_select, self.petal_select]), self.scatt],
-                        [column([self.data_det_option, self.save_btn, self.bin_slider, self.bin_option, self.replot_btn]), [self.main_plot]],
+
+                        [self.select_header], 
+                        [column([Div(text=' ',height=50), self.pos_enter, self.enter_pos_option, self.petal_select, self.can_select, self.pos_select]), self.scatt],
+                        [self.attr_header],
+                        [column([Div(text=' ',height=50), self.data_det_option, self.bin_option, self.bin_slider, self.save_btn]), [self.main_plot]],
                         [self.plot_trend_option, self.mp_tl_det, self.ts1_tl_det, self.ts2_tl_det],
+
+                        [self.time_header],
                         [self.ts1],
                         [self.ts2]])
         tab = Panel(child=this_layout, title=self.title)
         return tab
 
+    def pos_selection(self, attr, old, new):
+        self.petal = self.petal_select.value
+        self.can = self.can_select.value
+
+        if (self.petal == 'ALL') & (self.can == 'ALL'):
+            pos_list = []
+        elif (self.petal == 'ALL') & (self.can != 'ALL'):
+            pos_list = list(self.fp[(self.fp.BUS_ID == int(self.can))].CAN_ID)
+        elif (self.petal != 'ALL') & (self.can == 'ALL'):
+            pos_list = list(self.fp[(self.fp.PETAL == int(self.petal))].CAN_ID)
+        else:
+            pos_list = list(self.fp[(self.fp.PETAL == int(self.petal))&(self.fp.BUS_ID == int(self.can))].CAN_ID)
+        
+        self.pos_select.options = ['ALL'] + [str(p) for p in pos_list]
+
+    def get_selection(self):
+        if self.enter_pos_option.active == 0:
+            self.pos = self.pos_enter.value
+            self.can = int(np.unique(self.fp[self.fp.CAN_ID == int(self.pos)].BUS_ID)[0])
+            self.petal = int(np.unique(self.fp[self.fp.CAN_ID == int(self.pos)].PETAL)[0])
+        else:
+            self.pos = self.pos_select.value
+            self.can = self.can_select.value
+            self.petal = self.petal_select.value
+
+        if self.pos != 'ALL':
+            self.pos_files = [os.path.join(self.DH.pos_dir, '{}.csv'.format(self.pos))]
+            row = self.fp[self.fp.CAN_ID == int(self.pos)]
+            self.index = row.index
+            #self.can_select.value = str(row.BUS_ID)
+            #self.petal_select.value = str(row.PETAL)
+        elif self.petal != 'ALL':
+            if self.can == 'ALL':
+                pos = self.fp[self.fp.PETAL == int(self.petal)]
+                self.index = pos.index
+                self.pos_files = [os.path.join(self.DH.pos_dir, '{}.csv'.format(p)) for p in pos.CAN_ID]
+            else:
+                pos = self.fp[(self.fp.PETAL == int(self.petal))&(self.fp.BUS_ID == int(self.can))]
+                self.pos_files = [os.path.join(self.DH.pos_dir, '{}.csv'.format(p)) for p in pos.CAN_ID]
+                self.index = pos.index
+        elif self.can != 'ALL':
+            if self.petal == 'ALL':
+                pos = self.fp[(self.fp.BUS_ID == int(self.can))]
+                self.pos_files = [os.path.join(self.DH.pos_dir, '{}.csv'.format(p)) for p in pos.CAN_ID]
+                self.index = pos.index
+
     def get_pos_data(self, update=False):
         #- docstring
         self.xx = 'datetime'
-        pos_file = os.path.join(self.DH.pos_dir, '{}.csv'.format(self.pos))
-        data = pd.read_csv(pos_file)
+        dd = []
+        for f in self.pos_files:
+            try:
+                dd.append(pd.read_csv(f))
+            except:
+                pass
+
+        data = pd.concat(dd)
         data = self.DH.get_datetime(data)
-        self.dev = int(np.unique(data.DEVICE_LOC)[0])
-        self.petal = int(np.unique(data.PETAL_LOC)[0])
         data['air_mirror_temp_diff'] = np.abs(data['air_temp'] - data['mirror_temp'])
         data_ = data[['datetime',self.x_select.value, self.y_select.value]]
         data_ = data_[pd.notnull(data_['datetime'])] #temporary
@@ -68,9 +133,10 @@ class PosAccPage(Plots):
             self.main_plot.yaxis.axis_label = self.y_select.value
             self.ts1.yaxis.axis_label = self.x_select.value
             self.ts2.yaxis.axis_label = self.y_select.value
-            self.main_plot.title.text  = '{} vs. {} for POS {}'.format(self.x_select.value, self.y_select.value, self.pos)
+            self.main_plot.title.text  = '{} vs. {} for {} positioners'.format(self.x_select.value, self.y_select.value, len(self.index))
             self.ts1.title.text = 'Time vs. {}'.format(self.x_select.value)
             self.ts2.title.text = 'Time vs. {}'.format(self.y_select.value)
+
             self.bin_data.data = self.update_binned_data('attr1','attr2')
             self.bin_data1.data = self.update_binned_data('datetime','attr1')
             self.bin_data2.data = self.update_binned_data('datetime','attr2')
@@ -91,9 +157,20 @@ class PosAccPage(Plots):
             self.ts1_binned_tl_values = self.calc_trend_line(self.bin_data1.data['centers'],self.plot_source.data['means'])[1,2]
             self.ts2_binned_tl_values = self.calc_trend_line(self.bin_data2.data['centers'],self.plot_source.data['means'])[1,2] 
 
+            fp = self.DH.fiberpos
+            fp['COLOR'] = 'white'
+            fp.at[self.index, 'COLOR'] = 'red'
+            self.fp_source.data = fp
+
         else:
+            fp = self.DH.fiberpos
+            fp['COLOR'] = 'white'
+            fp.at[self.index, 'COLOR'] = 'red'
+            self.fp_source = ColumnDataSource(fp)
+
             self.plot_source = ColumnDataSource(data_)
             self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
+
 
             self.bin_data = ColumnDataSource(self.update_binned_data('attr1','attr2'))
             self.bin_data1 = ColumnDataSource(self.update_binned_data('datetime','attr1'))
@@ -137,18 +214,12 @@ class PosAccPage(Plots):
 
 
     def pos_loc_plot(self):
-        #- docstring
-        self.fp = self.DH.fiberpos
-        self.fp['COLOR'] = 'white'
-        idx = self.fp[(self.fp.DEVICE == self.dev) & (self.fp.PETAL == self.petal)].index
-        self.fp.at[idx, 'COLOR'] = 'red'
         self.scatt = self.figure(width=450, height=450, x_axis_label='obsX / mm', y_axis_label='obsY / mm', 
-                                        tooltips=self.page_tooltips)
-        self.pos_scatter(self.scatt, self.fp, 'COLOR')
+                                        tooltips=self.pos_tooltips)
+        self.pos_scatter(self.scatt, self.fp_source, 'COLOR')
 
     def pos_update(self):
-        #- docstring
-        self.pos = self.pos_select.value
+        self.get_selection()
         self.get_pos_data(update=True)
 
     def run(self):
@@ -165,14 +236,17 @@ class PosAccPage(Plots):
             ("exposure","@EXPID"),
             ("{}".format(self.x_select.value),"@attr1"),
             ("{}".format(self.y_select.value),"@attr2"),
-            ("(x,y)", "($x, $y)"),
-            ]
+            ("(x,y)", "($x, $y)"),]
+        self.get_selection()
         self.get_pos_data()
         self.time_series_plot()
+        self.pos_loc_plot()
         self.btn.on_click(self.pos_update)
         self.bin_plot('new',[0],[0])
-        self.replot_btn.on_click(self.plot_binned_data)
+        #self.replot_btn.on_click(self.pos_update)
         self.bin_option.on_change('active',self.bin_plot)
+        self.petal_select.on_change('value',self.pos_selection)
+        self.can_select.on_change('value',self.pos_selection)
         self.save_btn.on_click(self.save_data)
         self.plot_source.selected.on_change('indices', self.update_selected_data)
         self.plot_trend_option.on_change('active',self.plot_trend_line)

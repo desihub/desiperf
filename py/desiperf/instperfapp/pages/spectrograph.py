@@ -1,5 +1,5 @@
 
-from bokeh.layouts import layout
+from bokeh.layouts import layout, column
 from bokeh.models.widgets import Panel
 from bokeh.models import ColumnDataSource, Select, CDSView, GroupFilter
 from bokeh.models import Button, CheckboxButtonGroup, PreText, Select
@@ -40,11 +40,7 @@ class SpectrographPage(Plots):
 
     def spectro_data(self, attr1, attr2, spectro, update=False):
         data = pd.DataFrame(self.data_source.data)
-
-        # Convert CAM from byte encoding
-        #camdf = data['CAM'].str.decode('utf-8')
-        #data['CAM'] = [x[2] for x in list(data['CAM'])]  #Something odd going on with teh pandas data :(
-        # Filter by sp_select if not 'ALL'
+        data = self.data_selections(data)
         if spectro != 'ALL':
             data = data.loc[data['SPECTRO'] == int(spectro)]
 
@@ -90,44 +86,66 @@ class SpectrographPage(Plots):
             self.tsz.xaxis.axis_label = self.x_select.value
             self.tsz.yaxis.axis_label = self.y_select.value
 
+            self.bin_data.data = self.update_binned_data('attrbx','attrby', pd.DataFrame(self.blue_source.data))
+            self.bin_data1.data = self.update_binned_data('attrrx','attrry', pd.DataFrame(self.blue_source.data))
+            self.bin_data2.data = self.update_binned_data('attrzx','attrzy', pd.DataFrame(self.blue_source.data))
+
         else:
+            self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
+
             self.blue_source = ColumnDataSource(data_[data_.CAM == 'B'])
             self.red_source = ColumnDataSource(data_[data_.CAM == 'R'])
             self.zed_source = ColumnDataSource(data_[data_.CAM == 'Z'])
+            self.bin_data = ColumnDataSource(self.update_binned_data('attrbx','attrby', pd.DataFrame(self.blue_source.data)))
+            self.bin_data1 = ColumnDataSource(self.update_binned_data('attrrx','attrry', pd.DataFrame(self.blue_source.data)))
+            self.bin_data2 = ColumnDataSource(self.update_binned_data('attrzx','attrzy', pd.DataFrame(self.blue_source.data)))
 
     def page_layout(self):
         this_layout = layout([[self.header],
                               [self.description],
                               [self.x_cat_select, self.y_cat_select, self.sp_select],
                               [self.x_select, self.y_select, self.btn],
+                              [self.obstype_option], 
+                              [[self.data_det_option, self.save_btn], [self.bin_option,self.bin_slider]],
                               [self.details],
+                              [self.attr_header],
                               [self.tsb], [self.tsr], [self.tsz]])
 
         tab = Panel(child=this_layout, title=self.title)
         return tab
 
-    def time_series_plot(self):
+    def spec_time_series_plot(self):
         
         if self.x_select.value == 'datetime':
             axistype = 'datetime'
         else:
             axistype = None
-        self.tsb = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips, 
+        self.tsb = figure(plot_width=1000, plot_height=300, tools=self.tools, tooltips=self.default_tooltips, 
                             x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Blue Detectors')
-        self.tsr = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips,  
+        self.tsr = figure(plot_width=1000, plot_height=300, tools=self.tools, tooltips=self.default_tooltips,  
                             x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Red Detectors')
-        self.tsz = figure(plot_width=1000, plot_height=400, tools=self.tools, tooltips=self.default_tooltips,  
+        self.tsz = figure(plot_width=1000, plot_height=300, tools=self.tools, tooltips=self.default_tooltips,  
                             x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Infrared Detectors')
 
-        self.tsb.circle(x='attrbx', y='attrby', color='color', size=5, source=self.blue_source, selection_color="gray", legend = 'AMP')
-        self.tsr.circle(x='attrrx', y='attrry',  color='color', size=5, source=self.red_source, selection_color="gray", legend = 'AMP')
-        self.tsz.circle(x='attrzx', y='attrzy',  color='color', size=5, source=self.zed_source, selection_color="gray", legend = 'AMP')
+        self.c1 = self.tsb.circle(x='attrbx', y='attrby', color='color', size=5, source=self.blue_source, selection_color="gray", legend = 'AMP')
+        self.c4 = self.tsr.circle(x='attrrx', y='attrry',  color='color', size=5, source=self.red_source, selection_color="gray", legend = 'AMP')
+        self.c7 = self.tsz.circle(x='attrzx', y='attrzy',  color='color', size=5, source=self.zed_source, selection_color="gray", legend = 'AMP')
+
+        self.c2 = self.tsb.circle(x='centers',y='means',color='red',source=self.bin_data)
+        self.c3 = self.tsb.varea(x='centers',y1='upper',y2='lower',source=self.bin_data,alpha=0.4,color='red')
+        self.c5 = self.tsr.circle(x='centers',y='means',color='red',source=self.bin_data1)
+        self.c6 = self.tsr.varea(x='centers',y1='upper',y2='lower',source=self.bin_data1,alpha=0.4,color='red')
+        self.c8 = self.tsz.circle(x='centers',y='means',color='red',source=self.bin_data2)
+        self.c9 = self.tsz.varea(x='centers',y1='upper',y2='lower',source=self.bin_data2,alpha=0.4,color='red')
 
         
         for p in [self.tsb, self.tsr, self.tsz]:
             p.legend.title = "Amp"
             p.legend.location = "top_right"
             p.legend.orientation = "horizontal" 
+
+
+
 
     def spec_update(self):
         self.spectro_data(self.x_select.value, self.y_select.value, self.sp_select.value, update=True)
@@ -143,5 +161,16 @@ class SpectrographPage(Plots):
         self.x_select.value = self.default_options[self.default_categories[0]][0]
         self.y_select.value = self.default_options[self.default_categories[1]][0]
         self.spectro_data(self.x_select.value, self.y_select.value, self.sp_select.value)
-        self.time_series_plot()
+        self.spec_time_series_plot()
         self.btn.on_click(self.spec_update)
+        self.bin_plot('new',[0],[0])
+        #self.replot_btn.on_click(self.spec_update)
+        self.bin_option.on_change('active',self.bin_plot)
+        self.obstype_option.on_change('active',self.obstype_selection)
+        self.save_btn.on_click(self.save_data)
+        self.data_det_option.on_change('active',self.data_det_type)
+        self.blue_source.selected.on_change('indices', self.update_selected_data)
+        self.red_source.selected.on_change('indices', self.update_selected_data)
+        self.zed_source.selected.on_change('indices', self.update_selected_data)
+
+

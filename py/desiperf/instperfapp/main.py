@@ -1,3 +1,5 @@
+
+
 '''
 @author: Parker Fagrelius (pfagrelius@noao.edu)
 
@@ -95,7 +97,7 @@ subtitle1_5 = Div(text="<b>Limit the data to a shorter date range below.</b>", w
 start_date = TextInput(title ='Start Date', width=200, placeholder = str(int(min(ds.NIGHT))))
 end_date = TextInput(title ='End Date', width=200, placeholder = str(int(max(ds.NIGHT))))
 data_update_info = Div(text=' ', width=800, css_classes=['alert-style'])
-date_btn = Button(label='Update Date Range', width=200, css_classes=['connect_button'])
+date_btn = Button(label='Update Date Range', width=200, css_classes=['save_button'])
 
 
 data_instructions = Div(text='To expand the date range up to the current date, run <b>data_script.py</b> on the desi server. [This is only for the time being]', width=800, css_classes=['inst-style'])
