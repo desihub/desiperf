@@ -31,6 +31,7 @@ class DataHandler(object):
         fp_df = self.get_datetime(fp_df)
         fp_df['obstype'] = fp_df['obstype'].astype('str').str.upper() 
         fp_df = fp_df[(fp_df.datetime >= self.start_date)&(fp_df.datetime <= self.end_date)]
+        fp_df.columns = [x.upper() for x in fp_df.columns]
         self.focalplane_source = ColumnDataSource(fp_df)
 
     def get_detector_data(self):
@@ -39,6 +40,7 @@ class DataHandler(object):
         spec_df = self.get_datetime(spec_df)
         spec_df['obstype'] = spec_df['obstype'].astype('str').str.upper() 
         spec_df = spec_df[(spec_df.datetime >= self.start_date)&(spec_df.datetime <= self.end_date)]
+        spec_df.columns = [x.upper() for x in spec_df.columns]
         self.detector_source = ColumnDataSource(spec_df)
 
     def get_positioner_data(self):

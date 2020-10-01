@@ -26,7 +26,7 @@ class PosAccPage(Plots):
         self.default_categories = list(Positioner_attributes.keys())
         self.default_options = Positioner_attributes
 
-        self.pos = str(6205)
+        self.pos = str(6830)
 
         self.select_header = Div(text="Select Positioner(s) to Plot", width=1000, css_classes=['subt-style'])
         self.enter_pos_option = RadioGroup(labels=["Enter POS ID","OR Select from lists"], active=0)
@@ -55,9 +55,13 @@ class PosAccPage(Plots):
                         [self.select_header], 
                         [column([Div(text=' ',height=50), self.pos_enter, self.enter_pos_option, self.petal_select, self.can_select, self.pos_select]), self.scatt],
                         [self.attr_header],
-                        [column([Div(text=' ',height=50), self.data_det_option, self.bin_option, self.bin_slider, self.save_btn]), [self.main_plot]],
-                        [self.plot_trend_option, self.mp_tl_det, self.ts1_tl_det, self.ts2_tl_det],
 
+                        [self.bin_option, self.bin_slider, self.save_btn],
+                        [Div(text=' ',height=200),self.main_plot],
+                        [self.desc_header],
+                        [self.data_det_option, self.details],
+
+                        [self.plot_trend_option, self.mp_tl_det, self.ts1_tl_det, self.ts2_tl_det],
                         [self.time_header],
                         [self.ts1],
                         [self.ts2]])
@@ -112,7 +116,7 @@ class PosAccPage(Plots):
 
     def get_pos_data(self, update=False):
         #- docstring
-        self.xx = 'datetime'
+        self.xx = 'DATETIME'
         dd = []
         for f in self.pos_files:
             try:
@@ -121,10 +125,12 @@ class PosAccPage(Plots):
                 pass
 
         data = pd.concat(dd)
-        data = self.DH.get_datetime(data)
         data['air_mirror_temp_diff'] = np.abs(data['air_temp'] - data['mirror_temp'])
-        data_ = data[['datetime',self.x_select.value, self.y_select.value]]
-        data_ = data_[pd.notnull(data_['datetime'])] #temporary
+        
+        data = self.DH.get_datetime(data)
+        data.columns = [x.upper() for x in data.columns]
+        data_ = data[['DATETIME',self.x_select.value, self.y_select.value]]
+        data_ = data_[pd.notnull(data_['DATETIME'])] #temporary
         data_ = data_.rename(columns={self.x_select.value:'attr1',self.y_select.value:'attr2'}) 
         self.attr_list = np.hstack(['datetime',np.str(self.x_select.value),np.str(self.y_select.value)])
         if update:
@@ -137,25 +143,26 @@ class PosAccPage(Plots):
             self.ts1.title.text = 'Time vs. {}'.format(self.x_select.value)
             self.ts2.title.text = 'Time vs. {}'.format(self.y_select.value)
 
-            self.bin_data.data = self.update_binned_data('attr1','attr2')
-            self.bin_data1.data = self.update_binned_data('datetime','attr1')
-            self.bin_data2.data = self.update_binned_data('datetime','attr2')
+            self.bin_data.data = self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data))
+            self.bin_data1.data = self.update_binned_data('DATETIME','attr1', pd.DataFrame(self.plot_source.data))
+            self.bin_data2.data = self.update_binned_data('DATETIME','attr2', pd.DataFrame(self.plot_source.data))
 
             self.mp_tl_source.data = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])
-            self.ts1_tl_source.data = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1'])
-            self.ts2_tl_source.data = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2'])
+            self.ts1_tl_source.data = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])
+            self.ts2_tl_source.data = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr2'])
 
             self.mp_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])
             self.ts1_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])
             self.ts2_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])
 
             self.mp_tl_values = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[1,2]
-            self.ts1_tl_values = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1'])[1,2]
-            self.ts2_tl_values = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2'])[1,2]
+            self.ts1_tl_values = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])[1,2]
+            self.ts2_tl_values = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr2'])[1,2]
 
             self.mp_binned_tl_values = self.calc_trend_line(self.bin_data.data['centers'],self.plot_source.data['means'])[1,2]
             self.ts1_binned_tl_values = self.calc_trend_line(self.bin_data1.data['centers'],self.plot_source.data['means'])[1,2]
             self.ts2_binned_tl_values = self.calc_trend_line(self.bin_data2.data['centers'],self.plot_source.data['means'])[1,2] 
+
 
             fp = self.DH.fiberpos
             fp['COLOR'] = 'white'
@@ -171,22 +178,21 @@ class PosAccPage(Plots):
             self.plot_source = ColumnDataSource(data_)
             self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
 
-
-            self.bin_data = ColumnDataSource(self.update_binned_data('attr1','attr2'))
-            self.bin_data1 = ColumnDataSource(self.update_binned_data('datetime','attr1'))
-            self.bin_data2 = ColumnDataSource(self.update_binned_data('datetime','attr2'))
+            self.bin_data = ColumnDataSource(self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data)))
+            self.bin_data1 = ColumnDataSource(self.update_binned_data('DATETIME','attr1', pd.DataFrame(self.plot_source.data)))
+            self.bin_data2 = ColumnDataSource(self.update_binned_data('DATETIME','attr2', pd.DataFrame(self.plot_source.data)))
 
             self.mp_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[0])
-            self.ts1_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1'])[0])
-            self.ts2_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2'])[0])
+            self.ts1_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])[0])
+            self.ts2_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr2'])[0])
 
             self.mp_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])[0])
             self.ts1_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means'])[0])
             self.ts2_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means'])[0])
 
             self.mp_tl_values = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[1]
-            self.ts1_tl_values = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr1'])[1]
-            self.ts2_tl_values = self.calc_trend_line(self.plot_source.data['datetime'],self.plot_source.data['attr2'])[1]
+            self.ts1_tl_values = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])[1]
+            self.ts2_tl_values = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr2'])[1]
 
             self.mp_binned_tl_values = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])[1]
             self.ts1_binned_tl_values = self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means'])[1]

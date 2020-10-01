@@ -15,7 +15,7 @@ from static.attributes import Spectrograph_attributes
 class SpectrographPage(Plots):
     def __init__(self, datahandler):
         Plots.__init__(self,'Spectrograph', datahandler.detector_source)
-        self.description = Div(text='These plots show the behavior of the detectors in each spectrograph over time.', width=800, style=self.text_style)
+        self.description = Div(text='These plots show the behavior of the detectors in each spectrograph over time.', width=800, css_classes=['inst-style'])
 
         
         self.spectro_options = ['ALL', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -26,16 +26,9 @@ class SpectrographPage(Plots):
 
         self.default_options = Spectrograph_attributes
 
-        self.x_options = ['EXPID','datetime','CAMERA_TEMP','CAMERA_HUMIDITY','BENCH_CRYO_TEMP','BENCH_COLL_TEMP','BENCH_NIR_TEMP', 'IEB_TEMP',
-                            'READNOISE', 'BIAS', 'COSMICS_RATE', 'MEANDX', 'MINDX', 'MAXDX',
-                            'MEANDY', 'MINDY', 'MAXDY', 'MEANXSIG', 'MINXSIG', 'MAXXSIG',
-                            'MEANYSIG', 'MINYSIG', 'MAXYSIG', 'INTEG_RAW_FLUX',
-                            'MEDIAN_RAW_FLUX', 'MEDIAN_RAW_SNR', 'FLUX', 'SNR', 'SPECFLUX','THRU']
-        self.y_options = self.x_options
-
     def get_camera_attributes(self,attr):
-        attr = str(attr).lower()
-        attrs = [pre+'_'+attr for pre in ['blue','red','nir']]
+        attr = str(attr)
+        attrs = [pre+'_'+attr for pre in ['BLUE','RED','NIR']]
         return attrs
 
     def spectro_data(self, attr1, attr2, spectro, update=False):
@@ -97,8 +90,8 @@ class SpectrographPage(Plots):
             self.red_source = ColumnDataSource(data_[data_.CAM == 'R'])
             self.zed_source = ColumnDataSource(data_[data_.CAM == 'Z'])
             self.bin_data = ColumnDataSource(self.update_binned_data('attrbx','attrby', pd.DataFrame(self.blue_source.data)))
-            self.bin_data1 = ColumnDataSource(self.update_binned_data('attrrx','attrry', pd.DataFrame(self.blue_source.data)))
-            self.bin_data2 = ColumnDataSource(self.update_binned_data('attrzx','attrzy', pd.DataFrame(self.blue_source.data)))
+            self.bin_data1 = ColumnDataSource(self.update_binned_data('attrrx','attrry', pd.DataFrame(self.red_source.data)))
+            self.bin_data2 = ColumnDataSource(self.update_binned_data('attrzx','attrzy', pd.DataFrame(self.zed_source.data)))
 
     def page_layout(self):
         this_layout = layout([[self.header],
@@ -106,17 +99,20 @@ class SpectrographPage(Plots):
                               [self.x_cat_select, self.y_cat_select, self.sp_select],
                               [self.x_select, self.y_select, self.btn],
                               [self.obstype_option], 
-                              [[self.data_det_option, self.save_btn], [self.bin_option,self.bin_slider]],
-                              [self.details],
+                              [self.bin_option,self.bin_slider, self.save_btn], 
                               [self.attr_header],
-                              [self.tsb], [self.tsr], [self.tsz]])
+                              [self.tsb],
+                              [self.tsr], 
+                              [self.tsz],
+                              [self.desc_header],
+                              [self.data_det_option, self.details]])
 
         tab = Panel(child=this_layout, title=self.title)
         return tab
 
     def spec_time_series_plot(self):
         
-        if self.x_select.value == 'datetime':
+        if self.x_select.value == 'DATETIME':
             axistype = 'datetime'
         else:
             axistype = None

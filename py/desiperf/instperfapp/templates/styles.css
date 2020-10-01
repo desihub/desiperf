@@ -1,7 +1,8 @@
 .connect_button button.bk.bk-btn.bk-btn-default {
     color: black;
     width: 200px;
-    font-size:10pt;
+    height: 50px;
+    font-size:14pt;
     background-color: mediumturquoise;
     border-color: black;
 }
@@ -10,7 +11,7 @@
     color: black;
     width: 200px;
     font-size:10pt;
-    background-color: #BA55D3;
+    background-color: plum;
     border-color: black;
 }
 
