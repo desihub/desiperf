@@ -31,9 +31,9 @@ class Plots:
         self.bin_data = None
 
         self.plot_trend_option = CheckboxGroup(labels=['Plot Trend Line'])
-        self.mp_tl_det = PreText(text=' ',width=250)
-        self.ts1_tl_det = PreText(text=' ',width=250)
-        self.ts2_tl_det = PreText(text=' ',width=250)
+        self.mp_tl_det = PreText(text=' ',width=300)
+        self.ts1_tl_det = PreText(text=' ',width=300)
+        self.ts2_tl_det = PreText(text=' ',width=300)
 
         self.pos_tooltips = [
                     ("fiber","@FIBER"),
