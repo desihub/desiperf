@@ -152,9 +152,9 @@ class Plots:
             self.ts1.title.text = 'Time vs. {}'.format(attr1)
             self.ts2.title.text = 'Time vs. {}'.format(attr2)
 
-            self.bin_data.data = self.update_binned_data('attr1','attr2')
-            self.bin_data1.data = self.update_binned_data(self.xx,'attr1')
-            self.bin_data2.data = self.update_binned_data(self.xx,'attr2')
+            self.bin_data.data = self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data))
+            self.bin_data1.data = self.update_binned_data(self.xx,'attr1', pd.DataFrame(self.plot_source.data))
+            self.bin_data2.data = self.update_binned_data(self.xx,'attr2', pd.DataFrame(self.plot_source.data))
 
             self.mp_tl_source.data = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[0]
             self.ts1_tl_source.data = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])[0]
@@ -168,9 +168,9 @@ class Plots:
             self.ts1_tl_values = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])[1]
             self.ts2_tl_values = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr2'])[1]
 
-            self.mp_binned_tl_values = self.calc_trend_line(self.bin_data.data['centers'],self.plot_source.data['means'])[1]
-            self.ts1_binned_tl_values = self.calc_trend_line(self.bin_data1.data['centers'],self.plot_source.data['means'])[1]
-            self.ts2_binned_tl_values = self.calc_trend_line(self.bin_data2.data['centers'],self.plot_source.data['means'])[1] 
+            self.mp_binned_tl_values = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])[1]
+            self.ts1_binned_tl_values = self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means'])[1]
+            self.ts2_binned_tl_values = self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means'])[1] 
 
 
         else:
@@ -319,9 +319,9 @@ class Plots:
             self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.sel_data.data).describe())
             self.cov.text = 'Covariance of {} & {}: \n{}'.format(self.x_select.value, self.y_select.value, str(pd.DataFrame(self.sel_data.data).cov()))
     def plot_binned_data(self):
-        self.bin_data.data = self.update_binned_data('attr1','attr2')
-        self.bin_data1.data = self.update_binned_data(self.xx, 'attr1')
-        self.bin_data2.data = self.update_binned_data(self.xx,'attr2')
+        self.bin_data.data = self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data))
+        self.bin_data1.data = self.update_binned_data(self.xx, 'attr1', pd.DataFrame(self.plot_source.data))
+        self.bin_data2.data = self.update_binned_data(self.xx,'attr2', pd.DataFrame(self.plot_source.data))
 
         for page in [self.l1,self.l2,self.l3,self.l4,self.l5,self.l6]:
         	page.visible = False
