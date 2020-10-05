@@ -32,6 +32,7 @@ class DataHandler(object):
         fp_df['obstype'] = fp_df['obstype'].astype('str').str.upper() 
         fp_df = fp_df[(fp_df.datetime >= self.start_date)&(fp_df.datetime <= self.end_date)]
         fp_df.columns = [x.upper() for x in fp_df.columns]
+        fp_df = fp_df.loc[:,~fp_df.columns.duplicated()]
         self.focalplane_source = ColumnDataSource(fp_df)
 
     def get_detector_data(self):
