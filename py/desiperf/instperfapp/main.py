@@ -26,6 +26,11 @@ from bokeh.models.callbacks import CustomJS
 
 from data_mgt.data_handler import DataHandler
 
+import cProfile, pstats, io
+from pstats import SortKey
+
+# Use cProfile? 
+PROFILE = False
 
 def init_pages(datahandler):
     '''
@@ -61,11 +66,24 @@ def data_text(ds, fps):
     df = pd.DataFrame([sp,fp], columns = ['type','date_start','date_end','exp_start','exp_end'])
     return df
 
+if PROFILE: 
+    # Activate cProfile
+    pr = cProfile.Profile()
+    pr.enable()
 
 #- Initialize data & pages
 DH = DataHandler()
 DH.run()
 fp_tab, pp_tab, sp_tab = init_pages(DH)
+
+if PROFILE: 
+    # Print cProfile stats for startup
+    pr.disable()
+    s = io.StringIO()
+    sortby = SortKey.CUMULATIVE
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print(s.getvalue())
 
 #- Welcome Page
 title_1 = Div(text="DESI Instrument Peformance Analysis Tool", width=800, css_classes=['h1-title-style'])
