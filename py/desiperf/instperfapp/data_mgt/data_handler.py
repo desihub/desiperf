@@ -7,6 +7,7 @@ import numpy as np
 import os, glob
 from datetime import datetime
 from astropy.time import Time
+from astropy.table import Table
 
 from bokeh.models import ColumnDataSource
 
@@ -26,8 +27,11 @@ class DataHandler(object):
         self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
 
     def get_focalplane_data(self):
-        files = glob.glob(os.path.join(self.fp_dir, 'fpa_data_*.csv')) 
-        fp_df = pd.concat([pd.read_csv(f, low_memory=False) for f in files])
+        # files = glob.glob(os.path.join(self.fp_dir, 'fpa_data_*.csv')) 
+        # fp_df = pd.concat([pd.read_csv(f, low_memory=False) for f in files])
+        fpfile = os.path.join(self.fp_dir, 'fpa_all.fits.gz')
+        fptab = Table.read(fpfile)
+        fp_df = fptab.to_pandas()
         fp_df = self.get_datetime(fp_df)
         fp_df['obstype'] = fp_df['obstype'].astype('str').str.upper() 
         fp_df = fp_df[(fp_df.datetime >= self.start_date)&(fp_df.datetime <= self.end_date)]
@@ -58,14 +62,10 @@ class DataHandler(object):
             datetimes = pd.to_datetime(df.time_recorded)
         else:
             datetimes = np.zeros(len(df))
-
         df['datetime'] = datetimes
         return df
-
-
 
     def run(self):
         self.get_focalplane_data() #self.focalplane_source
         self.get_detector_data() #self.detector_source
         self.get_positioner_data()
-
