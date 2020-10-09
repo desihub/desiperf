@@ -133,7 +133,11 @@ class SpectrographPage(Page):
 
         self.time_series_plot()
 
-        self.activate_buttons()
+        self.btn.on_click(self.update)
+        self.bin_option.on_change('active',self.bin_plot)
+
+        self.save_btn.on_click(self.save_data)
+
         self.data_det_option.on_change('active',self.data_det_type)
         self.blue_source.selected.on_change('indices', self.update_selected_data)
         self.red_source.selected.on_change('indices', self.update_selected_data)

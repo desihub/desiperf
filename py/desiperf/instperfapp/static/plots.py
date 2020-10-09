@@ -22,7 +22,7 @@ class Plots:
         self.red_source = None 
         self.zed_source = None
 
-        self.tools = "pan,lasso,wheel_zoom,box_zoom,reset"
+        self.tools = 'pan,wheel_zoom,lasso_select,reset,undo,save,hover'
 
     def prepare_layout(self):
         self.x_select = Select(title='X Attribute', options=self.x_options)
