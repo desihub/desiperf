@@ -12,11 +12,13 @@ from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 
 from static.attributes import Positioner_attributes
+from static.page import Page
 from static.plots import Plots
 
-class PosAccPage(Plots):
+class PosAccPage(Page):
     def __init__(self, datahandler):
-        Plots.__init__(self,'Positioner',source=None)
+        Page.__init__(self,'Positioner',source=None)
+        self.page_name = 'pos'
         self.DH = datahandler
 
         desc = """These plots show behavior for a single (selected) positioner over time.
@@ -37,16 +39,7 @@ class PosAccPage(Plots):
 
         self.fp = self.DH.fiberpos
 
-        self.pos_tooltips = [
-            ("POS ID","@CAN_ID"),
-            ("Petal","@PETAL"),
-            ("CAN","@BUS_ID"),
-            ("DEV LOC","@DEVICE"),
-            ("FIBER No.","@FIBER"),
-            ("(x,y,z)","(@X,@Y,@Z)")]
-
     def page_layout(self):
-        #docstring
         this_layout = layout([[self.header],
                         [self.description],
                         [ self.x_cat_select, self.y_cat_select],
@@ -57,7 +50,7 @@ class PosAccPage(Plots):
                         [self.attr_header],
 
                         [self.bin_option, self.bin_slider, self.save_btn],
-                        [Div(text=' ',height=200),self.main_plot],
+                        [Div(text=' ',height=200),self.ts0],
                         [self.desc_header],
                         [self.data_det_option, self.details],
 
@@ -97,8 +90,7 @@ class PosAccPage(Plots):
             self.pos_files = [os.path.join(self.DH.pos_dir, '{}.csv'.format(self.pos))]
             row = self.fp[self.fp.CAN_ID == int(self.pos)]
             self.index = row.index
-            #self.can_select.value = str(row.BUS_ID)
-            #self.petal_select.value = str(row.PETAL)
+
         elif self.petal != 'ALL':
             if self.can == 'ALL':
                 pos = self.fp[self.fp.PETAL == int(self.petal)]
@@ -114,145 +106,43 @@ class PosAccPage(Plots):
                 self.pos_files = [os.path.join(self.DH.pos_dir, '{}.csv'.format(p)) for p in pos.CAN_ID]
                 self.index = pos.index
 
-    def get_pos_data(self, update=False):
-        #- docstring
-        self.xx = 'DATETIME'
-        dd = []
-        for f in self.pos_files:
-            try:
-                dd.append(pd.read_csv(f))
-            except:
-                pass
-
-        data = pd.concat(dd)
-        data['air_mirror_temp_diff'] = np.abs(data['air_temp'] - data['mirror_temp'])
-        
-        data = self.DH.get_datetime(data)
-        data.columns = [x.upper() for x in data.columns]
-        data_ = data[['DATETIME',self.x_select.value, self.y_select.value]]
-        data_ = data_[pd.notnull(data_['DATETIME'])] #temporary
-        data_ = data_.rename(columns={self.x_select.value:'attr1',self.y_select.value:'attr2'}) 
-        self.attr_list = np.hstack(['datetime',np.str(self.x_select.value),np.str(self.y_select.value)])
-        if update:
-            self.plot_source.data = data_
-            self.main_plot.xaxis.axis_label = self.x_select.value
-            self.main_plot.yaxis.axis_label = self.y_select.value
-            self.ts1.yaxis.axis_label = self.x_select.value
-            self.ts2.yaxis.axis_label = self.y_select.value
-            self.main_plot.title.text  = '{} vs. {} for {} positioners'.format(self.x_select.value, self.y_select.value, len(self.index))
-            self.ts1.title.text = 'Time vs. {}'.format(self.x_select.value)
-            self.ts2.title.text = 'Time vs. {}'.format(self.y_select.value)
-
-            self.bin_data.data = self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data))
-            self.bin_data1.data = self.update_binned_data('DATETIME','attr1', pd.DataFrame(self.plot_source.data))
-            self.bin_data2.data = self.update_binned_data('DATETIME','attr2', pd.DataFrame(self.plot_source.data))
-
-            self.mp_tl_source.data = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])
-            self.ts1_tl_source.data = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])
-            self.ts2_tl_source.data = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr2'])
-
-            self.mp_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])
-            self.ts1_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])
-            self.ts2_binned_tl_source.data = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])
-
-            self.mp_tl_values = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[1,2]
-            self.ts1_tl_values = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])[1,2]
-            self.ts2_tl_values = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr2'])[1,2]
-
-            self.mp_binned_tl_values = self.calc_trend_line(self.bin_data.data['centers'],self.plot_source.data['means'])[1,2]
-            self.ts1_binned_tl_values = self.calc_trend_line(self.bin_data1.data['centers'],self.plot_source.data['means'])[1,2]
-            self.ts2_binned_tl_values = self.calc_trend_line(self.bin_data2.data['centers'],self.plot_source.data['means'])[1,2] 
-
-
-            fp = self.DH.fiberpos
-            fp['COLOR'] = 'white'
-            fp.at[self.index, 'COLOR'] = 'red'
-            self.fp_source.data = fp
-
-        else:
-            fp = self.DH.fiberpos
-            fp['COLOR'] = 'white'
-            fp.at[self.index, 'COLOR'] = 'red'
-            self.fp_source = ColumnDataSource(fp)
-
-            self.plot_source = ColumnDataSource(data_)
-            self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
-
-            self.bin_data = ColumnDataSource(self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data)))
-            self.bin_data1 = ColumnDataSource(self.update_binned_data('DATETIME','attr1', pd.DataFrame(self.plot_source.data)))
-            self.bin_data2 = ColumnDataSource(self.update_binned_data('DATETIME','attr2', pd.DataFrame(self.plot_source.data)))
-
-            self.mp_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[0])
-            self.ts1_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])[0])
-            self.ts2_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr2'])[0])
-
-            self.mp_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])[0])
-            self.ts1_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means'])[0])
-            self.ts2_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means'])[0])
-
-            self.mp_tl_values = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[1]
-            self.ts1_tl_values = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])[1]
-            self.ts2_tl_values = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr2'])[1]
-
-            self.mp_binned_tl_values = self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])[1]
-            self.ts1_binned_tl_values = self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means'])[1]
-            self.ts2_binned_tl_values = self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means'])[1] 
-
-        if self.plot_trend_option.active == [0]:
-            if self.bin_option.active == [0]:
-                self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.mp_tl_values[0]) + 'Y-Int: ' + np.str(self.mp_tl_values[1])
-                self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: ' + np.str(self.ts1_tl_values[0]) + 'Y-Int: ' + np.str(self.ts1_tl_values[1])
-                self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_tl_values[0]) + 'Y-Int: ' + np.str(self.ts2_tl_values[1])
-            elif self.bin_option.active == [0,1] or self.bin_option.active == [1]:
-                self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.mp_binned_tl_values[0]) + 'Y-Int: ' + np.str(self.mp_binned_tl_values[1])
-                self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: ' + np.str(self.ts1_binned_tl_values[0]) + 'Y-Int: ' + np.str(self.ts1_binned_tl_values[1])
-                self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_binned_tl_values[0]) + 'Y-Int: ' + np.str(self.ts2_binned_tl_values[1])              
-            elif self.bin_option.active == []:
-                self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: NA Y-Int: NA'
-                self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: NA Y-Int: NA'
-                self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: NA Y-Int: NA'
-        elif self.plot_trend_option.active == []:
-            self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: NA Y-Int: NA'
-            self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: NA Y-Int: NA'
-            self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: NA Y-Int: NA'
-
-        self.pos_loc_plot()
-
-
-    def pos_loc_plot(self):
-        self.scatt = self.figure(width=450, height=450, x_axis_label='obsX / mm', y_axis_label='obsY / mm', 
-                                        tooltips=self.pos_tooltips)
-        self.pos_scatter(self.scatt, self.fp_source, 'COLOR')
-
-    def pos_update(self):
-        self.get_selection()
-        self.get_pos_data(update=True)
 
     def run(self):
+        #Layout
         self.x_options = self.default_options
         self.y_options = self.default_options
         self.x_cat_options = self.default_categories
         self.y_cat_options = self.default_categories
-        self.prepare_layout_two_menus()
-        self.x_cat_select.value = self.default_categories[0]
-        self.y_cat_select.value = self.default_categories[1]
-        self.x_select.value = self.default_options[self.default_categories[0]][0]
-        self.y_select.value = self.default_options[self.default_categories[1]][0]
+        self.prepare_layout()
+
+        #Get data
+        self.get_selection()
+        self.get_data('DATETIME',self.x_select.value, self.y_select.value, other_attr=['EXPID','OBSTYPE','PROGRAM','DEVICE_LOC','PETAL_LOC','SPECTRO'])
+
         self.page_tooltips = [
             ("exposure","@EXPID"),
+            ("obstime","@DATETIME{%F}"),
+            ("obstype","@OBSTYPE"),
+            ("program","@PROGRAM"),
+            ("dev","@DEVICE_LOC"),
+            ("petal","@PETAL_LOC"),
+            ("spectro","@SPECTRO"),
             ("{}".format(self.x_select.value),"@attr1"),
-            ("{}".format(self.y_select.value),"@attr2"),
-            ("(x,y)", "($x, $y)"),]
-        self.get_selection()
-        self.get_pos_data()
+            ("{}".format(self.y_select.value),"@attr2"),]
+
+        self.pos_tooltips = [
+            ("Petal","@PETAL"),
+            ("CAN","@BUS_ID"),
+            ("DEV LOC","@DEVICE"),
+            ("FIBER No.","@FIBER"),
+            ("(x,y,z)","(@X,@Y,@Z)")]
+        #            ("POS ID","@CAN_ID"),
+        #Plots
         self.time_series_plot()
         self.pos_loc_plot()
-        self.btn.on_click(self.pos_update)
-        self.bin_plot('new',[0],[0])
-        #self.replot_btn.on_click(self.pos_update)
-        self.bin_option.on_change('active',self.bin_plot)
+
+        #Buttons and actions
+        self.activate_buttons()
         self.petal_select.on_change('value',self.pos_selection)
         self.can_select.on_change('value',self.pos_selection)
-        self.save_btn.on_click(self.save_data)
-        self.plot_source.selected.on_change('indices', self.update_selected_data)
-        self.plot_trend_option.on_change('active',self.plot_trend_line)
+        

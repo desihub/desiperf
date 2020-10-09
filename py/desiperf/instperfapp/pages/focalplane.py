@@ -10,13 +10,15 @@ import numpy as np
 from datetime import datetime
 
 from static.plots import Plots
+from static.page import Page
 from static.attributes import Focalplane_attributes
 from scipy import stats
 
 
-class FocalPlanePage(Plots):
+class FocalPlanePage(Page):
     def __init__(self, datahandler):
-        Plots.__init__(self,'Focal Plane', source=datahandler.focalplane_source)
+        Page.__init__(self,'Focal Plane', source=datahandler.focalplane_source)
+        self.page_name = 'fp'
         desc = """ These plots show the average behavior across the whole focal plate for a given time or exposure.
             """
         self.description = Div(text=desc, width=800, css_classes=['inst-style'])
@@ -36,7 +38,7 @@ class FocalPlanePage(Plots):
                               [self.attr_header],
 
                               [self.bin_option, self.bin_slider, self.save_btn],
-                              [Div(text=" ",width=200), self.main_plot],
+                              [Div(text=" ",width=200), self.ts0],
                               [self.desc_header],
                               [self.data_det_option, self.details],
                               [Div(text=" ",width=150), self.cov],
@@ -55,7 +57,7 @@ class FocalPlanePage(Plots):
         self.y_options = self.default_options
         self.x_cat_options = self.default_categories
         self.y_cat_options = self.default_categories
-        self.prepare_layout_two_menus()
+        self.prepare_layout()
 
         #Get Data
         self.get_data('DATETIME',self.x_select.value, self.y_select.value, other_attr = ['EXPID','OBSTYPE','PROGRAM'])

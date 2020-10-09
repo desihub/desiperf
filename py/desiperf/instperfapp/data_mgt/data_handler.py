@@ -26,8 +26,18 @@ class DataHandler(object):
         self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
 
     def get_focalplane_data(self):
+<<<<<<< Updated upstream
         files = glob.glob(os.path.join(self.fp_dir, 'fpa_data_*.csv')) 
         fp_df = pd.concat([pd.read_csv(f, low_memory=False) for f in files])
+=======
+        # files = glob.glob(os.path.join(self.fp_dir, 'fpa_data_*.csv')) 
+        # fp_df = pd.concat([pd.read_csv(f, low_memory=False) for f in files])
+        fpfile = os.path.join(self.fp_dir, 'fpa_all.fits.gz')
+        fptab = Table.read(fpfile)
+        fp_df = fptab.to_pandas()
+        fp_df['obstype'] = fp_df['obstype'].str.decode("utf-8")
+        fp_df['program'] = fp_df['program'].str.decode("utf-8")
+>>>>>>> Stashed changes
         fp_df = self.get_datetime(fp_df)
         fp_df['obstype'] = fp_df['obstype'].astype('str').str.upper() 
         fp_df = fp_df[(fp_df.datetime >= self.start_date)&(fp_df.datetime <= self.end_date)]
