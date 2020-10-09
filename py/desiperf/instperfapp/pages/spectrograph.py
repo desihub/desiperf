@@ -144,7 +144,15 @@ class SpectrographPage(Plots):
 
 
     def spec_update(self):
+        self.change_btn_label(1)
         self.spectro_data(self.x_select.value, self.y_select.value, self.sp_select.value, update=True)
+        self.change_btn_label(0)
+
+    def change_btn_label(self,a):
+        if a == 0:
+            self.btn.label = 'Re-Plot'
+        if a == 1:
+            self.btn.label = 'Plotting ... Please Wait'
 
     def run(self):
         self.x_options = self.default_options

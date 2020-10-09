@@ -82,7 +82,9 @@ class Plots:
         self.y_cat_select.js_on_change('value',y_attribute_callback)
 
     def update(self):
+        self.change_btn_label(1)
         self.get_data(self.xx, self.x_select.value, self.y_select.value, self.other_attr, update=True)
+        self.change_btn_label(0)
 
     def save_data(self):
         dd = pd.DataFrame(self.sel_data.data)
@@ -381,6 +383,11 @@ class Plots:
 
     			self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.ts2_binned_tl_values[1])
 
+    def change_btn_label(self,a):
+        if a == 0:
+            self.btn.label = 'Re-Plot'
+        elif a == 1:
+            self.btn.label = 'Plotting ... Please Wait'
 
     def activate_buttons(self):
         self.btn.on_click(self.update)
