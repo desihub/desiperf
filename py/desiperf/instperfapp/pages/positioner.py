@@ -22,6 +22,7 @@ class PosAccPage(Page):
         self.DH = datahandler
 
         desc = """These plots show behavior for a single (selected) positioner over time.
+        Press Re-Plot button when change attribute, positioner selection, binning, or obstype.
             """
         self.description = Div(text=desc, width=800, css_classes=['inst-style'])
 
@@ -42,22 +43,26 @@ class PosAccPage(Page):
     def page_layout(self):
         this_layout = layout([[self.header],
                         [self.description],
-                        [ self.x_cat_select, self.y_cat_select],
+                        [self.x_cat_select, self.y_cat_select],
                         [self.x_select, self.y_select, self.btn],
 
+                        [self.line],
                         [self.select_header], 
                         [column([Div(text=' ',height=50), self.pos_enter, self.enter_pos_option, self.petal_select, self.can_select, self.pos_select]), self.scatt],
                         [self.attr_header],
 
+                        [self.line],
                         [self.bin_option, self.bin_slider, self.save_btn],
-                        [Div(text=' ',height=200),self.ts0],
+                        [Div(text=' ',height=200),self.ts0,[self.plot_trend_option, self.mp_tl_det]],
+
+                        [self.line],
                         [self.desc_header],
                         [self.data_det_option, self.details],
 
-                        [self.plot_trend_option, self.mp_tl_det, self.ts1_tl_det, self.ts2_tl_det],
+                        [self.line],
                         [self.time_header],
-                        [self.ts1],
-                        [self.ts2]])
+                        [self.ts1, self.ts1_tl_det],
+                        [self.ts2, self.ts2_tl_det]])
         tab = Panel(child=this_layout, title=self.title)
         return tab
 
@@ -106,7 +111,6 @@ class PosAccPage(Page):
                 self.pos_files = [os.path.join(self.DH.pos_dir, '{}.csv'.format(p)) for p in pos.CAN_ID]
                 self.index = pos.index
 
-
     def run(self):
         #Layout
         self.x_options = self.default_options
@@ -127,8 +131,8 @@ class PosAccPage(Page):
             ("dev","@DEVICE_LOC"),
             ("petal","@PETAL_LOC"),
             ("spectro","@SPECTRO"),
-            ("{}".format(self.x_select.value),"@attr1"),
-            ("{}".format(self.y_select.value),"@attr2"),]
+            ("x attr.","@attr1"),
+            ("y attr.","@attr2"),]
 
         self.pos_tooltips = [
             ("Petal","@PETAL"),

@@ -100,12 +100,16 @@ class SpectrographPage(Page):
                               [self.description],
                               [self.x_cat_select, self.y_cat_select, self.sp_select],
                               [self.x_select, self.y_select, self.btn],
-                              [self.obstype_option], 
+
+                              [self.line],
+                              [self.obstype_hdr, self.obstype_option], 
                               [self.bin_option,self.bin_slider, self.save_btn], 
                               [self.attr_header],
                               [self.ts0],
                               [self.ts1], 
                               [self.ts2],
+
+                              [self.line],
                               [self.desc_header],
                               [self.data_det_option, self.details]])
 
@@ -125,8 +129,8 @@ class SpectrographPage(Page):
         self.page_tooltips = [
             ("spec","@SPECTRO"),
             ("obstime","@DATETIME{%F}"),
-            ("{}".format(self.x_select.value),"@attr1"),
-            ("{}".format(self.y_select.value),"@attr2"),]
+            ("x attr.","@attr1"),
+            ("y attr.","@attr2"),]
 
         self.time_series_plot()
 

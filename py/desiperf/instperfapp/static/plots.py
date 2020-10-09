@@ -1,4 +1,4 @@
-from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, Slider, CheckboxGroup, ColumnDataSource, RadioGroup, CustomJS, Line
+from bokeh.models import Button, CheckboxButtonGroup, PreText, Select, Slider, CheckboxGroup, ColumnDataSource, RadioGroup, CustomJS, Line, HoverTool
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 from scipy import stats
@@ -12,9 +12,9 @@ class Plots:
     def __init__(self, title, source=None):
 
         self.plot_trend_option = CheckboxGroup(labels=['Plot Trend Line'])
-        self.mp_tl_det = PreText(text=' ',width=250)
-        self.ts1_tl_det = PreText(text=' ',width=250)
-        self.ts2_tl_det = PreText(text=' ',width=250)
+        self.mp_tl_det = PreText(text=' ',width=300)
+        self.ts1_tl_det = PreText(text=' ',width=300)
+        self.ts2_tl_det = PreText(text=' ',width=300)
 
         self.bin_data = None
         self.plot_source = None
@@ -106,6 +106,7 @@ class Plots:
                 fp.at[self.index, 'COLOR'] = 'red'
                 self.fp_source.data = fp
 
+
         else:
             if self.page_name == 'pos':
                 fp = self.DH.fiberpos
@@ -115,22 +116,18 @@ class Plots:
 
             self.plot_source = ColumnDataSource(data_)
             self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
-            print('plot source',pd.DataFrame(self.plot_source.data))
 
             self.bin_data = ColumnDataSource(self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data)))
             self.bin_data1 = ColumnDataSource(self.update_binned_data('DATETIME','attr1', pd.DataFrame(self.plot_source.data)))
             self.bin_data2 = ColumnDataSource(self.update_binned_data('DATETIME','attr2', pd.DataFrame(self.plot_source.data)))
-            print('bin data',pd.DataFrame(self.bin_data.data))
 
             self.mp_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[0])
             self.ts1_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])[0])
             self.ts2_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr2'])[0])
-            print('mp tl source',pd.DataFrame(self.mp_tl_source.data))
 
             self.mp_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data.data['centers'],self.bin_data.data['means'])[0])
             self.ts1_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data1.data['centers'],self.bin_data1.data['means'])[0])
             self.ts2_binned_tl_source = ColumnDataSource(self.calc_trend_line(self.bin_data2.data['centers'],self.bin_data2.data['means'])[0])
-            print('mp binned ',pd.DataFrame(self.mp_binned_tl_source.data))
 
         self.mp_tl_values = self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[1]
         self.ts1_tl_values = self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])[1]
@@ -171,29 +168,24 @@ class Plots:
                         selection_alpha=selection_alpha)
         return p
 
-    def circle_plot(self, fig, x, y, source, size=5, selection_color='orange', legend=None, color=None):
-        p = fig.circle(x=x, y=y, size=size, source=source, selection_color=selection_color, legend=legend, color=color)
-
-        return p
 
     def pos_loc_plot(self):
-        self.scatt = figure(width=450, height=450, x_axis_label='obsX / mm', y_axis_label='obsY / mm', tooltips=self.pos_tooltips)
+        self.scatt = figure(width=550, height=450, x_axis_label='obsX / mm', y_axis_label='obsY / mm', tooltips=self.pos_tooltips)
         self.scatt.circle(x='X', y='Y', size=5, source=self.fp_source, fill_color={'field': 'COLOR'})
 
 
     def time_series_plot(self):
-        if self.x_select.value == 'DATETIME':
-            axistype = 'datetime'
-        else:
-            axistype = None
+
+
+        hover = HoverTool(tooltips=self.page_tooltips, formatters={"@DATETIME":"datetime"},mode='vline')
 
         if self.page_name in ['fp','pos']:
-            self.ts0 = figure(width=450, height=450, tooltips=self.page_tooltips, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype,title='{} vs {}'.format(self.x_select.value, self.y_select.value))
-            self.ts1 = figure(width=900, height=300, x_axis_label=self.xx, tooltips=self.page_tooltips, y_axis_label=self.x_select.value, x_axis_type=axistype,title='Time vs. {}'.format(self.x_select.value))
-            self.ts2 = figure(width=900, height=300, x_axis_label=self.xx, tooltips=self.page_tooltips, y_axis_label=self.y_select.value, x_axis_type=axistype,title='Time vs. {}'.format(self.y_select.value))
+            self.ts0 = figure(width=550, height=450, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='{} vs {}'.format(self.x_select.value, self.y_select.value))
+            self.ts1 = figure(width=900, height=300, x_axis_label=self.xx, y_axis_label=self.x_select.value, x_axis_type='datetime', title='Time vs. {}'.format(self.x_select.value))
+            self.ts2 = figure(width=900, height=300, x_axis_label=self.xx, y_axis_label=self.y_select.value, x_axis_type='datetime', title='Time vs. {}'.format(self.y_select.value))
             self.c1 = self.corr_plot(self.ts0, x='attr1',y='attr2', source=self.plot_source)
-            self.c4 = self.circle_plot(self.ts1, x=self.xx,y='attr1',source=self.plot_source)
-            self.c7 = self.circle_plot(self.ts2, x=self.xx,y='attr2',source=self.plot_source)
+            self.c4 = self.ts1.circle(x=self.xx, y='attr1', size=5, source=self.plot_source, selection_color='orange')
+            self.c7 = self.ts2.circle(x=self.xx, y='attr1', size=5, source=self.plot_source, selection_color='orange')
 
             self.l1 = self.ts0.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.mp_tl_source)
             self.l2 = self.ts1.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts1_tl_source)
@@ -205,18 +197,31 @@ class Plots:
             for page in [self.l1,self.l2,self.l3,self.l4,self.l5,self.l6]:
                 page.visible = False
 
+            if self.x_select.value == 'DATETIME':
+                self.ts0.xaxis.axistype = 'datetime'
+
         elif self.page_name == 'spec':
-            self.ts0 = figure(plot_width=1000, plot_height=300, tooltips=self.page_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Blue Detectors')
-            self.ts1 = figure(plot_width=1000, plot_height=300, tooltips=self.page_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Red Detectors')
-            self.ts2 = figure(plot_width=1000, plot_height=300, tooltips=self.page_tooltips,  x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Infrared Detectors')
-            self.c1 = self.circle_plot(self.ts0, x='attrbx', y='attrby', color='color', source=self.blue_source, legend = 'AMP')
-            self.c4 = self.circle_plot(self.ts1, x='attrrx', y='attrry',  color='color', source=self.red_source, legend = 'AMP')
-            self.c7 = self.circle_plot(self.ts2, x='attrzx', y='attrzy',  color='color', source=self.zed_source, legend = 'AMP')
+            self.ts0 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Blue Detectors')
+            self.ts1 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Red Detectors')
+            self.ts2 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Infrared Detectors')
+            self.c1 = self.ts0.circle(x='attrbx', y='attrby', size=5, source=self.blue_source, selection_color='orange', color='color', legend='AMP')
+            self.c4 = self.ts1.circle(x='attrrx', y='attrry', size=5, source=self.red_source, selection_color='orange', color='color', legend='AMP') 
+            self.c7 = self.ts2.circle(x='attrzx', y='attrzy', size=5, source=self.zed_source, selection_color='orange', color='color', legend='AMP') 
+
+            if self.x_select.value == 'DATETIME':
+                self.ts0.xaxis.axistype = 'datetime'
+                self.ts1.xaxis.axistype = 'datetime'
+                self.ts2.xaxis.axistype = 'datetime'
+
 
             for p in [self.ts0, self.ts1, self.ts2]:
                 p.legend.title = "Amp"
                 p.legend.location = "top_right"
                 p.legend.orientation = "horizontal" 
+
+        self.ts0.add_tools(hover)
+        self.ts1.add_tools(hover)
+        self.ts2.add_tools(hover)
 
         self.c2 = self.ts0.circle(x='centers',y='means',color='red',source=self.bin_data)
         self.c3 = self.ts0.varea(x='centers',y1='upper',y2='lower',source=self.bin_data,alpha=0.4,color='red')
@@ -239,9 +244,9 @@ class Plots:
         				line.visible  = True
         			for line in [self.l4,self.l5,self.l6]:
         				line.visible = False
-        			self.mp_tl_det.text = self.attr_list[1] + ' Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.mp_tl_values[0]) + ' Y-Int: ' + np.str(self.mp_tl_values[1])
-        			self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: ' + np.str(self.ts1_tl_values[0]) + ' Y-Int: ' + np.str(self.ts1_tl_values[1])
-        			self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_tl_values[0]) + ' Y-Int: ' + np.str(self.ts2_tl_values[1])
+        			self.mp_tl_det.text = self.attr_list[1] + ' vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.mp_tl_values[0]) + ' Y-Int: ' + np.str(self.mp_tl_values[1])
+        			self.ts1_tl_det.text = 'Time vs. ' + self.attr_list[1] + '\nSlope: ' + np.str(self.ts1_tl_values[0]) + ' Y-Int: ' + np.str(self.ts1_tl_values[1])
+        			self.ts2_tl_det.text = 'Time vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_tl_values[0]) + ' Y-Int: ' + np.str(self.ts2_tl_values[1])
         if 1 in new:
         	for page in [self.c2, self.c3, self.c5, self.c6, self.c8, self.c9]:
         		page.visible = True
@@ -264,9 +269,9 @@ class Plots:
             self.cov.text = 'Covariance of {} & {}: \n{}'.format(self.x_select.value, self.y_select.value, str(pd.DataFrame(self.sel_data.data).cov()))
 
     def plot_binned_data(self):
-        self.bin_data.data = self.update_binned_data('attr1','attr2')
-        self.bin_data1.data = self.update_binned_data(self.xx, 'attr1')
-        self.bin_data2.data = self.update_binned_data(self.xx,'attr2')
+        self.bin_data.data = self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data))
+        self.bin_data1.data = self.update_binned_data(self.xx, 'attr1', pd.DataFrame(self.plot_source.data))
+        self.bin_data2.data = self.update_binned_data(self.xx,'attr2', pd.DataFrame(self.plot_source.data))
 
         for page in [self.l1,self.l2,self.l3,self.l4,self.l5,self.l6]:
         	page.visible = False

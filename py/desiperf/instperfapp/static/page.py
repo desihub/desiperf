@@ -19,6 +19,7 @@ class Page(Plots):
         self.data_source = source  # Here it will pick up the latest
         self.tools = 'pan,wheel_zoom,lasso_select,reset,undo,save,hover'
         self.bin_slider = Slider(start=1, end = 100, value=100, step=1, title="# of Bins", direction="rtl", width=300)
+        self.line = Div(text='------------------------------------------------------------------------------------------------------------------', width=800)
 
         self.details = PreText(text=' ', width=500)
         self.cov = PreText(text=' ', width=400)
@@ -29,6 +30,7 @@ class Page(Plots):
         self.bin_option = CheckboxButtonGroup(labels=["Raw Data","Binned Data"], active=[0], orientation='horizontal')
         self.data_det_option = RadioGroup(labels=["All Data","Selected Data"], active=0, width=150)
     
+        self.obstype_hdr = Div(text="Select Obstype: ",  width=150)
         self.obstype_option = CheckboxButtonGroup(name='ObsType', labels=['ALL','SCIENCE','DARK','ZERO','FLAT','TWILIGHT','OTHER'], active=[0], orientation='horizontal')
         self.obstype = ['ALL']
 
@@ -60,13 +62,13 @@ class Page(Plots):
     def save_data(self):
         dd = pd.DataFrame(self.sel_data.data)
         dd = dd.rename(columns={'attr1':self.x_select.value, 'attr2':self.y_select.value})
-        dd.to_csv('{}_data_selected.csv'.format(datetime.now().strftime('%Y%m%d_%H:%M:%S.%f')),index=False)
+        dd.to_csv('saved_data/{}_data_selected.csv'.format(datetime.now().strftime('%Y%m%d_%H:%M:%S.%f')),index=False)
 
     def data_selections(self, data):
         if 'ALL' in self.obstype:
             pass
         else:
-            data = data[data.obstype.isin(self.obstype)]
+            data = data[data.OBSTYPE.isin(self.obstype)]
         return data
 
     def obstype_selection(self, attr, old, new):
