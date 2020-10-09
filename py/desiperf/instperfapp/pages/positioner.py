@@ -225,8 +225,16 @@ class PosAccPage(Plots):
         self.pos_scatter(self.scatt, self.fp_source, 'COLOR')
 
     def pos_update(self):
+        self.change_btn_label(1)
         self.get_selection()
         self.get_pos_data(update=True)
+        self.change_btn_label(0)
+
+    def change_btn_label(self,a):
+        if a == 0:
+            self.btn.label = 'Re-Plot'
+        elif a == 1:
+            self.btn.label = 'Plotting ... Please Wait'
 
     def run(self):
         self.x_options = self.default_options
