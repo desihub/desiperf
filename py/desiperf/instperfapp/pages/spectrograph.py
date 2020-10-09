@@ -100,9 +100,9 @@ class SpectrographPage(Page):
                               [self.description],
                               [self.x_cat_select, self.y_cat_select, self.sp_select],
                               [self.x_select, self.y_select, self.btn],
+                              [self.obstype_hdr, self.obstype_option], 
 
                               [self.line],
-                              [self.obstype_hdr, self.obstype_option], 
                               [self.bin_option,self.bin_slider, self.save_btn], 
                               [self.attr_header],
                               [self.ts0],

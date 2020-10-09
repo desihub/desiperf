@@ -1,4 +1,4 @@
-ROM ubuntu:latest
+FROM ubuntu:latest
 LABEL maintainer="Parker Fagrelius <parkerf@berkeley.edu>"
 
 # Base Ubuntu packages
@@ -39,7 +39,8 @@ RUN \
             bokeh               \
             pandas              \
             numpy               \
-            scipy               
+            scipy               \ 
+            matplotlib
 
 ENV PATH=/opt/anaconda3/bin:$PATH
 WORKDIR /srv
