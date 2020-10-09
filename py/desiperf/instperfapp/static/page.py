@@ -75,6 +75,12 @@ class Page(Plots):
         otypes = np.array(['ALL','SCIENCE','DARK','ZERO','FLAT','TWILIGHT','OTHER'])
         self.obstype = otypes[new]
 
+    def change_btn_label(self,a):
+        if a == 0:
+            self.btn.label = 'Re-Plot'
+        elif a == 1:
+            self.btn.label = 'Plotting ... Please Wait'
+
     def data_det_type(self, attr, old, new):
         if new == 0:
             self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.dd.data).describe())
@@ -84,6 +90,7 @@ class Page(Plots):
             self.cov.text = 'Covariance of Option {} & {}: \n'.format(self.x_select.value, self.y_select.value, str(pd.DataFrame(self.sel_data.data).cov()))
 
     def update(self):
+        self.change_btn_label(1)
         if self.page_name == 'fp':
             self.get_data(self.xx, self.x_select.value, self.y_select.value, self.other_attr, update=True)
         if self.page_name == 'pos':
@@ -91,6 +98,7 @@ class Page(Plots):
             self.get_data(self.xx, self.x_select.value, self.y_select.value, self.other_attr, update=True)
         if self.page_name == 'spec':
             self.spectro_data(self.x_select.value, self.y_select.value, self.sp_select.value, update=True)
+        self.change_btn_label(0)
 
     def activate_buttons(self):
         self.btn.on_click(self.update)
@@ -101,3 +109,5 @@ class Page(Plots):
         self.data_det_option.on_change('active',self.data_det_type)
         self.plot_source.selected.on_change('indices', self.update_selected_data)
         self.plot_trend_option.on_change('active',self.plot_trend_line)
+
+        

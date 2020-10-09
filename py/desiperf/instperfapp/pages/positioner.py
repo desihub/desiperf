@@ -111,6 +111,7 @@ class PosAccPage(Page):
                 self.pos_files = [os.path.join(self.DH.pos_dir, '{}.csv'.format(p)) for p in pos.CAN_ID]
                 self.index = pos.index
 
+
     def run(self):
         #Layout
         self.x_options = self.default_options

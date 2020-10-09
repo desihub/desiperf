@@ -116,7 +116,6 @@ class SpectrographPage(Page):
         tab = Panel(child=this_layout, title=self.title)
         return tab
 
-
     def run(self):
         self.x_options = self.default_options
         self.y_options = self.default_options

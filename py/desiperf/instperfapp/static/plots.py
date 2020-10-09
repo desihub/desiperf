@@ -22,7 +22,33 @@ class Plots:
         self.red_source = None 
         self.zed_source = None
 
-    def update_binned_data(self, attr1, attr2, data):
+    def prepare_layout(self):
+        self.x_select = Select(title='X Attribute', options=self.x_options)
+        self.y_select = Select(title='Y Attribute', options=self.y_options)
+
+    def prepare_layout_two_menus(self):
+        self.x_cat_select = Select(title='X Category',options=self.x_cat_options, value=self.x_cat_options[0])
+        self.y_cat_select = Select(title='Y Category',options=self.y_cat_options, value=self.x_cat_options[1])
+        self.x_select = Select(title='X Attribute', options=self.x_options[self.x_cat_options[0]], value=self.x_options[self.x_cat_options[0]][0])
+        self.y_select = Select(title='Y Attribute', options=self.y_options[self.y_cat_options[1]], value=self.x_options[self.x_cat_options[1]][0])  
+        x_attribute_callback = CustomJS(args=dict(x_select=self.x_select),code = """
+            const opts = %s
+            console.log('changed selected options',cb_obj.value)
+            x_select.options = opts[cb_obj.value]
+            """ %self.x_options)
+
+        self.x_cat_select.js_on_change('value',x_attribute_callback)
+
+        y_attribute_callback = CustomJS(args=dict(y_select=self.y_select),code = """
+            const opts = %s
+            console.log('changed selected options',cb_obj.value)
+            y_select.options = opts[cb_obj.value]
+            """ %self.y_options)
+
+        self.y_cat_select.js_on_change('value',y_attribute_callback)
+
+
+    def update_binned_data(self,attr1, attr2, data):
         data = pd.DataFrame(data)
         dd = data[pd.notnull(data[attr1])]
         dd = dd[pd.notnull(dd[attr2])]
@@ -323,6 +349,5 @@ class Plots:
     			self.ts1_tl_det.text = 'Time Vs. ' + self.attr_list[1] + '\nSlope: ' + np.str(self.ts1_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.ts1_binned_tl_values[1])
 
     			self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: ' + np.str(self.ts2_binned_tl_values[0]) + ' Y-Int: ' + np.str(self.ts2_binned_tl_values[1])
-
 
     
