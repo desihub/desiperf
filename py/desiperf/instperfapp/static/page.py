@@ -21,8 +21,8 @@ class Page(Plots):
         self.bin_slider = Slider(start=1, end = 100, value=100, step=1, title="# of Bins", direction="rtl", width=300)
         self.line = Div(text='------------------------------------------------------------------------------------------------------------------', width=800)
 
-        self.details = PreText(text=' ', width=500)
-        self.cov = PreText(text=' ', width=400)
+        self.details = PreText(text=' ', width=800)
+        self.cov = PreText(text=' ', width=800)
 
         self.btn = Button(label='Re-Plot', css_classes=['connect_button'])
         self.save_btn = Button(label='Save Selected Data', width=200, css_classes=['save_button'])

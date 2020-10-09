@@ -128,11 +128,12 @@ class SpectrographPage(Page):
         self.page_tooltips = [
             ("spec","@SPECTRO"),
             ("obstime","@DATETIME{%F}"),
-            ("x attr.","@attr1"),
-            ("y attr.","@attr2"),]
+            ("x attr.","@attrbx"),
+            ("y attr.","@attrby"),]
 
         self.time_series_plot()
 
+        self.activate_buttons()
         self.data_det_option.on_change('active',self.data_det_type)
         self.blue_source.selected.on_change('indices', self.update_selected_data)
         self.red_source.selected.on_change('indices', self.update_selected_data)

@@ -22,6 +22,8 @@ class Plots:
         self.red_source = None 
         self.zed_source = None
 
+        self.tools = "pan,lasso,wheel_zoom,box_zoom,reset"
+
     def prepare_layout(self):
         self.x_select = Select(title='X Attribute', options=self.x_options)
         self.y_select = Select(title='Y Attribute', options=self.y_options)
@@ -187,14 +189,6 @@ class Plots:
         	self.ts2_tl_det.text = 'Time Vs. ' + self.attr_list[2] + '\nSlope: NA Y-Int: NA'
 
 
-    def corr_plot(self, fig, x, y, source, size=5, selection_color='orange', 
-                    alpha=0.75, nonselection_alpha=0.1, selection_alpha=0.5):
-        p = fig.circle(x=x, y=y, size=size, source=source, selection_color=selection_color,
-                        alpha=alpha, nonselection_alpha=nonselection_alpha,
-                        selection_alpha=selection_alpha)
-        return p
-
-
     def pos_loc_plot(self):
         self.scatt = figure(width=550, height=450, x_axis_label='obsX / mm', y_axis_label='obsY / mm', tooltips=self.pos_tooltips)
         self.scatt.circle(x='X', y='Y', size=5, source=self.fp_source, fill_color={'field': 'COLOR'})
@@ -202,14 +196,13 @@ class Plots:
 
     def time_series_plot(self):
 
-
-        hover = HoverTool(tooltips=self.page_tooltips, formatters={"@DATETIME":"datetime"},mode='vline')
+        hover = HoverTool(tooltips=self.page_tooltips, formatters={"@DATETIME":"datetime"}, names=["main",'blue','red','zed'], mode='vline')
 
         if self.page_name in ['fp','pos']:
-            self.ts0 = figure(width=550, height=450, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='{} vs {}'.format(self.x_select.value, self.y_select.value))
-            self.ts1 = figure(width=900, height=300, x_axis_label=self.xx, y_axis_label=self.x_select.value, x_axis_type='datetime', title='Time vs. {}'.format(self.x_select.value))
-            self.ts2 = figure(width=900, height=300, x_axis_label=self.xx, y_axis_label=self.y_select.value, x_axis_type='datetime', title='Time vs. {}'.format(self.y_select.value))
-            self.c1 = self.corr_plot(self.ts0, x='attr1',y='attr2', source=self.plot_source)
+            self.ts0 = figure(width=550, height=450, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, tools=self.tools, title='{} vs {}'.format(self.x_select.value, self.y_select.value))
+            self.ts1 = figure(width=900, height=300, x_axis_label=self.xx, y_axis_label=self.x_select.value, x_axis_type='datetime', tools=self.tools, title='Time vs. {}'.format(self.x_select.value))
+            self.ts2 = figure(width=900, height=300, x_axis_label=self.xx, y_axis_label=self.y_select.value, x_axis_type='datetime', tools=self.tools, title='Time vs. {}'.format(self.y_select.value))
+            self.c1 = self.ts0.circle(x='attr1', y='attr2', source=self.plot_source, size=5, name='main', selection_color='orange', alpha=0.75, nonselection_alpha=0.1, selection_alpha=0.5)
             self.c4 = self.ts1.circle(x=self.xx, y='attr1', size=5, source=self.plot_source, selection_color='orange')
             self.c7 = self.ts2.circle(x=self.xx, y='attr1', size=5, source=self.plot_source, selection_color='orange')
 
@@ -227,12 +220,12 @@ class Plots:
                 self.ts0.xaxis.axistype = 'datetime'
 
         elif self.page_name == 'spec':
-            self.ts0 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Blue Detectors')
-            self.ts1 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Red Detectors')
-            self.ts2 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, title='Infrared Detectors')
-            self.c1 = self.ts0.circle(x='attrbx', y='attrby', size=5, source=self.blue_source, selection_color='orange', color='color', legend='AMP')
-            self.c4 = self.ts1.circle(x='attrrx', y='attrry', size=5, source=self.red_source, selection_color='orange', color='color', legend='AMP') 
-            self.c7 = self.ts2.circle(x='attrzx', y='attrzy', size=5, source=self.zed_source, selection_color='orange', color='color', legend='AMP') 
+            self.ts0 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, tools=self.tools, title='Blue Detectors')
+            self.ts1 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, tools=self.tools, title='Red Detectors')
+            self.ts2 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, tools=self.tools, title='Infrared Detectors')
+            self.c1 = self.ts0.circle(x='attrbx', y='attrby', size=5, source=self.blue_source, name='blue', selection_color='orange', color='color', legend='AMP')
+            self.c4 = self.ts1.circle(x='attrrx', y='attrry', size=5, source=self.red_source, name='red', selection_color='orange', color='color', legend='AMP') 
+            self.c7 = self.ts2.circle(x='attrzx', y='attrzy', size=5, source=self.zed_source, name='zed', selection_color='orange', color='color', legend='AMP') 
 
             if self.x_select.value == 'DATETIME':
                 self.ts0.xaxis.axistype = 'datetime'
