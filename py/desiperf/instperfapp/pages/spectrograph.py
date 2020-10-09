@@ -8,13 +8,15 @@ from bokeh.plotting import figure
 from bokeh.transform import factor_cmap
 import pandas as pd
 
+from static.page import Page
 from static.plots import Plots
 from static.attributes import Spectrograph_attributes
 
 
-class SpectrographPage(Plots):
+class SpectrographPage(Page):
     def __init__(self, datahandler):
-        Plots.__init__(self,'Spectrograph', datahandler.detector_source)
+        Page.__init__(self,'Spectrograph', datahandler.detector_source)
+        self.page_name = 'spec'
         self.description = Div(text='These plots show the behavior of the detectors in each spectrograph over time.', width=800, css_classes=['inst-style'])
 
         
@@ -72,12 +74,12 @@ class SpectrographPage(Plots):
             self.blue_source.data = data_[data_.CAM == 'B']
             self.red_source.data = data_[data_.CAM == 'R']
             self.zed_source.data = data_[data_.CAM == 'Z']
-            self.tsb.xaxis.axis_label = self.x_select.value
-            self.tsb.yaxis.axis_label = self.y_select.value
-            self.tsr.xaxis.axis_label = self.x_select.value
-            self.tsr.yaxis.axis_label = self.y_select.value
-            self.tsz.xaxis.axis_label = self.x_select.value
-            self.tsz.yaxis.axis_label = self.y_select.value
+            self.ts0.xaxis.axis_label = self.x_select.value
+            self.ts0.yaxis.axis_label = self.y_select.value
+            self.ts1.xaxis.axis_label = self.x_select.value
+            self.ts1.yaxis.axis_label = self.y_select.value
+            self.ts2.xaxis.axis_label = self.x_select.value
+            self.ts2.yaxis.axis_label = self.y_select.value
 
             self.bin_data.data = self.update_binned_data('attrbx','attrby', pd.DataFrame(self.blue_source.data))
             self.bin_data1.data = self.update_binned_data('attrrx','attrry', pd.DataFrame(self.blue_source.data))
@@ -98,80 +100,39 @@ class SpectrographPage(Plots):
                               [self.description],
                               [self.x_cat_select, self.y_cat_select, self.sp_select],
                               [self.x_select, self.y_select, self.btn],
-                              [self.obstype_option], 
+
+                              [self.line],
+                              [self.obstype_hdr, self.obstype_option], 
                               [self.bin_option,self.bin_slider, self.save_btn], 
                               [self.attr_header],
-                              [self.tsb],
-                              [self.tsr], 
-                              [self.tsz],
+                              [self.ts0],
+                              [self.ts1], 
+                              [self.ts2],
+
+                              [self.line],
                               [self.desc_header],
                               [self.data_det_option, self.details]])
 
         tab = Panel(child=this_layout, title=self.title)
         return tab
 
-    def spec_time_series_plot(self):
-        
-        if self.x_select.value == 'DATETIME':
-            axistype = 'datetime'
-        else:
-            axistype = None
-        self.tsb = figure(plot_width=1000, plot_height=300, tools=self.tools, tooltips=self.default_tooltips, 
-                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Blue Detectors')
-        self.tsr = figure(plot_width=1000, plot_height=300, tools=self.tools, tooltips=self.default_tooltips,  
-                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Red Detectors')
-        self.tsz = figure(plot_width=1000, plot_height=300, tools=self.tools, tooltips=self.default_tooltips,  
-                            x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, x_axis_type=axistype, title='Infrared Detectors')
-
-        self.c1 = self.tsb.circle(x='attrbx', y='attrby', color='color', size=5, source=self.blue_source, selection_color="gray", legend = 'AMP')
-        self.c4 = self.tsr.circle(x='attrrx', y='attrry',  color='color', size=5, source=self.red_source, selection_color="gray", legend = 'AMP')
-        self.c7 = self.tsz.circle(x='attrzx', y='attrzy',  color='color', size=5, source=self.zed_source, selection_color="gray", legend = 'AMP')
-
-        self.c2 = self.tsb.circle(x='centers',y='means',color='red',source=self.bin_data)
-        self.c3 = self.tsb.varea(x='centers',y1='upper',y2='lower',source=self.bin_data,alpha=0.4,color='red')
-        self.c5 = self.tsr.circle(x='centers',y='means',color='red',source=self.bin_data1)
-        self.c6 = self.tsr.varea(x='centers',y1='upper',y2='lower',source=self.bin_data1,alpha=0.4,color='red')
-        self.c8 = self.tsz.circle(x='centers',y='means',color='red',source=self.bin_data2)
-        self.c9 = self.tsz.varea(x='centers',y1='upper',y2='lower',source=self.bin_data2,alpha=0.4,color='red')
-
-        
-        for p in [self.tsb, self.tsr, self.tsz]:
-            p.legend.title = "Amp"
-            p.legend.location = "top_right"
-            p.legend.orientation = "horizontal" 
-
-
-
-
-    def spec_update(self):
-        self.change_btn_label(1)
-        self.spectro_data(self.x_select.value, self.y_select.value, self.sp_select.value, update=True)
-        self.change_btn_label(0)
-
-    def change_btn_label(self,a):
-        if a == 0:
-            self.btn.label = 'Re-Plot'
-        if a == 1:
-            self.btn.label = 'Plotting ... Please Wait'
-
     def run(self):
         self.x_options = self.default_options
         self.y_options = self.default_options
         self.x_cat_options = self.default_categories
         self.y_cat_options = self.default_categories
-        self.prepare_layout_two_menus()
-        self.x_cat_select.value = self.default_categories[0]
-        self.y_cat_select.value = self.default_categories[1]
-        self.x_select.value = self.default_options[self.default_categories[0]][0]
-        self.y_select.value = self.default_options[self.default_categories[1]][0]
+        self.prepare_layout()
+
         self.spectro_data(self.x_select.value, self.y_select.value, self.sp_select.value)
-        self.spec_time_series_plot()
-        self.btn.on_click(self.spec_update)
-        self.bin_plot('new',[0],[0])
-        #self.replot_btn.on_click(self.spec_update)
-        self.bin_option.on_change('active',self.bin_plot)
-        self.obstype_option.on_change('active',self.obstype_selection)
-        self.save_btn.on_click(self.save_data)
+
+        self.page_tooltips = [
+            ("spec","@SPECTRO"),
+            ("obstime","@DATETIME{%F}"),
+            ("x attr.","@attr1"),
+            ("y attr.","@attr2"),]
+
+        self.time_series_plot()
+
         self.data_det_option.on_change('active',self.data_det_type)
         self.blue_source.selected.on_change('indices', self.update_selected_data)
         self.red_source.selected.on_change('indices', self.update_selected_data)

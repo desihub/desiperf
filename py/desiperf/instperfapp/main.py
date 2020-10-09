@@ -40,7 +40,7 @@ def init_pages(datahandler):
     for page in [FP, PP, SP]:
         page.run()
 
-    return FP.page_layout(), PP.page_layout(), SP.page_layout()
+    return FP.page_layout(), PP.page_layout(), SP.page_layout() #
 
 def update_data():
     print('Updating data')
@@ -62,10 +62,11 @@ def data_text(ds, fps):
     return df
 
 
+
 #- Initialize data & pages
 DH = DataHandler()
 DH.run()
-fp_tab, pp_tab, sp_tab = init_pages(DH)
+fp_tab, pp_tab, sp_tab = init_pages(DH) # 
 
 #- Welcome Page
 title_1 = Div(text="DESI Instrument Peformance Analysis Tool", width=800, css_classes=['h1-title-style'])
@@ -139,7 +140,7 @@ tab2 = fp_tab
 tab3 = pp_tab
 tab4 = sp_tab
 
-tabs = Tabs(tabs=[tab1, tab2, tab3, tab4])
+tabs = Tabs(tabs=[tab1, tab2, tab3, tab4]) #
 
 date_btn.on_click(update_data)
 
