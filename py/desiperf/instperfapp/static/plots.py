@@ -238,16 +238,16 @@ class Plots:
                 p.legend.location = "top_right"
                 p.legend.orientation = "horizontal" 
 
-        self.ts0.add_tools(hover)
-        self.ts1.add_tools(hover)
-        self.ts2.add_tools(hover)
-
         self.c2 = self.ts0.circle(x='centers',y='means',color='red',source=self.bin_data)
         self.c3 = self.ts0.varea(x='centers',y1='upper',y2='lower',source=self.bin_data,alpha=0.4,color='red')
         self.c5 = self.ts1.circle(x='centers',y='means',color='red',source=self.bin_data1)
         self.c6 = self.ts1.varea(x='centers',y1='upper',y2='lower',source=self.bin_data1,alpha=0.4,color='red')
         self.c8 = self.ts2.circle(x='centers',y='means',color='red',source=self.bin_data2)
         self.c9 = self.ts2.varea(x='centers',y1='upper',y2='lower',source=self.bin_data2,alpha=0.4,color='red')
+
+        self.ts0.add_tools(hover)
+        self.ts1.add_tools(hover)
+        self.ts2.add_tools(hover)
 
         self.bin_plot('new',[0],[0])
 
