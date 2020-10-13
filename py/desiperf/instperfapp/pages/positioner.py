@@ -137,6 +137,7 @@ class PosAccPage(Page):
 
         self.pos_tooltips = [
             ("Petal","@PETAL"),
+            ("POS ID","@CAN_ID"),
             ("CAN","@BUS_ID"),
             ("DEV LOC","@DEVICE"),
             ("FIBER No.","@FIBER"),
