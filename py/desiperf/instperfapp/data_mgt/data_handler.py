@@ -34,6 +34,10 @@ class DataHandler(object):
         fp_df = fptab.to_pandas()
         fp_df = self.get_datetime(fp_df)
         fp_df['obstype'] = fp_df['obstype'].astype('str').str.upper() 
+        #print(np.array(fp_df.columns))
+        fp_df['obstype'] = fp_df['obstype'].str.decode("utf-8")
+        fp_df['program'] = fp_df['program'].str.decode("utf-8")
+
         fp_df = fp_df[(fp_df.datetime >= self.start_date)&(fp_df.datetime <= self.end_date)]
         fp_df.columns = [x.upper() for x in fp_df.columns]
         self.focalplane_source = ColumnDataSource(fp_df)
