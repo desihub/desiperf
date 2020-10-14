@@ -132,8 +132,8 @@ class SPECData():
     def per_amp_columns(self, full_df):
         dfs = []
         for amp in ['A','B','C','D']:
-            df = full_df[full_df == amp]['NIGHT', 'EXPID', 'SPECTRO','CAM','READNOISE','BIAS', 'COSMICS_RATE']
-            cold = {}
+            df = full_df[full_df.AMP == amp][['NIGHT','EXPID','SPECTRO','CAM','READNOISE','BIAS', 'COSMICS_RATE']]
+            cold = {'NIGHT':'NIGHT','EXPID':'EXPID','SPECTRO':'SPECTRO','CAM':'CAM'}
             for col in ['READNOISE','BIAS', 'COSMICS_RATE']:
                 new_col = col + '_' + amp
                 cold[col] = new_col
@@ -143,12 +143,9 @@ class SPECData():
 
         full_df.drop(['AMP','READNOISE','BIAS', 'COSMICS_RATE'], axis=1, inplace=True)
         full_df.drop_duplicates(subset=['NIGHT', 'EXPID', 'SPECTRO','CAM'], keep='first')
-        print(full_df.shape)
-        df_final = pd.concat(dfs)
-        print(df_final.shape)
-        final_df = pd.merge(full_df, df_final, on=['NIGHT','EXPID','SPECTRO','CAM'])
-        print(final_df.shape)
-        return final_df
+        for df in dfs:
+            full_df = pd.merge(full_df, df, on=['NIGHT','EXPID','SPECTRO','CAM'], how='left')
+        return full_df
 
     def get_qa_data(self, f):
         per_amp_cols = ['NIGHT', 'EXPID', 'SPECTRO','CAM', 'AMP', 'READNOISE','BIAS', 'COSMICS_RATE']
@@ -158,8 +155,7 @@ class SPECData():
         if 'PER_AMP' in hdu_names:
             per_amp_df = Table(hdulist['PER_AMP'].data).to_pandas()
             final_df = per_amp_df[per_amp_cols]
-            final_df = self.per_amp_columns(per_amp_df)
-
+            final_df = self.per_amp_columns(final_df)
 
         if 'PER_CAMERA' in hdu_names:
             per_cam_df = Table(hdulist['PER_CAMERA'].data).to_pandas()
@@ -246,12 +242,20 @@ class SPECData():
         b = pd.merge(all_dfs[1], all_dfs[3],on=['EXPID','SPECTRO'],how='left')
         c = pd.merge(a, b, on='EXPID', how='inner')
         final_df = pd.merge(c, all_dfs[4], on=['EXPID','SPECTRO'],how='left')
+        final_df.drop(['zenith'], axis=1, inplace=True)
+        print(list(final_df.columns))
+        print(list(final_df.dtypes))
+        #print(final_df.select_dtypes(include=['object']))
         print('All merged: {}'.format(datetime.now()))
 
         #Save as fits.gz
         save_dir = './data/detector/'
-        t = Table.from_pandas(final_df)
-        t.write(save_dir + 'spec_all.fits.gz', format='fits')
+        final_df.to_csv(save_dir+'spec_all.csv',index=False)
+        print('CSV saved')
+        df = pd.read_csv(save_dir+'spec_all.csv')
+        print(df.dtypes)
+        t = Table.from_pandas(df)
+        t.write(save_dir + 'spec_all.fits.gz', overwrite=True,format='fits')
         # dfs = np.array_split(final_df, 10)
         # for i, df in enumerate(dfs):
         #     df.to_csv(save_dir+'qa_data_{}.csv'.format(i),index=False)
