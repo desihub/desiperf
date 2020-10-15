@@ -223,10 +223,14 @@ class Plots:
             self.ts0 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, tools=self.tools, title='Blue Detectors')
             self.ts1 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, tools=self.tools, title='Red Detectors')
             self.ts2 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, tools=self.tools, title='Infrared Detectors')
-            self.c1 = self.ts0.circle(x='attrbx', y='attrby', size=5, source=self.blue_source, selection_color='orange', color='color', legend='AMP')
-            self.c4 = self.ts1.circle(x='attrrx', y='attrry', size=5, source=self.red_source, selection_color='orange', color='color', legend='AMP') 
-            self.c7 = self.ts2.circle(x='attrzx', y='attrzy', size=5, source=self.zed_source, selection_color='orange', color='color', legend='AMP') 
-
+            
+            self.c1 = self.ts0.circle(x='attrbx', y='attrby', size=5, source=self.blue_source, selection_color='orange')
+            self.c4 = self.ts1.circle(x='attrrx', y='attrry', size=5, source=self.red_source, selection_color='orange') 
+            self.c7 = self.ts2.circle(x='attrzx', y='attrzy', size=5, source=self.zed_source, selection_color='orange') 
+            if self.plot_color == True:
+                self.c1.color = 'COLOR'
+                self.c4.color = 'COLOR'
+                self.c7.color = 'COLOR'
             if self.x_select.value == 'DATETIME':
                 self.ts0.xaxis.axistype = 'datetime'
                 self.ts1.xaxis.axistype = 'datetime'
