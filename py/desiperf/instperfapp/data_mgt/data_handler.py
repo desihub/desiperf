@@ -19,8 +19,8 @@ class DataHandler(object):
 
         self.data_dir = os.path.join(os.getcwd(),'instperfapp','data')
         self.pos_dir = os.path.join(self.data_dir, 'per_fiber')
-        self.fp_dir = os.path.join(self.data_dir, 'focalplane')
-        self.det_dir = os.path.join(self.data_dir, 'detector')
+        self.fp_dir = self.data_dir #os.path.join(self.data_dir, 'focalplane')
+        self.det_dir = self.data_dir #os.path.join(self.data_dir, 'detector')
 
         self.fiberpos = pd.read_csv('./instperfapp//data/fiberpos.csv')
 
