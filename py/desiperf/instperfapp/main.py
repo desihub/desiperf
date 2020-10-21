@@ -11,6 +11,7 @@ view at http://localhost:5006/instperfapp
 
 '''
 import pandas as pd
+import numpy as np
 
 from bokeh.io import curdoc
 from bokeh.models import Button, TextInput, PreText, ColumnDataSource
@@ -22,6 +23,7 @@ from bokeh.models.widgets.markups import Div
 from pages.focalplane import FocalPlanePage
 from pages.positioner import PosAccPage
 from pages.spectrograph import SpectrographPage
+from pages.telemetry import TelemetryPage
 from bokeh.models.callbacks import CustomJS
 
 from data_mgt.data_handler import DataHandler
@@ -42,10 +44,11 @@ def init_pages(datahandler):
     FP = FocalPlanePage(datahandler)
     PP = PosAccPage(datahandler) #Has its own data
     SP = SpectrographPage(datahandler)
-    for page in [FP, PP, SP]:
+    TP = TelemetryPage(datahandler)
+    for page in [FP, PP, SP, TP]:
         page.run()
 
-    return FP.page_layout(), PP.page_layout(), SP.page_layout() #
+    return FP.page_layout(), PP.page_layout(), SP.page_layout(), TP.page_layout() #
 
 def update_data():
     print('Updating data')
@@ -75,7 +78,7 @@ if PROFILE:
 #- Initialize data & pages
 DH = DataHandler()
 DH.run()
-fp_tab, pp_tab, sp_tab = init_pages(DH) # 
+fp_tab, pp_tab, sp_tab, tp_tab = init_pages(DH) # 
 
 if PROFILE: 
     # Print cProfile stats for startup
@@ -157,8 +160,9 @@ tab1 = Panel(child=layout1, title="Welcome")
 tab2 = fp_tab
 tab3 = pp_tab
 tab4 = sp_tab
+tab5 = tp_tab
 
-tabs = Tabs(tabs=[tab1, tab2, tab3, tab4]) #
+tabs = Tabs(tabs=[tab1, tab2, tab3, tab4, tab5]) #
 
 date_btn.on_click(update_data)
 

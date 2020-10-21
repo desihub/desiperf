@@ -1,12 +1,15 @@
 
 from bokeh.layouts import layout, column
 from bokeh.models.widgets import Panel
-from bokeh.models import ColumnDataSource, Select, CDSView, GroupFilter
+from bokeh.models import ColumnDataSource, Select, CDSView, GroupFilter, Legend, LegendItem
+
 from bokeh.models import Button, CheckboxButtonGroup, PreText, Select
+from bokeh.models.annotations import Title
 from bokeh.models.widgets.markups import Div
 from bokeh.plotting import figure
 from bokeh.transform import factor_cmap
 import pandas as pd
+import numpy as np
 
 from static.page import Page
 from static.plots import Plots
@@ -29,6 +32,7 @@ class SpectrographPage(Page):
         self.default_options = Spectrograph_attributes
 
         self.plot_color = False 
+        self.update_title = False
 
     def get_camera_attributes(self,attr):
         attrx = str(attr)
@@ -38,27 +42,36 @@ class SpectrographPage(Page):
     def get_amp_attributes(self, data, attr, attr2):
         dd = []
         for amp in ['A','B','C','D']:
-            d = data[[attr+'_'+amp, attr2, 'SPECTRO','CAM']]
+            d = data[[attr+'_'+amp, attr2, 'SPECTRO','CAM','DATETIME']]
             d['COLOR'] = self.colors[amp]
-            d = d.rename(columns={attr+'_'+amp:atttr})
+            #d['AMP'] = amp
+            d = d.rename(columns={attr+'_'+amp:attr})
             dd.append(d)
-        data_ = pd.concat(dd)
+        data = pd.concat(dd)
+        data_ = data.copy()
         for a in ['attrbx','attrrx','attrzx']:
             data_[a] = data_[attr]
-        del data_[attr1]
-        return data_
+        for b in ['attrby','attrry','attrzy']:
+            data_[b] = data_[attr2]
+        del data_[attr]
+        del data_[attr2]
+
+        self.update_title = True
+
+        return data, data_
 
     def spectro_data(self, attr1, attr2, spectro, update=False):
-        
         data = pd.DataFrame(self.data_source.data)
         data = self.data_selections(data)
+        data['COLOR'] = 'blue'
+        self.update_title = False
         if spectro != 'ALL':
             data = data.loc[data['SPECTRO'] == int(spectro)]
 
         if attr1 in ['CAMERA_TEMP','CAMERA_HUMIDITY']:
             attrbx, attrrx, attrzx = self.get_camera_attributes(attr1)
             attrby, attrry, attrzy = attr2, attr2, attr2
-            data = data[[attrbx, attrrx, attrzx, attr2, 'SPECTRO', 'CAM']]
+            data = data[[attrbx, attrrx, attrzx, attr2, 'SPECTRO', 'CAM','COLOR','DATETIME']]
             data_ = data.rename(columns={attrbx: 'attrbx', attrrx: 'attrrx',attrzx:'attrzx'})
             for b in ['attrby','attrry','attrzy']:
                 data_[b] = data[attr2]
@@ -66,21 +79,24 @@ class SpectrographPage(Page):
         elif attr2 in ['CAMERA_TEMP','CAMERA_HUMIDITY']:
             attrby, attrry, attrzy = self.get_camera_attributes(attr2)
             attrbx, attrrx, attrzx = attr1, attr1, attr1
-            data = data[[attr1, attrby, attrry, attrzy, 'SPECTRO', 'CAM']]
+            data = data[[attr1, attrby, attrry, attrzy, 'SPECTRO', 'CAM','COLOR','DATETIME']]
             data_ = data.rename(columns={attrby: 'attrby', attrry: 'attrry',attrzy:'attrzy'})
             for a in ['attrbx','attrrx','attrzx']:
                 data_[a] = data[attr1]
             del data_[attr1]
+
         elif attr1 in ['READNOISE','BIAS','COSMICS_RATE']:
-            data_ = self.get_amp_attributes(data, attr1, attr2)
-            self.plot_color = True
+            
+            data, data_ = self.get_amp_attributes(data, attr1, attr2)
+            
         elif attr2 in ['READNOISE','BIAS','COSMICS_RATE']:
-            data_ = self.get_amp_attributes(data, attr2, attr1)
-            self.plot_color = True
+
+            data, data_ = self.get_amp_attributes(data, attr2, attr1)
+
         else:
             attrbx, attrrx, attrzx = attr1, attr1, attr1
             attrby, attrry, attrzy = attr2, attr2, attr2
-            data = data[[attr1, attr2, 'SPECTRO', 'CAM']]
+            data = data[[attr1, attr2, 'SPECTRO', 'CAM','COLOR','DATETIME']]
             data_ = data.copy()
             for a in ['attrbx','attrrx','attrzx']:
                 data_[a] = data_[attr1]
@@ -89,9 +105,10 @@ class SpectrographPage(Page):
             del data_[attr1]
             del data_[attr2]
 
-        #data_['color'] = [self.colors[i] for i in list(data_.AMP)]
+        del data['DATETIME']
         self.details.text = 'Data Overview: \n ' + str(data.describe())
         
+        amp_title = '(A:red, B:blue, C: yellow, D:green)'
         if update:
             self.blue_source.data = data_[data_.CAM == 'B']
             self.red_source.data = data_[data_.CAM == 'R']
@@ -102,6 +119,13 @@ class SpectrographPage(Page):
             self.ts1.yaxis.axis_label = self.y_select.value
             self.ts2.xaxis.axis_label = self.x_select.value
             self.ts2.yaxis.axis_label = self.y_select.value
+            self.ts0.title.text = "Blue detectors "
+            self.ts1.title.text = "Red detectors "
+            self.ts2.title.text = "Infrared detectors "
+            if self.update_title:
+                self.ts0.title.text = "Blue detectors "+amp_title
+                self.ts1.title.text = "Red detectors "+amp_title
+                self.ts2.title.text = "Infrared detectors "+amp_title
 
             self.bin_data.data = self.update_binned_data('attrbx','attrby', pd.DataFrame(self.blue_source.data))
             self.bin_data1.data = self.update_binned_data('attrrx','attrry', pd.DataFrame(self.blue_source.data))
@@ -146,7 +170,6 @@ class SpectrographPage(Page):
         self.prepare_layout()
 
         self.spectro_data(self.x_select.value, self.y_select.value, self.sp_select.value)
-
         self.page_tooltips = [
             ("spec","@SPECTRO"),
             ("obstime","@DATETIME{%F}"),

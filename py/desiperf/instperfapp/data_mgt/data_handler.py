@@ -46,11 +46,10 @@ class DataHandler(object):
         #files = glob.glob(os.path.join(self.det_dir, 'qa_data_*.csv'))
         #spec_df = pd.concat([pd.read_csv(f, low_memory=False) for f in files])
 
-        specfile = os.path.join(self.det_dir, 'qa_data_full.fits.gz') #spec_all.fits.gz
+        specfile = os.path.join(self.det_dir, 'spec_all.fits.gz') #spec_all.fits.gz
         spectab = Table.read(specfile)
         spec_df = spectab.to_pandas()
         spec_df['date_obs'] = spec_df['date_obs'].str.decode("utf-8")
-        spec_df['AMP'] = spec_df['AMP'].str.decode("utf-8")
         spec_df['CAM'] = spec_df['CAM'].str.decode("utf-8")
         spec_df['obstype'] = spec_df['obstype'].str.decode("utf-8")
         spec_df['program'] = spec_df['program'].str.decode("utf-8")
