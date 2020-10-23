@@ -288,9 +288,12 @@ class FPData():
         print(final_df.shape)
 
         save_dir = './data/focalplane/'
-        dfs = np.array_split(final_df, 10)
-        for i, df in enumerate(dfs):
-            df.to_csv(save_dir+'fpa_data_{}.csv'.format(i),index=False)
+        t = Table.from_pandas(final_df)
+        t.write(save_dir + 'fpa_all.fits.gz', format='fits')
+
+        # dfs = np.array_split(final_df, 10)
+        # for i, df in enumerate(dfs):
+        #     df.to_csv(save_dir+'fpa_data_{}.csv'.format(i),index=False)
         print("FP Done")
 
 

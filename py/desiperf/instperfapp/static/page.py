@@ -17,7 +17,7 @@ class Page(Plots):
         self.title = title
         self.header = Div(text="{}".format(title), width=500, css_classes=['h1-title-style'])
         self.data_source = source  # Here it will pick up the latest
-        self.tools = 'pan,wheel_zoom,lasso_select,reset,undo,save,hover'
+
         self.bin_slider = Slider(start=1, end = 100, value=100, step=1, title="# of Bins", direction="rtl", width=300)
         self.line = Div(text='------------------------------------------------------------------------------------------------------------------', width=800)
 

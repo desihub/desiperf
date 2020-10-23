@@ -19,8 +19,8 @@ class DataHandler(object):
 
         self.data_dir = os.path.join(os.getcwd(),'instperfapp','data')
         self.pos_dir = os.path.join(self.data_dir, 'per_fiber')
-        self.fp_dir = os.path.join(self.data_dir, 'focalplane')
-        self.det_dir = os.path.join(self.data_dir, 'detector')
+        self.fp_dir = self.data_dir #os.path.join(self.data_dir, 'focalplane')
+        self.det_dir = self.data_dir #os.path.join(self.data_dir, 'detector')
 
         self.fiberpos = pd.read_csv('./instperfapp//data/fiberpos.csv')
 
@@ -43,10 +43,19 @@ class DataHandler(object):
         self.focalplane_source = ColumnDataSource(fp_df)
 
     def get_detector_data(self):
-        files = glob.glob(os.path.join(self.det_dir, 'qa_data_*.csv'))
-        spec_df = pd.concat([pd.read_csv(f, low_memory=False) for f in files])
+        #files = glob.glob(os.path.join(self.det_dir, 'qa_data_*.csv'))
+        #spec_df = pd.concat([pd.read_csv(f, low_memory=False) for f in files])
+
+        specfile = os.path.join(self.det_dir, 'spec_all.fits.gz') #spec_all.fits.gz
+        spectab = Table.read(specfile)
+        spec_df = spectab.to_pandas()
+        spec_df['date_obs'] = spec_df['date_obs'].str.decode("utf-8")
+        spec_df['CAM'] = spec_df['CAM'].str.decode("utf-8")
+        spec_df['obstype'] = spec_df['obstype'].str.decode("utf-8")
+        spec_df['program'] = spec_df['program'].str.decode("utf-8")
         spec_df = self.get_datetime(spec_df)
-        spec_df['obstype'] = spec_df['obstype'].astype('str').str.upper() 
+
+        #spec_df['obstype'] = spec_df['obstype'].astype('str').str.upper() 
         spec_df = spec_df[(spec_df.datetime >= self.start_date)&(spec_df.datetime <= self.end_date)]
         spec_df.columns = [x.upper() for x in spec_df.columns]
         self.detector_source = ColumnDataSource(spec_df)

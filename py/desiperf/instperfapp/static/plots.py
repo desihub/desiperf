@@ -22,7 +22,7 @@ class Plots:
         self.red_source = None 
         self.zed_source = None
 
-        self.tools = 'pan,wheel_zoom,lasso_select,reset,undo,save,hover'
+        self.tools = 'pan,wheel_zoom,lasso_select,reset,undo,save'
 
     def prepare_layout(self):
         self.x_select = Select(title='X Attribute', options=self.x_options)
@@ -101,10 +101,10 @@ class Plots:
             data = pd.DataFrame(self.data_source.data)
             data = self.data_selections(data)
 
-
         data = data[self.attr_list]
         self.dd = ColumnDataSource(data[[xx, attr1, attr2]])
         data_ = data.rename(columns={attr1:'attr1', attr2:'attr2'})     
+        data_['COLOR'] = 'blue'
 
         if update:
             self.plot_source.data = data_
@@ -146,8 +146,8 @@ class Plots:
             self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
 
             self.bin_data = ColumnDataSource(self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data)))
-            self.bin_data1 = ColumnDataSource(self.update_binned_data('DATETIME','attr1', pd.DataFrame(self.plot_source.data)))
-            self.bin_data2 = ColumnDataSource(self.update_binned_data('DATETIME','attr2', pd.DataFrame(self.plot_source.data)))
+            self.bin_data1 = ColumnDataSource(self.update_binned_data(self.xx,'attr1', pd.DataFrame(self.plot_source.data)))
+            self.bin_data2 = ColumnDataSource(self.update_binned_data(self.xx,'attr2', pd.DataFrame(self.plot_source.data)))
 
             self.mp_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['attr1'],self.plot_source.data['attr2'])[0])
             self.ts1_tl_source = ColumnDataSource(self.calc_trend_line(self.plot_source.data['DATETIME'],self.plot_source.data['attr1'])[0])
@@ -196,15 +196,13 @@ class Plots:
 
     def time_series_plot(self):
 
-        hover = HoverTool(tooltips=self.page_tooltips, formatters={"@DATETIME":"datetime"}, names=["main",'blue','red','zed'], mode='vline')
-
         if self.page_name in ['fp','pos']:
             self.ts0 = figure(width=550, height=450, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, tools=self.tools, title='{} vs {}'.format(self.x_select.value, self.y_select.value))
             self.ts1 = figure(width=900, height=300, x_axis_label=self.xx, y_axis_label=self.x_select.value, x_axis_type='datetime', tools=self.tools, title='Time vs. {}'.format(self.x_select.value))
             self.ts2 = figure(width=900, height=300, x_axis_label=self.xx, y_axis_label=self.y_select.value, x_axis_type='datetime', tools=self.tools, title='Time vs. {}'.format(self.y_select.value))
-            self.c1 = self.ts0.circle(x='attr1', y='attr2', source=self.plot_source, size=5, name='main', selection_color='orange', alpha=0.75, nonselection_alpha=0.1, selection_alpha=0.5)
-            self.c4 = self.ts1.circle(x=self.xx, y='attr1', size=5, source=self.plot_source, selection_color='orange')
-            self.c7 = self.ts2.circle(x=self.xx, y='attr1', size=5, source=self.plot_source, selection_color='orange')
+            self.c1 = self.ts0.circle(x='attr1', y='attr2', source=self.plot_source, size=5,  color='COLOR', selection_color='orange', alpha=0.75, nonselection_alpha=0.1, selection_alpha=0.5)
+            self.c4 = self.ts1.circle(x=self.xx, y='attr1', size=5, source=self.plot_source,  color='COLOR', selection_color='orange')
+            self.c7 = self.ts2.circle(x=self.xx, y='attr2', size=5, source=self.plot_source,  color='COLOR', selection_color='orange')
 
             self.l1 = self.ts0.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.mp_tl_source)
             self.l2 = self.ts1.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts1_tl_source)
@@ -223,20 +221,15 @@ class Plots:
             self.ts0 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, tools=self.tools, title='Blue Detectors')
             self.ts1 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, tools=self.tools, title='Red Detectors')
             self.ts2 = figure(plot_width=1000, plot_height=300, x_axis_label=self.x_select.value, y_axis_label=self.y_select.value, tools=self.tools, title='Infrared Detectors')
-            self.c1 = self.ts0.circle(x='attrbx', y='attrby', size=5, source=self.blue_source, name='blue', selection_color='orange', color='color', legend='AMP')
-            self.c4 = self.ts1.circle(x='attrrx', y='attrry', size=5, source=self.red_source, name='red', selection_color='orange', color='color', legend='AMP') 
-            self.c7 = self.ts2.circle(x='attrzx', y='attrzy', size=5, source=self.zed_source, name='zed', selection_color='orange', color='color', legend='AMP') 
+            
+            self.c1 = self.ts0.circle(x='attrbx', y='attrby', size=5, source=self.blue_source,  color='COLOR', selection_color='orange')
+            self.c4 = self.ts1.circle(x='attrrx', y='attrry', size=5, source=self.red_source,  color='COLOR', selection_color='orange') 
+            self.c7 = self.ts2.circle(x='attrzx', y='attrzy', size=5, source=self.zed_source,  color='COLOR', selection_color='orange') 
 
             if self.x_select.value == 'DATETIME':
                 self.ts0.xaxis.axistype = 'datetime'
                 self.ts1.xaxis.axistype = 'datetime'
                 self.ts2.xaxis.axistype = 'datetime'
-
-
-            for p in [self.ts0, self.ts1, self.ts2]:
-                p.legend.title = "Amp"
-                p.legend.location = "top_right"
-                p.legend.orientation = "horizontal" 
 
         self.c2 = self.ts0.circle(x='centers',y='means',color='red',source=self.bin_data)
         self.c3 = self.ts0.varea(x='centers',y1='upper',y2='lower',source=self.bin_data,alpha=0.4,color='red')
@@ -245,6 +238,7 @@ class Plots:
         self.c8 = self.ts2.circle(x='centers',y='means',color='red',source=self.bin_data2)
         self.c9 = self.ts2.varea(x='centers',y1='upper',y2='lower',source=self.bin_data2,alpha=0.4,color='red')
 
+        hover = HoverTool(tooltips=self.page_tooltips, renderers=[self.c1, self.c4, self.c7], formatters={"@DATETIME":"datetime"}, mode='vline')
         self.ts0.add_tools(hover)
         self.ts1.add_tools(hover)
         self.ts2.add_tools(hover)
@@ -287,18 +281,18 @@ class Plots:
             self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.sel_data.data).describe())
             self.cov.text = 'Covariance of {} & {}: \n{}'.format(self.x_select.value, self.y_select.value, str(pd.DataFrame(self.sel_data.data).cov()))
 
-    def plot_binned_data(self):
-        self.bin_data.data = self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data))
-        self.bin_data1.data = self.update_binned_data(self.xx, 'attr1', pd.DataFrame(self.plot_source.data))
-        self.bin_data2.data = self.update_binned_data(self.xx,'attr2', pd.DataFrame(self.plot_source.data))
+    # def plot_binned_data(self):
+    #     self.bin_data.data = self.update_binned_data('attr1','attr2', pd.DataFrame(self.plot_source.data))
+    #     self.bin_data1.data = self.update_binned_data(self.xx, 'attr1', pd.DataFrame(self.plot_source.data))
+    #     self.bin_data2.data = self.update_binned_data(self.xx,'attr2', pd.DataFrame(self.plot_source.data))
 
-        for page in [self.l1,self.l2,self.l3,self.l4,self.l5,self.l6]:
-        	page.visible = False
+    #     for page in [self.l1,self.l2,self.l3,self.l4,self.l5,self.l6]:
+    #     	page.visible = False
 
-        if self.plot_trend_option.active == [0]:
-        	self.l4 = self.ts0.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.mp_binned_tl_source)
-        	self.l5 = self.ts1.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts1_binned_tl_source)
-        	self.l6 = self.ts2.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts2_binned_tl_source)
+    #     if self.plot_trend_option.active == [0]:
+    #     	self.l4 = self.ts0.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.mp_binned_tl_source)
+    #     	self.l5 = self.ts1.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts1_binned_tl_source)
+    #     	self.l6 = self.ts2.line(x='attr',y='trend_line',line_width=2,line_alpha=0.4,line_color='black',source=self.ts2_binned_tl_source)
 
 
     def calc_trend_line(self,x_attr,y_attr):
