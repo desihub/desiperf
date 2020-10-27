@@ -64,8 +64,8 @@ def update_data():
     date_btn.label = 'Updated' 
 
 def data_text(ds, fps):
-    sp = ['Spectrograph Data', int(min(ds.NIGHT)), int(max(ds.NIGHT)), int(min(ds.EXPID)), int(max(ds.EXPID))]
-    fp = ['FocalPlane Data', int(min(fps.NIGHT)), int(max(fps.NIGHT)), int(min(fps.EXPID)), int(max(fps.EXPID))]
+    sp = ['Spectrograph Data', int(min(np.unique(ds.NIGHT))), int(max(np.unique(ds.NIGHT))), int(min(np.unique(ds.EXPID))), int(max(np.unique(ds.EXPID)))]
+    fp = ['FocalPlane Data', int(min(np.unique(fps.NIGHT))), int(max(np.unique(fps.NIGHT))), int(min(np.unique(fps.EXPID))), int(max(np.unique(fps.EXPID)))]
     df = pd.DataFrame([sp,fp], columns = ['type','date_start','date_end','exp_start','exp_end'])
     return df
 
@@ -116,8 +116,8 @@ data_table = DataTable(source=data_source, columns=columns, height=100)
 
 
 subtitle1_5 = Div(text="<b>Limit the data to a shorter date range below.</b>", width=800, css_classes=['inst-style'])
-start_date = TextInput(title ='Start Date', width=200, placeholder = str(int(min(ds.NIGHT))))
-end_date = TextInput(title ='End Date', width=200, placeholder = str(int(max(ds.NIGHT))))
+start_date = TextInput(title ='Start Date', width=200, placeholder = str(int(min(np.unique(ds.NIGHT)))))
+end_date = TextInput(title ='End Date', width=200, placeholder = str(int(max(np.unique(ds.NIGHT)))))
 data_update_info = Div(text=' ', width=800, css_classes=['alert-style'])
 date_btn = Button(label='Update Date Range', width=200, css_classes=['save_button'])
 

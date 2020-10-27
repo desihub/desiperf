@@ -102,7 +102,8 @@ class Plots:
             data = self.data_selections(data)
 
         data = data[self.attr_list]
-        self.dd = ColumnDataSource(data[[xx, attr1, attr2]])
+        self.dd = data[[attr1, attr2]]
+        self.dd = self.dd.loc[:,~self.dd.columns.duplicated()]
         data_ = data.rename(columns={attr1:'attr1', attr2:'attr2'})     
         data_['COLOR'] = 'blue'
 
@@ -166,8 +167,8 @@ class Plots:
 
 
         if self.data_det_option.active == 0:
-            self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.dd.data).describe())
-            self.cov.text = 'Covariance of {} & {}: \n{}'.format(self.x_select.value, self.y_select.value, str(pd.DataFrame(self.dd.data).cov()))
+            self.details.text = 'Data Overview: \n ' + str(self.dd.describe())
+            self.cov.text = 'Covariance of {} & {}: \n{}'.format(self.x_select.value, self.y_select.value, str(self.dd.cov()))
 
 
         if self.plot_trend_option.active == [0]:

@@ -27,8 +27,7 @@ class DataHandler(object):
         self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
 
     def get_focalplane_data(self):
-        # files = glob.glob(os.path.join(self.fp_dir, 'fpa_data_*.csv')) 
-        # fp_df = pd.concat([pd.read_csv(f, low_memory=False) for f in files])
+
         fpfile = os.path.join(self.fp_dir, 'fpa_all.fits.gz')
         fptab = Table.read(fpfile)
         fp_df = fptab.to_pandas()
@@ -43,10 +42,8 @@ class DataHandler(object):
         self.focalplane_source = ColumnDataSource(fp_df)
 
     def get_detector_data(self):
-        #files = glob.glob(os.path.join(self.det_dir, 'qa_data_*.csv'))
-        #spec_df = pd.concat([pd.read_csv(f, low_memory=False) for f in files])
 
-        specfile = os.path.join(self.det_dir, 'spec_all.fits.gz') #spec_all.fits.gz
+        specfile = os.path.join(self.det_dir, 'spec_all.fits.gz') 
         spectab = Table.read(specfile)
         spec_df = spectab.to_pandas()
         spec_df['date_obs'] = spec_df['date_obs'].str.decode("utf-8")
@@ -55,8 +52,8 @@ class DataHandler(object):
         spec_df['program'] = spec_df['program'].str.decode("utf-8")
         spec_df = self.get_datetime(spec_df)
 
-        #spec_df['obstype'] = spec_df['obstype'].astype('str').str.upper() 
         spec_df = spec_df[(spec_df.datetime >= self.start_date)&(spec_df.datetime <= self.end_date)]
+
         spec_df.columns = [x.upper() for x in spec_df.columns]
         self.detector_source = ColumnDataSource(spec_df)
 

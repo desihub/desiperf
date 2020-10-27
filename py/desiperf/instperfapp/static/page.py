@@ -83,8 +83,8 @@ class Page(Plots):
 
     def data_det_type(self, attr, old, new):
         if new == 0:
-            self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.dd.data).describe())
-            self.cov.text = 'Covariance of Option {} & {}: \n'.format(self.x_select.value, self.y_select.value, str(pd.DataFrame(self.dd.data).cov()))
+            self.details.text = 'Data Overview: \n ' + str(self.dd.describe())
+            self.cov.text = 'Covariance of Option {} & {}: \n'.format(self.x_select.value, self.y_select.value, str(self.dd.cov()))
         if new == 1:
             self.details.text = 'Data Overview: \n ' + str(pd.DataFrame(self.sel_data.data).describe())
             self.cov.text = 'Covariance of Option {} & {}: \n'.format(self.x_select.value, self.y_select.value, str(pd.DataFrame(self.sel_data.data).cov()))

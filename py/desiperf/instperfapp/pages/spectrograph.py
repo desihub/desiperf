@@ -42,8 +42,9 @@ class SpectrographPage(Page):
     def get_amp_attributes(self, data, attr, attr2):
         dd = []
         for amp in ['A','B','C','D']:
+            data = data[np.isfinite(data[attr+'_'+amp])]
             d = data[[attr+'_'+amp, attr2, 'SPECTRO','CAM','DATETIME']]
-            d['COLOR'] = self.colors[amp]
+            d.at[:,'COLOR'] = self.colors[amp]
             #d['AMP'] = amp
             d = d.rename(columns={attr+'_'+amp:attr})
             dd.append(d)
