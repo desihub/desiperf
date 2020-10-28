@@ -39,7 +39,7 @@ class FocalPlanePage(Page):
                               [self.line],
                               [self.attr_header],
                               [self.bin_option, self.bin_slider, self.save_btn],
-                              [Div(text=" ",width=200), self.ts0, [self.plot_trend_option, self.mp_tl_det]],
+                              [self.ts0, [self.plot_trend_option, self.mp_tl_det]],
 
                               [self.line],
                               [self.desc_header],
