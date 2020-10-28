@@ -5,6 +5,7 @@ from bokeh.plotting import figure
 from scipy import stats
 import pandas as pd 
 import numpy as np 
+import os
 from datetime import datetime
 from astropy.time import Time 
 import matplotlib.dates as mdates
@@ -26,6 +27,7 @@ class Page(Plots):
 
         self.btn = Button(label='Re-Plot', css_classes=['connect_button'])
         self.save_btn = Button(label='Save Selected Data', width=200, css_classes=['save_button'])
+        self.save_location = Div(text=' ', css_classes=['inst-style'], width=800)
 
         self.bin_option = CheckboxButtonGroup(labels=["Raw Data","Binned Data"], active=[0], orientation='horizontal')
         self.data_det_option = RadioGroup(labels=["All Data","Selected Data"], active=0, width=150)
@@ -62,7 +64,9 @@ class Page(Plots):
     def save_data(self):
         dd = pd.DataFrame(self.sel_data.data)
         dd = dd.rename(columns={'attr1':self.x_select.value, 'attr2':self.y_select.value})
-        dd.to_csv('saved_data/{}_data_selected.csv'.format(datetime.now().strftime('%Y%m%d_%H:%M:%S.%f')),index=False)
+        filen = os.getcwd() + '/saved_data/{}_data_selected.csv'.format(datetime.now().strftime('%Y%m%d_%H:%M:%S.%f'))
+        dd.to_csv(filen,index=False)
+        self.save_location.text = 'Last selection saved at {}'.format(filen)
 
     def data_selections(self, data):
         if 'ALL' in self.obstype:

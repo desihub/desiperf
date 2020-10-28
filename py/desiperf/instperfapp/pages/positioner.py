@@ -43,6 +43,7 @@ class PosAccPage(Page):
     def page_layout(self):
         this_layout = layout([[self.header],
                         [self.description],
+                        [self.save_location],
                         [self.x_cat_select, self.y_cat_select],
                         [self.x_select, self.y_select, self.btn],
 
