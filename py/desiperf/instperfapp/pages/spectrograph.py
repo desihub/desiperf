@@ -129,8 +129,8 @@ class SpectrographPage(Page):
                 self.ts2.title.text = "Infrared detectors "+amp_title
 
             self.bin_data.data = self.update_binned_data('attrbx','attrby', pd.DataFrame(self.blue_source.data))
-            self.bin_data1.data = self.update_binned_data('attrrx','attrry', pd.DataFrame(self.blue_source.data))
-            self.bin_data2.data = self.update_binned_data('attrzx','attrzy', pd.DataFrame(self.blue_source.data))
+            self.bin_data1.data = self.update_binned_data('attrrx','attrry', pd.DataFrame(self.red_source.data))
+            self.bin_data2.data = self.update_binned_data('attrzx','attrzy', pd.DataFrame(self.zed_source.data))
 
         else:
             self.sel_data = ColumnDataSource(data=dict(attr1=[], attr2=[]))
