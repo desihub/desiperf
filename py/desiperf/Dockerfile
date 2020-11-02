@@ -52,5 +52,6 @@ ENV XDG_CONFIG_HOME=/srv/config
 RUN mkdir -p $XDG_CONFIG_HOME/astropy
 
 ADD instperfapp /srv/instperfapp
+RUN python3 -c "import astropy"
 
 CMD ["bokeh", "serve", "--show", "instperfapp"]
