@@ -32,6 +32,7 @@ class FocalPlanePage(Page):
     def page_layout(self):
         this_layout = layout([[self.header],
                               [self.description],
+                              [self.save_location],
                               [self.x_cat_select, self.y_cat_select],
                               [self.x_select, self.y_select, self.btn],
                               [self.obstype_hdr, self.obstype_option],
@@ -39,7 +40,7 @@ class FocalPlanePage(Page):
                               [self.line],
                               [self.attr_header],
                               [self.bin_option, self.bin_slider, self.save_btn],
-                              [Div(text=" ",width=200), self.ts0, [self.plot_trend_option, self.mp_tl_det]],
+                              [self.ts0, [self.plot_trend_option, self.mp_tl_det]],
 
                               [self.line],
                               [self.desc_header],
