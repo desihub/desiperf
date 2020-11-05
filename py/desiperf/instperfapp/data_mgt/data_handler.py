@@ -39,6 +39,28 @@ class DataHandler(object):
         fp_df = fp_df[(fp_df.datetime >= self.start_date)&(fp_df.datetime <= self.end_date)]
         fp_df.columns = [x.upper() for x in fp_df.columns]
         fp_df = fp_df.loc[:,~fp_df.columns.duplicated()]
+
+        fp_df['FOCUS'] = fp_df['FOCUS'].str.decode("utf-8")
+        fp_df['FOCUS'] = fp_df['FOCUS'].map(lambda x: x.lstrip('[').rstrip(']'))
+
+        fp_df['FOCUS0'] = fp_df['FOCUS'].str.split(', ').str[0]
+        fp_df['FOCUS0'] = pd.to_numeric(fp_df['FOCUS0'],errors='coerce')
+
+        fp_df['FOCUS1'] = fp_df['FOCUS'].str.split(', ').str[1]
+        fp_df['FOCUS1'] = pd.to_numeric(fp_df['FOCUS1'],errors='coerce')
+
+        fp_df['FOCUS2'] = fp_df['FOCUS'].str.split(', ').str[2]
+        fp_df['FOCUS2'] = pd.to_numeric(fp_df['FOCUS2'],errors='coerce')
+
+        fp_df['FOCUS3'] = fp_df['FOCUS'].str.split(', ').str[3]
+        fp_df['FOCUS3'] = pd.to_numeric(fp_df['FOCUS3'],errors='coerce')
+
+        fp_df['FOCUS4'] = fp_df['FOCUS'].str.split(', ').str[4]
+        fp_df['FOCUS4'] = pd.to_numeric(fp_df['FOCUS4'],errors='coerce')
+
+        fp_df['FOCUS5'] = fp_df['FOCUS'].str.split(', ').str[5]
+        fp_df['FOCUS5'] = pd.to_numeric(fp_df['FOCUS5'],errors='coerce')
+
         self.focalplane_source = ColumnDataSource(fp_df)
 
     def get_detector_data(self):
