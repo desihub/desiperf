@@ -39,6 +39,28 @@ class DataHandler(object):
         fp_df = fp_df[(fp_df.datetime >= self.start_date)&(fp_df.datetime <= self.end_date)]
         fp_df.columns = [x.upper() for x in fp_df.columns]
         fp_df = fp_df.loc[:,~fp_df.columns.duplicated()]
+
+        fp_df['FOCUS'] = fp_df['FOCUS'].str.decode("utf-8")
+        fp_df['FOCUS'] = fp_df['FOCUS'].map(lambda x: x.lstrip('[').rstrip(']'))
+
+        fp_df['FOCUS_X'] = fp_df['FOCUS'].str.split(', ').str[0]
+        fp_df['FOCUS_X'] = pd.to_numeric(fp_df['FOCUS_X'],errors='coerce')
+
+        fp_df['FOCUS_Y'] = fp_df['FOCUS'].str.split(', ').str[1]
+        fp_df['FOCUS_Y'] = pd.to_numeric(fp_df['FOCUS_Y'],errors='coerce')
+
+        fp_df['FOCUS_Z'] = fp_df['FOCUS'].str.split(', ').str[2]
+        fp_df['FOCUS_Z'] = pd.to_numeric(fp_df['FOCUS_Z'],errors='coerce')
+
+        fp_df['FOCUS_TIP'] = fp_df['FOCUS'].str.split(', ').str[3]
+        fp_df['FOCUS_TIP'] = pd.to_numeric(fp_df['FOCUS_TIP'],errors='coerce')
+
+        fp_df['FOCUS_TILT'] = fp_df['FOCUS'].str.split(', ').str[4]
+        fp_df['FOCUS_TILT'] = pd.to_numeric(fp_df['FOCUS_TILT'],errors='coerce')
+
+        fp_df['FOCUS_ROT'] = fp_df['FOCUS'].str.split(', ').str[5]
+        fp_df['FOCUS_ROT'] = pd.to_numeric(fp_df['FOCUS_ROT'],errors='coerce')
+
         self.focalplane_source = ColumnDataSource(fp_df)
 
     def get_detector_data(self):
