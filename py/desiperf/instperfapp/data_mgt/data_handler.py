@@ -43,23 +43,23 @@ class DataHandler(object):
         fp_df['FOCUS'] = fp_df['FOCUS'].str.decode("utf-8")
         fp_df['FOCUS'] = fp_df['FOCUS'].map(lambda x: x.lstrip('[').rstrip(']'))
 
-        fp_df['FOCUS0'] = fp_df['FOCUS'].str.split(', ').str[0]
-        fp_df['FOCUS0'] = pd.to_numeric(fp_df['FOCUS0'],errors='coerce')
+        fp_df['FOCUS_X'] = fp_df['FOCUS'].str.split(', ').str[0]
+        fp_df['FOCUS_X'] = pd.to_numeric(fp_df['FOCUS_X'],errors='coerce')
 
-        fp_df['FOCUS1'] = fp_df['FOCUS'].str.split(', ').str[1]
-        fp_df['FOCUS1'] = pd.to_numeric(fp_df['FOCUS1'],errors='coerce')
+        fp_df['FOCUS_Y'] = fp_df['FOCUS'].str.split(', ').str[1]
+        fp_df['FOCUS_Y'] = pd.to_numeric(fp_df['FOCUS_Y'],errors='coerce')
 
-        fp_df['FOCUS2'] = fp_df['FOCUS'].str.split(', ').str[2]
-        fp_df['FOCUS2'] = pd.to_numeric(fp_df['FOCUS2'],errors='coerce')
+        fp_df['FOCUS_Z'] = fp_df['FOCUS'].str.split(', ').str[2]
+        fp_df['FOCUS_Z'] = pd.to_numeric(fp_df['FOCUS_Z'],errors='coerce')
 
-        fp_df['FOCUS3'] = fp_df['FOCUS'].str.split(', ').str[3]
-        fp_df['FOCUS3'] = pd.to_numeric(fp_df['FOCUS3'],errors='coerce')
+        fp_df['FOCUS_TIP'] = fp_df['FOCUS'].str.split(', ').str[3]
+        fp_df['FOCUS_TIP'] = pd.to_numeric(fp_df['FOCUS_TIP'],errors='coerce')
 
-        fp_df['FOCUS4'] = fp_df['FOCUS'].str.split(', ').str[4]
-        fp_df['FOCUS4'] = pd.to_numeric(fp_df['FOCUS4'],errors='coerce')
+        fp_df['FOCUS_TILT'] = fp_df['FOCUS'].str.split(', ').str[4]
+        fp_df['FOCUS_TILT'] = pd.to_numeric(fp_df['FOCUS_TILT'],errors='coerce')
 
-        fp_df['FOCUS5'] = fp_df['FOCUS'].str.split(', ').str[5]
-        fp_df['FOCUS5'] = pd.to_numeric(fp_df['FOCUS5'],errors='coerce')
+        fp_df['FOCUS_ROT'] = fp_df['FOCUS'].str.split(', ').str[5]
+        fp_df['FOCUS_ROT'] = pd.to_numeric(fp_df['FOCUS_ROT'],errors='coerce')
 
         self.focalplane_source = ColumnDataSource(fp_df)
 
