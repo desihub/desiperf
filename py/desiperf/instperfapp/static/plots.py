@@ -93,7 +93,7 @@ class Plots:
 
             data = pd.concat(dd)
             data = self.DH.get_datetime(data)
-            data['air_mirror_temp_diff'] = np.abs(data['air_temp'] - data['mirror_temp'])
+            #data['air_mirror_temp_diff'] = np.abs(data['air_temp'] - data['mirror_temp'])
             data.columns = [x.upper() for x in data.columns]
             data = data[pd.notnull(data['DATETIME'])]
 

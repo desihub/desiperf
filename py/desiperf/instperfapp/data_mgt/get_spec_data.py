@@ -250,12 +250,15 @@ class SPECData():
 
         #Save as fits.gz
         save_dir = './data/detector/'
-        final_df.to_csv(save_dir+'spec_all.csv',index=False)
+        final_df.to_csv(os.path.join(save_dir,'spec_all.csv'),index=False)
         print('CSV saved')
-        df = pd.read_csv(save_dir+'spec_all.csv')
-        print(df.dtypes)
+        df = pd.read_csv(os.path.join(save_dir,'spec_all.csv'))
         t = Table.from_pandas(df)
-        t.write(save_dir + 'spec_all.fits.gz', overwrite=True,format='fits')
+        for col in t.columns:
+            if t[col].dtype == 'object':
+                t[col] = t[col].astype('str')
+
+        t.write(os.path.join(save_dir,'spec_all.fits.gz'), overwrite=True,format='fits')
         # dfs = np.array_split(final_df, 10)
         # for i, df in enumerate(dfs):
         #     df.to_csv(save_dir+'qa_data_{}.csv'.format(i),index=False)

@@ -76,7 +76,7 @@ if PROFILE:
 
 
 #- Initialize data & pages
-DH = DataHandler()
+DH = DataHandler(start_date = '20201112',end_date='20201216')
 DH.run()
 fp_tab, pp_tab, sp_tab, tp_tab = init_pages(DH) # 
 

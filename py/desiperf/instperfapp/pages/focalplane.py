@@ -28,7 +28,6 @@ class FocalPlanePage(Page):
         self.default_options = Focalplane_attributes
 
 
-
     def page_layout(self):
         this_layout = layout([[self.header],
                               [self.description],
@@ -63,6 +62,7 @@ class FocalPlanePage(Page):
         self.prepare_layout()
 
         #Get Data
+        print(self.x_select.value, self.y_select.value)
         self.get_data('DATETIME',self.x_select.value, self.y_select.value, other_attr = ['EXPID','OBSTYPE','PROGRAM'])
         self.page_tooltips = [
             ("exposure","@EXPID"),

@@ -19,6 +19,7 @@ class POSData():
         self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev", user="desi_reader", password="reader")
 
         #self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
+        #self.POSITIONERS = [int(os.path.splitext(f)[0]) for f in os.listdir(self.save_dir)]
         self.POSITIONERS = [6205, 6828, 4804, 4946, 6830, 4374, 3770, 7403, 3239, 7545, 3963]
 
         self.petal_loc_to_id = {0:'4',1:'5',2:'6',3:'3',4:'8',5:'10',6:'11',7:'2',8:'7',9:'9'}
@@ -42,6 +43,7 @@ class POSData():
         self.ptl_loc = int(np.unique(init_df.PETAL))
         self.ptl = self.petal_loc_to_id[self.ptl_loc]
         self.dev = int(np.unique(init_df.DEVICE))
+        init_df.drop(['PETAL_LOC','DEVICE_LOC'], axis=1, inplace=True)
         self.pos_df = pd.merge(self.coord_df, init_df, how='inner',left_on=['PETAL_LOC','DEVICE_LOC'], right_on=['PETAL','DEVICE'])
 
     def add_posmove_telemetry(self):
@@ -54,6 +56,32 @@ class POSData():
         df.reset_index(inplace=True, drop=True)
         self.exp_df_base.reset_index(inplace=True, drop=True)
         self.pos_telem = pd.concat([self.exp_df_base, df], axis=1)
+
+    def get_telem_data(self):
+        dfs = []
+        for d in ['telescope','tower','dome']:
+            try:
+                t_keys = list(self.exp_df_new.iloc[0][d].keys())
+            except:
+                t_keys = list(self.exp_df_new.iloc[5][d].keys())
+            dd = {}
+            for t in t_keys:
+                dd[t] = []
+            for item in self.exp_df_new[d]:
+                if item is not None:
+                    for key, val in item.items():
+                        dd[key].append(val)
+                else:
+                    for key, l in dd.items():
+                        dd[key].append(val)
+            df = pd.DataFrame.from_dict(dd)
+            dfs.append(df)
+
+        for i, df in enumerate(dfs):
+            df.reset_index(inplace=True, drop=True)
+            dfs[i] = df
+        telem_df = pd.concat(dfs, axis=1)
+        self.telem_df = pd.concat([self.exp_df_base, telem_df], axis=1)
 
     def get_coord_data(self):
         nights = np.unique(self.exp_df_new['night'])
@@ -85,12 +113,16 @@ class POSData():
         print('Start: {}'.format(datetime.now()))
         self.get_exp_df()
         print('Exp: {}'.format(datetime.now()))
+        self.get_telem_data()
+        print('Telem: {}'.format(datetime.now()))
         self.get_coord_data()
         print('Coord: {}'.format(datetime.now()))
         for pos in self.POSITIONERS:
             self.get_fiberpos_data(pos)
             self.add_posmove_telemetry()
-            self.final_pos_df = pd.merge(self.pos_df, self.pos_telem, on=['EXPID'], how='left')
+            final_pos_df = pd.merge(self.pos_df, self.pos_telem, on=['EXPID'], how='left')
+            #final_pos_df = pd.merge(final_pos_df, self.exp_df_new, on=['EXPID'], how='left')
+            self.final_pos_df = pd.merge(final_pos_df, self.telem_df, on=['EXPID'], how='left')
             print('Pos {} Done: {}'.format(pos, datetime.now()))
             self.final_pos_df.to_csv(self.save_dir+'{}.csv'.format(pos), index=False) 
 

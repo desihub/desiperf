@@ -288,8 +288,15 @@ class FPData():
         print(final_df.shape)
 
         save_dir = './data/focalplane/'
-        t = Table.from_pandas(final_df)
-        t.write(save_dir + 'fpa_all.fits.gz', format='fits')
+        final_df.to_csv(os.path.join(save_dir,'fpa_all.csv'),index=False)
+        df = pd.read_csv(os.path.join(save_dir,'fpa_all.csv'))
+        t = Table.from_pandas(df)
+        for col in t.columns: 
+            if t[col].dtype == 'object': 
+                t[col] = np.array(t[col].astype('str'))
+        print(t.dtype)
+        t.write(os.path.join(save_dir,'fpa_all.fits.gz'), format='fits')
+
 
         # dfs = np.array_split(final_df, 10)
         # for i, df in enumerate(dfs):

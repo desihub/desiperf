@@ -123,18 +123,16 @@ class PosAccPage(Page):
 
         #Get data
         self.get_selection()
-        self.get_data('DATETIME',self.x_select.value, self.y_select.value, other_attr=['EXPID','OBSTYPE','PROGRAM','DEVICE_LOC','PETAL_LOC','SPECTRO'])
+        self.get_data('DATETIME',self.x_select.value, self.y_select.value, other_attr=['EXPID','DEVICE_LOC','PETAL_LOC','SPECTRO']) #'OBSTYPE','PROGRAM'
 
         self.page_tooltips = [
             ("exposure","@EXPID"),
             ("obstime","@DATETIME{%F}"),
-            ("obstype","@OBSTYPE"),
-            ("program","@PROGRAM"),
             ("dev","@DEVICE_LOC"),
             ("petal","@PETAL_LOC"),
             ("spectro","@SPECTRO"),
             ("x attr.","@attr1"),
-            ("y attr.","@attr2"),]
+            ("y attr.","@attr2")]#("obstype","@OBSTYPE"),("program","@PROGRAM"),]
 
         self.pos_tooltips = [
             ("Petal","@PETAL"),

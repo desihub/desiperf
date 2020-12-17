@@ -19,8 +19,8 @@ class DataHandler(object):
 
         self.data_dir = os.path.join(os.getcwd(),'instperfapp','data')
         self.pos_dir = os.path.join(self.data_dir, 'per_fiber')
-        self.fp_dir = self.data_dir #os.path.join(self.data_dir, 'focalplane')
-        self.det_dir = self.data_dir #os.path.join(self.data_dir, 'detector')
+        self.fp_dir = os.path.join(self.data_dir, 'focalplane')
+        self.det_dir = os.path.join(self.data_dir, 'detector')
 
         self.fiberpos = pd.read_csv('./instperfapp//data/fiberpos.csv')
 
@@ -68,13 +68,17 @@ class DataHandler(object):
         specfile = os.path.join(self.det_dir, 'spec_all.fits.gz') 
         spectab = Table.read(specfile)
         spec_df = spectab.to_pandas()
-        spec_df['date_obs'] = spec_df['date_obs'].str.decode("utf-8")
+        spec_df['date_obs'] = spec_df['date_obs'].str.decode("utf-8") #[x.decode("utf-8") for x in list(spec_df['date_obs'])] #.str.decode("utf-8")
         spec_df['CAM'] = spec_df['CAM'].str.decode("utf-8")
         spec_df['obstype'] = spec_df['obstype'].str.decode("utf-8")
         spec_df['program'] = spec_df['program'].str.decode("utf-8")
         spec_df = self.get_datetime(spec_df)
+        print(spec_df.head())
+        print(self.start_date, self.end_date)
+        print(min(spec_df.date_obs), max(spec_df.date_obs))
 
-        spec_df = spec_df[(spec_df.datetime >= self.start_date)&(spec_df.datetime <= self.end_date)]
+        spec_df = spec_df[(spec_df.night >= int(self.start_date))&(spec_df.night <= int(self.end_date))]
+        print(spec_df.head())
 
         spec_df.columns = [x.upper() for x in spec_df.columns]
         self.detector_source = ColumnDataSource(spec_df)
@@ -86,7 +90,8 @@ class DataHandler(object):
 
     def get_datetime(self, df):
         if 'date_obs' in list(df.columns):
-            datetimes = pd.to_datetime(df.date_obs)
+            times = df['date_obs'].str.decode("utf-8") #[x.decode("utf-8") for x in df.date_obs]
+            datetimes = pd.to_datetime(times)
         elif 'mjd_obs' in list(df.columns):
             dt = [Time(t, format='mjd', scale='utc').datetime for t in list(df.mjd_obs)]
             datetimes = pd.to_datetime(dt)
