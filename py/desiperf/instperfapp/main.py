@@ -10,8 +10,10 @@ bokeh serve --show instperfapp
 view at http://localhost:5006/instperfapp
 
 '''
+import os
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
 from bokeh.io import curdoc
 from bokeh.models import Button, TextInput, PreText, ColumnDataSource
@@ -27,6 +29,8 @@ from pages.telemetry import TelemetryPage
 from bokeh.models.callbacks import CustomJS
 
 from data_mgt.data_handler import DataHandler
+
+os.environ["DATA_DIR"] = "/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/"
 
 import cProfile, pstats, io
 from pstats import SortKey
@@ -50,24 +54,41 @@ def init_pages(datahandler):
 
     return FP.page_layout(), PP.page_layout(), SP.page_layout(), TP.page_layout() #
 
-def update_data():
+def limit_data():
     print('Updating data')
     date_btn.label = 'Updating'
     DH = DataHandler(start_date=str(start_date.value), end_date=str(end_date.value), option='no_update')
     DH.run()
-    fp_tab, pp_tab, sp_tab = init_pages(DH)
+    fp_tab, pp_tab, sp_tab, tp_tab = init_pages(DH)
     ds = pd.DataFrame(DH.detector_source.data)
     fps = pd.DataFrame(DH.focalplane_source.data)
-    data_source.data = data_text(ds, fps)
-    start_date.value = None
-    end_date.value = None
+    data_source.data, max_night, min_night = data_text(ds, fps)
+    start_date.value = str(int(min_night))
+    end_date.value = str(int(max_night))
     date_btn.label = 'Updated' 
 
+def update_data():
+    update_btn.label = 'Updating'
+    today = datetime.today().strftime('%Y%m%d')
+    DH = DataHandler(start_date='20200123', end_date=today, option='update')
+    DH.run()
+    fp_tab, pp_tab, sp_tab, tp_tab = init_pages(DH)
+    ds = pd.DataFrame(DH.detector_source.data)
+    fps = pd.DataFrame(DH.focalplane_source.data)
+    data_source.data, max_night, min_night = data_text(ds, fps)
+    start_date.value = str(int(min_night))
+    end_date.value = str(int(max_night))
+    update_btn.label = 'Updated'
+
 def data_text(ds, fps):
-    sp = ['Spectrograph Data', int(min(np.unique(ds.NIGHT))), int(max(np.unique(ds.NIGHT))), int(min(np.unique(ds.EXPID))), int(max(np.unique(ds.EXPID)))]
-    fp = ['FocalPlane Data', int(min(np.unique(fps.NIGHT))), int(max(np.unique(fps.NIGHT))), int(min(np.unique(fps.EXPID))), int(max(np.unique(fps.EXPID)))]
+    sp_nights = ds[ds.NIGHT < 1e+20].NIGHT
+    fp_nights = fps[fps.NIGHT < 1e+20].NIGHT
+    max_night = np.max(np.hstack([sp_nights, fp_nights]))
+    min_night = np.min(np.hstack([sp_nights, fp_nights]))
+    sp = ['Spectrograph Data', int(min(np.unique(sp_nights))), int(max(np.unique(sp_nights))), int(min(np.unique(ds.EXPID))), int(max(np.unique(ds.EXPID)))]
+    fp = ['FocalPlane Data', int(min(np.unique(fp_nights))), int(max(np.unique(fp_nights))), int(min(np.unique(fps.EXPID))), int(max(np.unique(fps.EXPID)))]
     df = pd.DataFrame([sp,fp], columns = ['type','date_start','date_end','exp_start','exp_end'])
-    return df
+    return df, max_night, min_night
 
 if PROFILE: 
     # Activate cProfile
@@ -76,7 +97,9 @@ if PROFILE:
 
 
 #- Initialize data & pages
-DH = DataHandler(start_date = '20201112',end_date='20201216')
+data_start = '20200123'
+today = datetime.today().strftime('%Y%m%d')
+DH = DataHandler(start_date = data_start,end_date=today)
 DH.run()
 fp_tab, pp_tab, sp_tab, tp_tab = init_pages(DH) # 
 
@@ -103,7 +126,7 @@ welcome = Div(text=welcome_text, width=800, css_classes=['inst-style'])
 subtitle1 = Div(text="Data Overview", width=800, css_classes=['title-style'])
 ds = pd.DataFrame(DH.detector_source.data)
 fps = pd.DataFrame(DH.focalplane_source.data)
-df = data_text(ds, fps)
+df, max_night, min_night = data_text(ds, fps)
 data_source = ColumnDataSource(df)
 
 columns = [TableColumn(field='type', title='Data Source', width=200),
@@ -116,13 +139,15 @@ data_table = DataTable(source=data_source, columns=columns, height=100)
 
 
 subtitle1_5 = Div(text="<b>Limit the data to a shorter date range below.</b>", width=800, css_classes=['inst-style'])
-start_date = TextInput(title ='Start Date', width=200, placeholder = str(int(min(np.unique(ds.NIGHT)))))
-end_date = TextInput(title ='End Date', width=200, placeholder = str(int(max(np.unique(ds.NIGHT)))))
+start_date = TextInput(title ='Start Date', width=200, placeholder = str(int(min_night)))
+end_date = TextInput(title ='End Date', width=200, placeholder = str(int(max_night)))
 data_update_info = Div(text=' ', width=800, css_classes=['alert-style'])
-date_btn = Button(label='Update Date Range', width=200, css_classes=['save_button'])
+date_btn = Button(label='Limit Date Range', width=200, css_classes=['save_button'])
+
+update_btn = Button(label='Update Data', width=200, css_classes=['save_button'])
 
 
-data_instructions = Div(text='To expand the date range up to the current date, run <b>data_script.py</b> on the desi server. [This is only for the time being]', width=800, css_classes=['inst-style'])
+data_instructions = Div(text='To expand the date range up to the current date, hit the  <b>Update Data</b> below.', width=800, css_classes=['inst-style'])
 
 subtitle2 = Div(text="Page Descriptions: ", width=800, css_classes=['title-style'])
 page_desc = """<b>FocalPlane:</b> This page provides data to analyze the performance of the focalplane, specifically: overall mean 
@@ -152,6 +177,7 @@ layout1 = layout([[title_1],
                   [start_date, end_date, date_btn],
                   [data_update_info],
                   [data_instructions],
+                  [update_btn],
                   [subtitle2],
                   [page_info],
                   [contact_info]])
@@ -164,7 +190,8 @@ tab5 = tp_tab
 
 tabs = Tabs(tabs=[tab1, tab2, tab3, tab4, tab5]) #
 
-date_btn.on_click(update_data)
+date_btn.on_click(limit_data)
+update_btn.on_click(update_data)
 
 curdoc().title = 'DESI Instrument Performance Analysis Tool'
 curdoc().add_root(tabs)

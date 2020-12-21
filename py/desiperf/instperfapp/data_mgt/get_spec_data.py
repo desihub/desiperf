@@ -11,10 +11,13 @@ from datetime import datetime
 start = datetime.now()
 
 class SPECData():
-    def __init__(self, start, end):
+    def __init__(self, start, end, mode):
+        self.mode = mode #new, update
         self.start_date = start
         self.end_date = end
 
+        self.save_dir = self.data_dir = os.path.join(os.environ['DATA_DIR'],'detector')
+        self.spec_file = 'spec_all.fits.gz'
         self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev", user="desi_reader", password="reader")
 
     def get_exp_df(self):
@@ -214,6 +217,22 @@ class SPECData():
 
         self.qa_df = pd.concat(dfs)
 
+    def save_data(self):
+        df = pd.read_csv(os.path.join(self.save_dir, 'spec_all.csv'))
+        filen = os.path.join(self.save_dir, self.spec_file)
+        if self.mode == 'update':
+            old_df = Table.read(filen).to_pandas()
+            final_df = pd.concat([old_df, df])
+            final_df.drop_duplicates(subset=['date_obs'], keep='first', inplace=True)
+        elif self.mode == 'new':
+            final_df = df
+
+        t = Table.from_pandas(final_df)
+        for col in t.columns:
+            if t[col].dtype == 'object':
+                t[col] = np.array(t[col].astype('str'))
+        t.write(filen, format='fits', overwrite=True)
+
     def run(self):
         print('Start: {}'.format(datetime.now()))
         self.get_exp_df()
@@ -243,25 +262,11 @@ class SPECData():
         c = pd.merge(a, b, on='EXPID', how='inner')
         final_df = pd.merge(c, all_dfs[4], on=['EXPID','SPECTRO'],how='left')
         final_df.drop(['zenith'], axis=1, inplace=True)
-        print(list(final_df.columns))
-        print(list(final_df.dtypes))
-        #print(final_df.select_dtypes(include=['object']))
         print('All merged: {}'.format(datetime.now()))
 
         #Save as fits.gz
-        save_dir = './data/detector/'
-        final_df.to_csv(os.path.join(save_dir,'spec_all.csv'),index=False)
-        print('CSV saved')
-        df = pd.read_csv(os.path.join(save_dir,'spec_all.csv'))
-        t = Table.from_pandas(df)
-        for col in t.columns:
-            if t[col].dtype == 'object':
-                t[col] = t[col].astype('str')
-
-        t.write(os.path.join(save_dir,'spec_all.fits.gz'), overwrite=True,format='fits')
-        # dfs = np.array_split(final_df, 10)
-        # for i, df in enumerate(dfs):
-        #     df.to_csv(save_dir+'qa_data_{}.csv'.format(i),index=False)
+        final_df.to_csv(os.path.join(self.save_dir,'spec_all.csv'),index=False)
+        self.save_data()
         print("Spec Done")
 
 

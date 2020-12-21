@@ -11,13 +11,19 @@ from astropy.table import Table
 
 from bokeh.models import ColumnDataSource
 
+from data_mgt.get_fp_data import FPData
+from data_mgt.get_spec_data import SPECData
+from data_mgt.get_pos_data import POSData
+
 
 class DataHandler(object):
     def __init__(self, start_date = '20200123', end_date = '20200316', option = 'no_update'):
+        self.option = option
         self.start_date = start_date
         self.end_date = end_date
+        print('Start: {}, End: {}'.format(self.start_date, self.end_date))
 
-        self.data_dir = os.path.join(os.getcwd(),'instperfapp','data')
+        self.data_dir = os.environ['DATA_DIR']
         self.pos_dir = os.path.join(self.data_dir, 'per_fiber')
         self.fp_dir = os.path.join(self.data_dir, 'focalplane')
         self.det_dir = os.path.join(self.data_dir, 'detector')
@@ -27,16 +33,27 @@ class DataHandler(object):
         self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
 
     def get_focalplane_data(self):
+            
 
         fpfile = os.path.join(self.fp_dir, 'fpa_all.fits.gz')
+        print('Focal Plane Data Coming from {}'.format(fpfile))
         fptab = Table.read(fpfile)
         fp_df = fptab.to_pandas()
+
+        if self.option == 'update':
+            time = fp_df[fp_df.night < 1e+20].night
+            last_end = int(max(time))
+            fpd = FPData(last_end, self.end_date, 'update')            
+            print(last_end, self.end_date)
+            fpd.run()
+            print("Updated FP Data")
+            fp_df = Table.read(fpfile).to_pandas()
 
         fp_df = self.get_datetime(fp_df)
         fp_df['obstype'] = fp_df['obstype'].str.decode("utf-8")
         fp_df['program'] = fp_df['program'].str.decode("utf-8")
 
-        fp_df = fp_df[(fp_df.datetime >= self.start_date)&(fp_df.datetime <= self.end_date)]
+        fp_df = fp_df[(fp_df.datetime >= self.start_date)&(fp_df.datetime <= str((int(self.end_date)+1)))]
         fp_df.columns = [x.upper() for x in fp_df.columns]
         fp_df = fp_df.loc[:,~fp_df.columns.duplicated()]
 
@@ -66,27 +83,37 @@ class DataHandler(object):
     def get_detector_data(self):
 
         specfile = os.path.join(self.det_dir, 'spec_all.fits.gz') 
+        print('Spectrograph Data Coming from {}'.format(specfile))
         spectab = Table.read(specfile)
         spec_df = spectab.to_pandas()
+
+        if self.option == 'update':
+            time = spec_df[spec_df.night < 1e+20].night
+            last_end = int(max(time))
+            specd = SPECData(last_end, self.end_date, 'update')
+            print(last_end, self.end_date)
+            specd.run()
+            print("Updated Spec Data")
+
         spec_df['date_obs'] = spec_df['date_obs'].str.decode("utf-8") #[x.decode("utf-8") for x in list(spec_df['date_obs'])] #.str.decode("utf-8")
         spec_df['CAM'] = spec_df['CAM'].str.decode("utf-8")
         spec_df['obstype'] = spec_df['obstype'].str.decode("utf-8")
         spec_df['program'] = spec_df['program'].str.decode("utf-8")
         spec_df = self.get_datetime(spec_df)
-        print(spec_df.head())
-        print(self.start_date, self.end_date)
-        print(min(spec_df.date_obs), max(spec_df.date_obs))
 
-        spec_df = spec_df[(spec_df.night >= int(self.start_date))&(spec_df.night <= int(self.end_date))]
-        print(spec_df.head())
+        spec_df = spec_df[(spec_df.night >= int(self.start_date))&(spec_df.night <= (int(self.end_date)+1))]
 
         spec_df.columns = [x.upper() for x in spec_df.columns]
         self.detector_source = ColumnDataSource(spec_df)
 
     def get_positioner_data(self):
-        # This data is loaded from the positioner page for individual positioners.
-        if self.FIBERS == 'all':
-            self.FIBERS = np.linspace(0,5000,5000)
+        if self.option == 'update':
+            print('Skipping pos this time')
+            #pos_df = pd.read_csv('6830.csv')
+            #time = pd.to_datetime(pos_df.date_obs_x)
+            #last_date = max(time).strftime('%Y%m%d')
+            #pos = POSData(last_date, self.end_date, 'update')
+            #pos.run()
 
     def get_datetime(self, df):
         if 'date_obs' in list(df.columns):
