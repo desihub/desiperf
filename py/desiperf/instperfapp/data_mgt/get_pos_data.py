@@ -11,20 +11,27 @@ from bokeh.models import ColumnDataSource
 
 
 class POSData():
-    def __init__(self, start, end):
+    def __init__(self, start, end, mode):
+        self.mode = mode #new, update
         self.start_date = start
         self.end_date = end
-        self.save_dir = './data/per_fiber/'
+        self.save_dir = os.path.join(os.environ['DATA_DIR'],'positioners')
+        self.fiberpos = pd.read_csv(os.path.join(os.environ['DATA_DIR'],'fiberpos.csv'))
 
         self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev", user="desi_reader", password="reader")
 
         #self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
-        #self.POSITIONERS = [int(os.path.splitext(f)[0]) for f in os.listdir(self.save_dir)]
-        self.POSITIONERS = [6205, 6828, 4804, 4946, 6830, 4374, 3770, 7403, 3239, 7545, 3963]
+        all_pos = np.unique(self.fiberpos.CAN_ID) 
+        
+        done_pos =  [int(os.path.splitext(f)[0]) for f in os.listdir(self.save_dir)]
+        self.POSITIONERS = [pos for pos in all_pos if pos not in done_pos]
+        print(self.POSITIONERS)
+        #self.POSITIONERS = [6205, 6828, 4804, 4946, 6830, 4374, 3770, 7403, 3239, 7545, 3963]
 
         self.petal_loc_to_id = {0:'4',1:'5',2:'6',3:'3',4:'8',5:'10',6:'11',7:'2',8:'7',9:'9'}
 
         self.fiberpos = pd.read_csv('./data/fiberpos.csv')
+
 
     def get_exp_df(self):
         exp_cols = ['id','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec','reqtime','exptime','flavor','program','lead','focus','airmass',
@@ -63,7 +70,7 @@ class POSData():
             try:
                 t_keys = list(self.exp_df_new.iloc[0][d].keys())
             except:
-                t_keys = list(self.exp_df_new.iloc[5][d].keys())
+                t_keys = list(self.exp_df_new.iloc[2][d].keys())
             dd = {}
             for t in t_keys:
                 dd[t] = []
@@ -109,6 +116,22 @@ class POSData():
                     pass
         self.coord_df = pd.concat(self.coord_df)
 
+    def save_data(self, pos, df):
+        filen = os.path.join(self.save_dir, '{}.csv'.format(pos))
+        if self.mode == 'new':
+            final_df = df
+        elif self.mode == 'update':
+            old_df = pd.read_csv(filen)
+            for col in list(df.columns):
+               if col not in list(old_df.columns):
+                   try:
+                       df.drop(columns=[col], axis=1, inplace=True) 
+                   except:
+                       print(col)
+            final_df = pd.concat([old_df, df])
+
+        final_df.to_csv(filen, index=False)
+
     def run(self):
         print('Start: {}'.format(datetime.now()))
         self.get_exp_df()
@@ -118,11 +141,15 @@ class POSData():
         self.get_coord_data()
         print('Coord: {}'.format(datetime.now()))
         for pos in self.POSITIONERS:
-            self.get_fiberpos_data(pos)
-            self.add_posmove_telemetry()
-            final_pos_df = pd.merge(self.pos_df, self.pos_telem, on=['EXPID'], how='left')
-            #final_pos_df = pd.merge(final_pos_df, self.exp_df_new, on=['EXPID'], how='left')
-            self.final_pos_df = pd.merge(final_pos_df, self.telem_df, on=['EXPID'], how='left')
-            print('Pos {} Done: {}'.format(pos, datetime.now()))
-            self.final_pos_df.to_csv(self.save_dir+'{}.csv'.format(pos), index=False) 
+            try:
+                self.get_fiberpos_data(pos)
+                self.add_posmove_telemetry()
+                final_pos_df = pd.merge(self.pos_df, self.pos_telem, on=['EXPID'], how='left')
+                #final_pos_df = pd.merge(final_pos_df, self.exp_df_new, on=['EXPID'], how='left')
+                self.final_pos_df = pd.merge(final_pos_df, self.telem_df, on=['EXPID'], how='left')
+                self.save_data(pos, self.final_pos_df)
+                print('Pos {} Done: {}'.format(pos, datetime.now()))
+            #self.final_pos_df.to_csv(self.save_dir+'{}.csv'.format(pos), index=False) 
+            except:
+                print("Issue with {}".format(pos))
 

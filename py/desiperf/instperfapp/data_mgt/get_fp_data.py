@@ -11,11 +11,15 @@ from datetime import datetime
 start = datetime.now()
 
 class FPData():
-    def __init__(self, start, end):
+    def __init__(self, start, end, mode):
+        self.mode = mode #new, update, 
         self.start_date = start
         self.end_date = end
 
         self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev", user="desi_reader", password="reader")
+
+        self.save_dir = self.data_dir = os.path.join(os.environ['DATA_DIR'],'focalplane')
+        self.fp_file = 'fpa_all.fits.gz'
 
     def get_exp_df(self):
         exp_cols = ['id','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec','reqtime','exptime','flavor','program','lead','focus','airmass',
@@ -255,6 +259,23 @@ class FPData():
         pos_df_final = pd.merge(self.exp_df_base, pos_df, on='EXPID',how='left')
         self.pos_df_final = self.remove_repeats(pos_df_final)
 
+    def save_data(self):
+        df = pd.read_csv(os.path.join(self.save_dir, 'fpa_all.csv'))
+        filen = os.path.join(self.save_dir, self.fp_file)
+        if self.mode == 'update':
+            old_df = Table.read(filen).to_pandas()
+            final_df = pd.concat([old_df, df])
+            final_df.drop_duplicates(subset=['date_obs'], keep='first', inplace=True)
+        elif self.mode == 'new':
+            final_df = df
+
+        t = Table.from_pandas(final_df)
+        for col in t.columns:
+            if t[col].dtype == 'object':
+                t[col] = np.array(t[col].astype('str'))
+        t.write(filen, format='fits', overwrite=True) 
+
+
     def run(self):
         start = datetime.now()
         print('Start: {}'.format(start))
@@ -279,28 +300,14 @@ class FPData():
         all_dfs = [self.exp_df_new, self.gfa_df_final, self.gc_df_final, self.gs_df_final, self.telem_df, self.hex_df, self.adc_df, self.fvc_df_final, self.pos_df_final]
         for i, df in enumerate(all_dfs):
             df.reset_index(drop=True, inplace=True)
-            print(df.shape)
             all_dfs[i] = df
 
         final_df = pd.concat(all_dfs, axis=1)
-        print(final_df.shape)
         final_df = self.remove_bad_attr(final_df)
-        print(final_df.shape)
 
-        save_dir = './data/focalplane/'
-        final_df.to_csv(os.path.join(save_dir,'fpa_all.csv'),index=False)
-        df = pd.read_csv(os.path.join(save_dir,'fpa_all.csv'))
-        t = Table.from_pandas(df)
-        for col in t.columns: 
-            if t[col].dtype == 'object': 
-                t[col] = np.array(t[col].astype('str'))
-        print(t.dtype)
-        t.write(os.path.join(save_dir,'fpa_all.fits.gz'), format='fits')
+        final_df.to_csv(os.path.join(self.save_dir,'fpa_all.csv'),index=False)
+        self.save_data()
 
-
-        # dfs = np.array_split(final_df, 10)
-        # for i, df in enumerate(dfs):
-        #     df.to_csv(save_dir+'fpa_data_{}.csv'.format(i),index=False)
         print("FP Done")
 
 
