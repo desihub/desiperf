@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 from astropy.time import Time
 import json
 import ephem
+import psycopg2
+import pandas as pd
 
 def read_json(filename: str):
     with open(filename) as fp:
@@ -39,8 +41,12 @@ coriroot = '/global/cfs/cdirs/desi/spectro/data/'
 
 if os.path.isdir(kpnoroot):
     nightdir = os.path.join(kpnoroot, night) 
+    dbhost = 'desi-db'
+    dbport = '5442'
 elif os.path.isdir(coriroot): 
     nightdir = os.path.join(coriroot, night) 
+    dbhost = 'db.replicator.dev-cattle.stable.spin.nersc.org'
+    dbport = '60042'
 else: 
     print("Error: root data directory not found")
     print("  Looked for {0} and {1}".format(kpnoroot, coriroot))
@@ -60,6 +66,7 @@ plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
 plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
 plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
 plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
 
 # Names for output json files: 
 specdatafile = "specdata" + night + ".json"
@@ -202,93 +209,140 @@ for item in specdata:
     if specdata[item]['OBSTYPE'] == 'FLAT' and specdata[item]['FLAVOR'] == 'science':
         flat_start.append( (specdata[item]['DATE-OBS'] - startdate)*24. )
         flat_width.append( specdata[item]['EXPTIME']/3600. )
-        
-# Compute total science and guiding time 
 
-# in hours
+# Connect to the DB to get additional telemetry:
+conn = psycopg2.connect(host=dbhost, port=dbport, database="desi_dev", user="desi_reader", password="reader")
+query_start = twibeg - (3./24.)
+query_stop = twiend + (3./24.) 
+
+# Get dome status: 
+domedf = pd.read_sql_query(f"SELECT dome_timestamp,shutter_upper,mirror_cover FROM environmentmonitor_dome WHERE time_recorded >= '{query_start}' AND time_recorded < '{query_stop}'", conn)
+dome = domedf.to_records()
+dome['dome_timestamp'] = np.array([Time(t) for t in dome['dome_timestamp']])
+dometime = np.array([ (Time(t).mjd - startdate)*24 for t in dome['dome_timestamp']])
+dome_open = np.array([t for t in dome['shutter_upper']], dtype=bool)
+mirror_open = np.array([t for t in dome['mirror_cover']], dtype=bool)
+
+# Get guider fwhm data: 
+guidedf = pd.read_sql_query(f"SELECT time_recorded,seeing,meanx,meany FROM guider_summary WHERE time_recorded >= '{query_start}' AND time_recorded < '{query_stop}'", conn)
+guide = guidedf.to_records()
+guidetime = (Time(guide['time_recorded']).mjd - startdate)*24
+
+# Compute total science and guiding time 
+ # in hours
 twibeg_hours = 24.*(twibeg.mjd - startdate)
 twiend_hours = 24.*(twiend.mjd - startdate)
-total_hours = twiend_hours - twibeg_hours 
+twitot_hours = twiend_hours - twibeg_hours 
+# # as a percent of dark time
+#guiding_percent = 100.*np.sum(guide_width)/twitot_hours
+#science_percent = 100.*np.sum(science_width)/twitot_hours
 
-# as a percent of dark time
-guiding_percent = 100.*np.sum(guide_width)/total_hours
-science_percent = 100.*np.sum(science_width)/total_hours
+# Compute total time open between twilights: 
+nmask = dometime > twibeg_hours
+nmask = nmask*(dometime < twiend_hours)
+dmask = nmask*dome_open
+open_fraction = np.sum(nmask)/np.sum(dmask)
+        
+# Calculate the total science time between twilights: 
+science_hours = 0.
+for i in range(len(science_start)): 
+    s1 = science_start[i]
+    s2 = s1 + science_width[i]
+    if s1 <= twibeg_hours and s2 >= twibeg_hours: 
+        science_hours += s2-twibeg_hours
+    elif s1 >= twibeg_hours and s2 <= twiend_hours: 
+        science_hours += s2-s1
+    elif s1 <= twiend_hours and s2 >= twiend_hours: 
+        science_hours += s1-twiend_hours
 
-plt.figure(figsize=(14,4))
-barheight = 0.25
+# Calculate the total guide time between twilights: 
+guide_hours = 0.
+for i in range(len(guide_start)): 
+    g1 = guide_start[i]
+    g2 = g1 + guide_width[i]
+    if g1 <= twibeg_hours and g2 >= twibeg_hours: 
+        guide_hours += g2-twibeg_hours
+    elif g1 >= twibeg_hours and g2 <= twiend_hours: 
+        guide_hours += g2-g1
+    elif g1 <= twiend_hours and g2 >= twiend_hours: 
+        guide_hours += g1-twiend_hours
 
-y_arc = 0
-y_flat = 1
-y_guide = 2
-y_science = 3
+# Total time dome was open between twilights
+twitot_dome_hours = open_fraction*twitot_hours
 
-ymin = -1
-ymax = 4
+# Percent of time dome was open between twilights with science, guide exposures
+science_fraction = science_hours/twitot_dome_hours
+guide_fraction = guide_hours/twitot_dome_hours
+# Total number of each type of observing block
+science_num = len(science_width)
+guide_num = len(guide_width)
 
-# Draw time sequence for spectroscopy, guiding, flats, and arcs -- 
+if args.verbose: 
+    print("Total hours between twilights: {0:.1f}".format(twitot_dome_hours))
+    print("  Open: {0:.1f}%".format(100.*open_fraction))
+    print("  Science: {0:.1f}% ({1})".format(100.*science_fraction, science_num))
+    print("  Guide: {0:.1f}% ({1})".format(100.*guide_fraction, guide_num))
 
-plt.barh(y_science, science_width, 2*barheight, science_start, align='center', color='b')
-plt.barh(y_science, dither_width, 2*barheight, dither_start, align='center', color='c')
-plt.barh(y_guide, guide_width, barheight, guide_start, align='center', color='b')
-plt.barh(y_flat, flat_width, barheight, flat_start, align='center', color='k')
-plt.barh(y_arc, arc_width, barheight, arc_start, align='center', color='r')
+fig, ax1 = plt.subplots(figsize=(14,4))
+barheight = 0.10
+
+y_guide = 0.25
+y_science = 0.75
+
+ymin = -0.05
+ymax = 1.25
+
+# Draw time sequence for spectroscopy, guiding
+ax1.barh(y_science, science_width, 2*barheight, science_start, align='center', color='b')
+ax1.barh(y_science, dither_width, 2*barheight, dither_start, align='center', color='c')
+ax1.barh(y_guide, guide_width, barheight, guide_start, align='center', color='b')
 
 # Twilight
-
-plt.plot([twibeg_hours, twibeg_hours], [ymin, ymax], 'k:')
-plt.plot([twiend_hours, twiend_hours], [ymin, ymax], 'k:')
-
-# Default label locations
-xlab1 = float(twibeg_hours - 3.5)
-xlab2 = float(twiend_hours + 0.5)
+ax1.plot([twibeg_hours, twibeg_hours], [ymin, ymax], 'k--')
+ax1.plot([twiend_hours, twiend_hours], [ymin, ymax], 'k--')
 
 # Populate in case no data were obtained in each category
 if len(science_start) == 0: 
-    science_start.append(xlab1 + 4.)
+    science_start.append(xlab + 4.)
     science_width.append(0.) 
 
 if len(guide_start) == 0: 
-    guide_start.append(xlab1 + 4.)
+    guide_start.append(xlab + 4.)
     guide_width.append(0.)
 
-if len(flat_start) == 0: 
-    flat_start.append(xlab2)
-    flat_width.append(0.)
-if len(arc_start) == 0: 
-    arc_start.append(xlab2)
-    arc_width.append(0.)
+# Default label locations
+y1, y2 = ax1.get_ylim()
+xlab = float(twibeg_hours - 4.)
+ylab1 = y1 + 0.9*(y2-y1)
+ylab2 = y1 + 0.8*(y2-y1)
+ylab3 = y1 + 0.7*(y2-y1)
+ylab4 = y1 + 0.6*(y2-y1)
+lab1 = "Night: {0:.1f} hrs".format(twitot_hours)
+lab2 = "Open: {0:.1f} %".format(100.*open_fraction)
+lab3 = "Science: {0:.1f}% ({1})".format(100.*science_fraction, science_num)
+lab4 = "Guide: {0:.1f}% ({1})".format(100.*guide_fraction, guide_num)
+ax1.text(xlab, ylab1, lab1, va='center')
+ax1.text(xlab, ylab2, lab2, va='center')
+ax1.text(xlab, ylab3, lab3, va='center')
+ax1.text(xlab, ylab4, lab4, va='center')
 
-plt.text(xlab1, y_science, "Science", va='center')
-plt.text(xlab1, y_guide, "Guiding", va='center')
+# Dome status
+ax1.plot(dometime, dome['shutter_upper'], ':')
 
-# Adjust locations of science and guiding percentages -- 
-sxlab = max(xlab2, science_start[-1] + science_width[-1] + 0.5) 
-gxlab = max(xlab2, guide_start[-1] + guide_width[-1] + 0.5) 
-slab = "{0:.1f}%".format(science_percent)
-glab = "{0:.1f}%".format(guiding_percent)
-plt.text(sxlab, y_science, slab, va='center')
-plt.text(gxlab, y_guide, glab, va='center')
-
-plt.text(xlab1, y_flat, "Flats", va='center')
-plt.text(xlab1, y_arc, "Arcs", va='center')
-
-# Adjust locations of Flats and Arcs labels 
-#if flat_start[-1] >= xlab1 + 0.5:
-#    plt.text(flat_start[-1] + 0.5, y_flat, "Flats", va='center')
-#else: 
-#    plt.text(xlab1, y_flat, "Flats", va='center')
-##
-#if arc_start[-1] >= xlab1 + 0.5:
-#    plt.text(arc_start[-1]+0.5, y_arc, "Arcs", va='center')
-#else: 
-#    plt.text(xlab1, y_arc, "Arcs", va='center')
-
-plt.ylim(ymin, ymax)   
-plt.xlim(twibeg_hours - 4, twiend_hours + 3)
-
+# Adjust limits
+ax1.set_ylim(ymin, ymax)   
+ax1.set_xlim(twibeg_hours - 4.5, twiend_hours + 3)
 night_t = t - 1
-plt.title(night_t.strftime('%Y/%m/%d'))
-plt.xlabel('UT [hours]')
+ax1.set_title(night_t.strftime('%Y/%m/%d'))
+ax1.set_xlabel('UT [hours]')
+ax1.set_yticks([])
+
+# Add points for seeing
+ax2 = ax1.twinx()
+ax2.set_ylabel("Seeing [arcsec]")
+ax2.scatter(guidetime, guide['seeing'], c='gray') #, marker='o') 
+y1, y2 = ax2.get_ylim()
+ax2.set_ylim(0, y2) 
 
 plt.savefig(outplot, bbox_inches="tight")
 if args.verbose: 
