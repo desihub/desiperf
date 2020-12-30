@@ -31,6 +31,10 @@ parser.add_argument('-v','--verbose', action='store_true', default=False,
                     required=False,
                     help='Provide verbose output?')
 
+parser.add_argument('-t','--table', action='store_true', default=False, 
+                    required=False,
+                    help='Print row for summary table?')
+
 args = parser.parse_args()
 
 night = args.night
@@ -151,7 +155,11 @@ mjds = np.zeros(len(specdata), dtype=float)
 for i, item in enumerate(specdata.keys()):
     mjds[i] = specdata[item]['DATE-OBS']
     
-startdate = int( mjds.max() ) 
+try: 
+    startdate = int( mjds.max() ) 
+except: 
+    print("Error: No science data found for ", night)
+    exit(-1) 
 starttime = (mjds.min() - startdate)*24
 
 # Establish (long, lat) to calculate twilight
@@ -233,15 +241,13 @@ guidetime = (Time(guide['time_recorded']).mjd - startdate)*24
 twibeg_hours = 24.*(twibeg.mjd - startdate)
 twiend_hours = 24.*(twiend.mjd - startdate)
 twitot_hours = twiend_hours - twibeg_hours 
-# # as a percent of dark time
-#guiding_percent = 100.*np.sum(guide_width)/twitot_hours
-#science_percent = 100.*np.sum(science_width)/twitot_hours
 
-# Compute total time open between twilights: 
-nmask = dometime > twibeg_hours
-nmask = nmask*(dometime < twiend_hours)
+# Compute total time *open* between twilights: 
+# nmask for the time between twilights, dmask for the dome open
+nmask = dometime >= twibeg_hours
+nmask = nmask*(dometime <= twiend_hours)
 dmask = nmask*dome_open
-open_fraction = np.sum(nmask)/np.sum(dmask)
+open_fraction = np.sum(dmask)/np.sum(nmask)
         
 # Calculate the total science time between twilights: 
 science_hours = 0.
@@ -271,8 +277,12 @@ for i in range(len(guide_start)):
 twitot_dome_hours = open_fraction*twitot_hours
 
 # Percent of time dome was open between twilights with science, guide exposures
-science_fraction = science_hours/twitot_dome_hours
-guide_fraction = guide_hours/twitot_dome_hours
+if twitot_dome_hours > 0.: 
+    science_fraction = science_hours/twitot_dome_hours
+    guide_fraction = guide_hours/twitot_dome_hours
+else: 
+    science_fraction = 0.
+    guide_fraction = 0.
 # Total number of each type of observing block
 science_num = len(science_width)
 guide_num = len(guide_width)
@@ -302,6 +312,7 @@ ax1.plot([twibeg_hours, twibeg_hours], [ymin, ymax], 'k--')
 ax1.plot([twiend_hours, twiend_hours], [ymin, ymax], 'k--')
 
 # Populate in case no data were obtained in each category
+xlab = float(twibeg_hours - 4.)
 if len(science_start) == 0: 
     science_start.append(xlab + 4.)
     science_width.append(0.) 
@@ -312,13 +323,12 @@ if len(guide_start) == 0:
 
 # Default label locations
 y1, y2 = ax1.get_ylim()
-xlab = float(twibeg_hours - 4.)
 ylab1 = y1 + 0.9*(y2-y1)
 ylab2 = y1 + 0.8*(y2-y1)
 ylab3 = y1 + 0.7*(y2-y1)
 ylab4 = y1 + 0.6*(y2-y1)
 lab1 = "Night: {0:.1f} hrs".format(twitot_hours)
-lab2 = "Open: {0:.1f} %".format(100.*open_fraction)
+lab2 = "Open: {0:.1f}%".format(100.*open_fraction)
 lab3 = "Science: {0:.1f}% ({1})".format(100.*science_fraction, science_num)
 lab4 = "Guide: {0:.1f}% ({1})".format(100.*guide_fraction, guide_num)
 ax1.text(xlab, ylab1, lab1, va='center')
@@ -343,6 +353,9 @@ ax2.set_ylabel("Seeing [arcsec]")
 ax2.scatter(guidetime, guide['seeing'], c='gray') #, marker='o') 
 y1, y2 = ax2.get_ylim()
 ax2.set_ylim(0, y2) 
+
+if args.table: 
+    print("<tr> <td>{0}</td> <td>{1:.1f}</td> <td> {2:.1f} </td> <td> {3:.1f} </td> <td> {4:.1f} </td> <td align=center><A HREF='{5}'><img SRC='{5}' width=20% height=auto></A></td> </tr>".format(night, twitot_dome_hours, 100.*open_fraction, 100.*science_fraction, 100*guide_fraction, outplot)) 
 
 plt.savefig(outplot, bbox_inches="tight")
 if args.verbose: 
