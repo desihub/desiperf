@@ -43,6 +43,10 @@ RUN \
             matplotlib          \
             gspread             \
             oauth2client
+FROM python:3
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir gspread-dataframe
 
 ENV PATH=/opt/anaconda3/bin:$PATH
 WORKDIR /srv
@@ -54,6 +58,5 @@ ENV XDG_CONFIG_HOME=/srv/config
 RUN mkdir -p $XDG_CONFIG_HOME/astropy
 
 ADD instperfapp /srv/instperfapp
-RUN python3 -c "import astropy"
 
 CMD ["bokeh", "serve", "--show", "instperfapp"]
