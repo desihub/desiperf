@@ -32,7 +32,7 @@ class DataHandler(object):
 
         self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
 
-    def get_focalplane_data(self):
+    def prepare_focalplane_source(self):
             
 
         fpfile = os.path.join(self.fp_dir, 'fpa_all.fits.gz')
@@ -80,7 +80,7 @@ class DataHandler(object):
 
         self.focalplane_source = ColumnDataSource(fp_df)
 
-    def get_detector_data(self):
+    def prepare_detector_source(self):
 
         specfile = os.path.join(self.det_dir, 'spec_all.fits.gz') 
         print('Spectrograph Data Coming from {}'.format(specfile))
@@ -106,7 +106,7 @@ class DataHandler(object):
         spec_df.columns = [x.upper() for x in spec_df.columns]
         self.detector_source = ColumnDataSource(spec_df)
 
-    def get_positioner_data(self):
+    def prepare_positioner_source(self):
         if self.option == 'update':
             print('Skipping pos this time')
             #pos_df = pd.read_csv('6830.csv')
@@ -130,6 +130,6 @@ class DataHandler(object):
         return df
 
     def run(self):
-        self.get_focalplane_data() #self.focalplane_source
-        self.get_detector_data() #self.detector_source
-        self.get_positioner_data()
+        self.prepare_focalplane_source() #self.focalplane_source
+        self.prepare_detector_source() #self.detector_source
+        self.prepare_positioner_source()
