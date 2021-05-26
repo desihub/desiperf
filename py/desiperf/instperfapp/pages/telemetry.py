@@ -31,7 +31,7 @@ class TelemetryPage(Page):
         self.description = Div(text=desc, width=800, css_classes=['inst-style'])
 
         self.url = "https://docs.google.com/spreadsheets/d/1pMsU5PXhpTyj76vPTfCgBde8jpz04JcXxvOVJVZfLiM/edit#gid=0"
-        self.credentials = "instperfapp/data/google_access_account.json"
+        self.credentials = "instperfapp/data_mgt/google_access_account.json"
         self.creds = ServiceAccountCredentials.from_json_keyfile_name(self.credentials)
         self.client = gspread.authorize(self.creds)
         self.sheet = self.client.open_by_url(self.url).sheet1

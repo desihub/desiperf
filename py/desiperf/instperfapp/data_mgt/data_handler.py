@@ -17,7 +17,7 @@ from data_mgt.get_pos_data import POSData
 
 
 class DataHandler(object):
-    def __init__(self, start_date = '20200123', end_date = '20200316', option = 'no_update'):
+    def __init__(self, start_date = '20200123', end_date = '20210525', option = 'no_update'):
         self.option = option
         self.start_date = start_date
         self.end_date = end_date
@@ -28,7 +28,7 @@ class DataHandler(object):
         self.fp_dir = os.path.join(self.data_dir, 'focalplane')
         self.det_dir = os.path.join(self.data_dir, 'detector')
 
-        self.fiberpos = pd.read_csv('./instperfapp//data/fiberpos.csv')
+        self.fiberpos = pd.read_csv('./instperfapp//data_mgt/fiberpos.csv')
 
         self.FIBERS = [1235 , 2561, 2976, 3881, 4844, 763, 2418, 294, 3532, 4731, 595]
 
