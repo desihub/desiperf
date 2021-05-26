@@ -48,18 +48,18 @@ def init_pages(datahandler):
     FP = FocalPlanePage(datahandler)
     PP = PosAccPage(datahandler) #Has its own data
     SP = SpectrographPage(datahandler)
-    TP = TelemetryPage(datahandler)
-    for page in [FP, PP, SP, TP]:
+    #TP = TelemetryPage(datahandler)
+    for page in [FP, PP, SP]: #TP
         page.run()
 
-    return FP.page_layout(), PP.page_layout(), SP.page_layout(), TP.page_layout() #
+    return FP.page_layout(), PP.page_layout(), SP.page_layout() #, TP.page_layout() #
 
 def limit_data():
     print('Updating data')
     date_btn.label = 'Updating'
     DH = DataHandler(start_date=str(start_date.value), end_date=str(end_date.value), option='no_update')
     DH.run()
-    fp_tab, pp_tab, sp_tab, tp_tab = init_pages(DH)
+    fp_tab, pp_tab, sp_tab = init_pages(DH) #tp_tab
     ds = pd.DataFrame(DH.detector_source.data)
     fps = pd.DataFrame(DH.focalplane_source.data)
     data_source.data, max_night, min_night = data_text(ds, fps)
@@ -72,7 +72,7 @@ def update_data():
     today = datetime.today().strftime('%Y%m%d')
     DH = DataHandler(start_date='20200123', end_date=today, option='update')
     DH.run()
-    fp_tab, pp_tab, sp_tab, tp_tab = init_pages(DH)
+    fp_tab, pp_tab, sp_tab= init_pages(DH)
     ds = pd.DataFrame(DH.detector_source.data)
     fps = pd.DataFrame(DH.focalplane_source.data)
     data_source.data, max_night, min_night = data_text(ds, fps)
@@ -101,7 +101,7 @@ data_start = '20200123'
 today = datetime.today().strftime('%Y%m%d')
 DH = DataHandler(start_date = data_start,end_date=today)
 DH.run()
-fp_tab, pp_tab, sp_tab, tp_tab = init_pages(DH) # 
+fp_tab, pp_tab, sp_tab= init_pages(DH) # 
 
 if PROFILE: 
     # Print cProfile stats for startup
@@ -186,9 +186,9 @@ tab1 = Panel(child=layout1, title="Welcome")
 tab2 = fp_tab
 tab3 = pp_tab
 tab4 = sp_tab
-tab5 = tp_tab
+#tab5 = tp_tab
 
-tabs = Tabs(tabs=[tab1, tab2, tab3, tab4, tab5]) #
+tabs = Tabs(tabs=[tab1, tab2, tab3, tab4]) #
 
 date_btn.on_click(limit_data)
 update_btn.on_click(update_data)
