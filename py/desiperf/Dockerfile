@@ -40,7 +40,9 @@ RUN \
             pandas              \
             numpy               \
             scipy               \ 
-            matplotlib
+            matplotlib          \
+            gspread             \
+            oauth2client
 
 ENV PATH=/opt/anaconda3/bin:$PATH
 WORKDIR /srv
