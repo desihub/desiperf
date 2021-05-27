@@ -48,4 +48,6 @@ RUN \
 ENV PATH=/opt/anaconda3/bin:$PATH
 WORKDIR /srv
 
-CMD ["bokeh", "serve", "--show", "instperfapp"]
+ADD instperfapp /srv/instperfapp
+
+CMD ["bokeh", "serve", "--show", "instperfapp/"]
