@@ -36,7 +36,6 @@ RUN \
     /opt/anaconda3/bin/conda install --yes                      \
             --channel conda-forge   \
             astropy             \
-            bokeh               \
             pandas              \
             numpy               \
             scipy               \ 
@@ -44,6 +43,8 @@ RUN \
             gspread             \
             psycopg2            \
             oauth2client
+
+RUN /opt/anaconda3/bin/conda install bokeh=2.2.2
 
 ENV PATH=/opt/anaconda3/bin:$PATH
 WORKDIR /srv
