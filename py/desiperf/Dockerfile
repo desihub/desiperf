@@ -48,13 +48,4 @@ RUN \
 ENV PATH=/opt/anaconda3/bin:$PATH
 WORKDIR /srv
 
-ENV XDG_CACHE_HOME=/srv/cache
-RUN mkdir -p $XDG_CACHE_HOME/astropy
-
-ENV XDG_CONFIG_HOME=/srv/config
-RUN mkdir -p $XDG_CONFIG_HOME/astropy
-
-ADD instperfapp /srv/instperfapp
-RUN python3 -c "import astropy"
-
 CMD ["bokeh", "serve", "--show", "instperfapp"]
