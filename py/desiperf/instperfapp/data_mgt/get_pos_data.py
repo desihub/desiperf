@@ -2,6 +2,7 @@ import pandas as pd
 import fnmatch
 import numpy as np
 import os, glob
+import multiprocessing
 
 from astropy.table import Table
 from astropy.time import Time
@@ -132,6 +133,19 @@ class POSData():
 
         final_df.to_csv(filen, index=False)
 
+    def get_single_pos_data(self,pos):
+        try:
+            self.get_fiberpos_data(pos)
+            self.add_posmove_telemetry()
+            final_pos_df = pd.merge(self.pos_df, self.pos_telem, on=['EXPID'], how='left')
+            #final_pos_df = pd.merge(final_pos_df, self.exp_df_new, on=['EXPID'], how='left')
+            self.final_pos_df = pd.merge(final_pos_df, self.telem_df, on=['EXPID'], how='left')
+            self.save_data(pos, self.final_pos_df)
+            print('Pos {} Done: {}'.format(pos, datetime.now()))
+            #self.final_pos_df.to_csv(self.save_dir+'{}.csv'.format(pos), index=False) 
+        except:
+            print("Issue with {}".format(pos))
+
     def run(self):
         print('Start: {}'.format(datetime.now()))
         self.get_exp_df()
@@ -140,16 +154,8 @@ class POSData():
         print('Telem: {}'.format(datetime.now()))
         self.get_coord_data()
         print('Coord: {}'.format(datetime.now()))
-        for pos in self.POSITIONERS:
-            try:
-                self.get_fiberpos_data(pos)
-                self.add_posmove_telemetry()
-                final_pos_df = pd.merge(self.pos_df, self.pos_telem, on=['EXPID'], how='left')
-                #final_pos_df = pd.merge(final_pos_df, self.exp_df_new, on=['EXPID'], how='left')
-                self.final_pos_df = pd.merge(final_pos_df, self.telem_df, on=['EXPID'], how='left')
-                self.save_data(pos, self.final_pos_df)
-                print('Pos {} Done: {}'.format(pos, datetime.now()))
-            #self.final_pos_df.to_csv(self.save_dir+'{}.csv'.format(pos), index=False) 
-            except:
-                print("Issue with {}".format(pos))
+        
+        pool = multiprocessing.Pool(processes=4)
+        pool.map(self.get_single_pos_data, self.POSITIONERS)
+        pool.terminate()
 
