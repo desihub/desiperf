@@ -42,6 +42,7 @@ RUN \
             scipy               \ 
             matplotlib          \
             gspread             \
+            psycopg2            \
             oauth2client
 
 ENV PATH=/opt/anaconda3/bin:$PATH
