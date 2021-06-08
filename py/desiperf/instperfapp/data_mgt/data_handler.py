@@ -24,7 +24,7 @@ class DataHandler(object):
         print('Start: {}, End: {}'.format(self.start_date, self.end_date))
 
         self.data_dir = os.environ['DATA_DIR']
-        self.pos_dir = os.path.join(self.data_dir, 'per_fiber')
+        self.pos_dir = os.path.join(self.data_dir, 'positioners')
         self.fp_dir = os.path.join(self.data_dir, 'focalplane')
         self.det_dir = os.path.join(self.data_dir, 'detector')
 
