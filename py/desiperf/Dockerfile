@@ -51,4 +51,4 @@ WORKDIR /srv
 
 ADD instperfapp /srv/instperfapp
 
-CMD ["bokeh", "serve", "--show", "instperfapp/"]
+CMD ["bokeh", "serve", "--show", "instperfapp/", "--websocket-max-message-size 1000000", "--check-unused-sessions 5000", "--unused-session-lifetime", "5000", "--log-level", "debug"]
