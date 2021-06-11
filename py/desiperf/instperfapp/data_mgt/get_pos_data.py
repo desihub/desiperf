@@ -17,7 +17,7 @@ class POSData():
         self.start_date = start
         self.end_date = end
         self.save_dir = os.path.join(os.environ['DATA_DIR'],'positioners')
-        self.fiberpos = pd.read_csv(os.path.join(os.environ['DATA_DIR'],'fiberpos.csv'))
+        self.fiberpos = pd.read_csv(os.path.join('./data_mgt/fiberpos.csv'))
 
         self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev", user="desi_reader", password="reader")
 
@@ -27,11 +27,9 @@ class POSData():
         done_pos =  [int(os.path.splitext(f)[0]) for f in os.listdir(self.save_dir)]
         self.POSITIONERS = [pos for pos in all_pos if pos not in done_pos]
         print(self.POSITIONERS)
-        #self.POSITIONERS = [6205, 6828, 4804, 4946, 6830, 4374, 3770, 7403, 3239, 7545, 3963]
+        self.POSITIONERS = [6205, 6828, 4804, 4946, 6830, 4374, 3770, 7403, 3239, 7545, 3963]
 
         self.petal_loc_to_id = {0:'4',1:'5',2:'6',3:'3',4:'8',5:'10',6:'11',7:'2',8:'7',9:'9'}
-
-        self.fiberpos = pd.read_csv('./data/fiberpos.csv')
 
 
     def get_exp_df(self):
@@ -68,20 +66,27 @@ class POSData():
     def get_telem_data(self):
         dfs = []
         for d in ['telescope','tower','dome']:
-            try:
-                t_keys = list(self.exp_df_new.iloc[0][d].keys())
-            except:
-                t_keys = list(self.exp_df_new.iloc[2][d].keys())
+            get_keys = True
+            i = 0
+            while get_keys:
+                try:
+                    t_keys = list(self.exp_df_new.iloc[i][d].keys())
+                    get_keys = False
+                except:
+                    i += 1
             dd = {}
             for t in t_keys:
                 dd[t] = []
             for item in self.exp_df_new[d]:
                 if item is not None:
-                    for key, val in item.items():
-                        dd[key].append(val)
+                    for key in t_keys:
+                        try:
+                            dd[key].append(item[key])
+                        except:
+                            dd[key].append(None)
                 else:
-                    for key, l in dd.items():
-                        dd[key].append(val)
+                   for key, l in dd.items():
+                        dd[key].append(None)
             df = pd.DataFrame.from_dict(dd)
             dfs.append(df)
 
@@ -102,17 +107,12 @@ class POSData():
             for f in coord_files:
                 exposure = int(os.path.splitext(os.path.split(f)[0])[0][-6:])
                 try:
-                    
                     df = Table.read(f, format='fits').to_pandas()
                     good = df['OFFSET_0']
-                    final_move = np.sort(fnmatch.filter(df.columns, 'OFFSET_*'))[-1]
-                    if int(final_move[-1]) > 0:
-                        df = df[['PETAL_LOC', 'DEVICE_LOC','TARGET_RA', 'TARGET_DEC','FIBERASSIGN_X', 'FIBERASSIGN_Y','OFFSET_0',final_move]]
-                        df = df.rename(columns={final_move:'OFFSET_FINAL'})
-                        df['EXPID'] = exposure
-                        self.coord_df.append(df)
-                    else:
-                        print(f, final_move)
+                    df = df[['PETAL_LOC', 'DEVICE_LOC','TARGET_RA', 'TARGET_DEC','FA_X', 'FA_Y','OFFSET_0','OFFSET_1']]
+                    df = df.rename(columns={'OFFSET_1':'OFFSET_FINAL','FA_X':'FIBERASSIGN_X','FA_Y':'FIBERASSIGN_Y'})
+                    df['EXPID'] = exposure
+                    self.coord_df.append(df)
                 except:
                     pass
         self.coord_df = pd.concat(self.coord_df)
@@ -155,7 +155,19 @@ class POSData():
         self.get_coord_data()
         print('Coord: {}'.format(datetime.now()))
         
-        pool = multiprocessing.Pool(processes=4)
-        pool.map(self.get_single_pos_data, self.POSITIONERS)
-        pool.terminate()
+        for pos in self.POSITIONERS:
+            try:
+                self.get_fiberpos_data(pos)
+                self.add_posmove_telemetry()
+                final_pos_df = pd.merge(self.pos_df, self.pos_telem, on=['EXPID'], how='left')
+                #final_pos_df = pd.merge(final_pos_df, self.exp_df_new, on=['EXPID'], how='left')
+                self.final_pos_df = pd.merge(final_pos_df, self.telem_df, on=['EXPID'], how='left')
+                self.save_data(pos, self.final_pos_df)
+                print('Pos {} Done: {}'.format(pos, datetime.now()))
+            except:
+                print("Issue with {}".format(pos))
+            
+        #pool = multiprocessing.Pool(processes=4)
+        #pool.map(self.get_single_pos_data, self.POSITIONERS)
+        #pool.terminate()
 

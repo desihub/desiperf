@@ -159,17 +159,24 @@ class FPData():
     def get_telem_df(self):
         dfs = []
         for d in ['telescope','tower','dome']:
-            try:
-                t_keys = list(self.exp_df_new.iloc[0][d].keys())
-            except:
-                t_keys = list(self.exp_df_new.iloc[1][d].keys())
+            t_keys = None
+            ix = 0
+            while t_keys is None:
+                try:
+                    ix += 1        # connect
+                    t_keys = list(self.exp_df_new.iloc[ix][d].keys())
+                except:
+                    pass
             dd = {}
             for t in t_keys:
                 dd[t] = []
             for item in self.exp_df_new[d]:
                 if item is not None:
-                    for key, val in item.items():
-                        dd[key].append(val)
+                    for key in t_keys:
+                        try:
+                            dd[key].append(item[key])
+                        except:
+                            dd[key].append(None)
                 else:
                     for key, l in dd.items():
                         dd[key].append(None)
@@ -217,13 +224,13 @@ class FPData():
 
     def get_pos_acc(self, f):
         date, exp = os.path.split(f)[0].split('/')[-2:]
-        date = int(date)
-        exp = int(exp)
-
-        df = Table.read(f,format='fits').to_pandas()
-        good_df = df[df['FLAGS_FVC_0'] == 4]
 
         try:
+            date = int(date)
+            exp = int(exp)
+
+            df = Table.read(f,format='fits').to_pandas()
+            good_df = df[df['FLAGS_FVC_0'] == 4]
             blind = np.array(good_df['OFFSET_0'])
             blind = blind[~np.isnan(blind)]
             max_blind = np.max(blind)*1000
