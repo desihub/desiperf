@@ -7,17 +7,18 @@ import multiprocessing
 from astropy.table import Table
 from astropy.time import Time
 import psycopg2
+from psycopg2 import pool
 from datetime import datetime
 from bokeh.models import ColumnDataSource
 
 
-start = '20210'
-end = '20210611'
+start = '20210615'
+end = '20210617'
 mode = 'update'
+os.environ['DATA_DIR'] = '/n/home/desiobserver/parkerf/desiperf/py/desiperf/data_local/' 
+fiberpos = pd.read_csv(os.path.join('./fiberpos.csv'))
+start = datetime.now()
 
-fiberpos = pd.read_csv(os.path.join('./data_mgt/fiberpos.csv'))
-
-    conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev", user="desi_reader", password="reader")
 petal_loc_to_id = {0:'4',1:'5',2:'6',3:'3',4:'8',5:'10',6:'11',7:'2',8:'7',9:'9'}
 
 def get_exp_df(start_date, end_date, conn):
@@ -92,6 +93,32 @@ def get_coord_data(exp_df_new):
 
     return coord_df
 
+
+all_pos = np.unique(fiberpos.CAN_ID)
+#all_pos = all_pos[0:10]
+#finished = pd.read_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/data_local/positioners/finished.txt',header=None)
+#fin = list(finished[0])[:-1]
+#finished_pos = [int(os.path.splitext(os.path.split(f)[1])[0]) for f in fin]
+#print(finished_pos)
+#all_pos = [x for x in all_pos if x not in finished_pos]
+print(len(all_pos))
+
+db = psycopg2.pool.ThreadedConnectionPool(4,64,host="desi-db", port="5442", database="desi_dev", user="desi_reader", password="reader")
+conn = db.getconn()
+exp_df_new = get_exp_df(start, end, conn)
+db.putconn(conn)
+exp_df_base = exp_df_new[['EXPID','date_obs']]
+print('done with exp df')
+telem_df = get_telem_data(exp_df_new)
+print('done with telem')
+coord_df = get_coord_data(exp_df_new)
+print('done with coord')
+ptl_dbs = {}
+for ptl in petal_loc_to_id.values():
+    print(ptl)
+    ptl_dbs[ptl] = pd.read_sql_query("SELECT * FROM positioner_moves_p{} WHERE time_recorded >= '{}' AND time_recorded < '{}'".format(ptl, start,end),conn)
+
+
 def get_fiberpos_data(pos, coord_df):
     init_df = fiberpos[fiberpos.CAN_ID == pos]
     ptl_loc = int(np.unique(init_df.PETAL))
@@ -102,8 +129,9 @@ def get_fiberpos_data(pos, coord_df):
 
     return ptl, dev, pos_df 
 
-def add_posmove_telemetry(ptl, dev, start, end, conn, exp_df_base):
-    df = pd.read_sql_query("SELECT * FROM positioner_moves_p{} WHERE device_loc = {} AND time_recorded >= '{}' AND time_recorded < '{}'".format(ptl, dev, start_date,end_date),conn)
+def add_posmove_telemetry(ptl, dev, start, end,  exp_df_base):
+    df = ptl_dbs[ptl]
+    df = df[df.device_loc == dev]
     idx = []
     for time in exp_df_base.date_obs:
         ix = np.argmin(np.abs(df['time_recorded'] - time))
@@ -131,15 +159,11 @@ def save_data(pos, df):
 
     final_df.to_csv(filen, index=False)
 
+print('Starting')
 def run(pos):
-
-    exp_df_new = get_exp_df(start_date, end_date, conn)
-    exp_df_base = exp_df_new[['EXPID','date_obs']]
-    telem_df = get_telem_data(exp_df_new)
-    coord_df = get_coord_data(exp_df_new)
     try:
         ptl, dev, pos_df = get_fiberpos_data(pos, coord_df)
-        pos_telem = add_posmove_telemetry(ptl, dev, start, end, conn, exp_df_base)
+        pos_telem = add_posmove_telemetry(ptl, dev, start, end, exp_df_base)
         final_pos_df = pd.merge(pos_df, pos_telem, on=['EXPID'], how='left')
         final_pos_df = pd.merge(final_pos_df, telem_df, on=['EXPID'], how='left')
         save_data(pos, final_pos_df)
@@ -149,11 +173,9 @@ def run(pos):
 
 
 
-if if __name__ == '__main__':
 
-    all_pos = np.unique(fiberpos.CAN_ID) 
-
-    pool = multiprocessing.Pool(processes=64)
-    pool.map(run, all_pos)
-    pool.terminate()
-
+pool = multiprocessing.Pool(processes=64)
+pool.map(run, all_pos)
+pool.terminate()
+db.closeall()
+print((datetime.now()-start).total_seconds())
