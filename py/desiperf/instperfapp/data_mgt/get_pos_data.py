@@ -2,41 +2,28 @@ import pandas as pd
 import fnmatch
 import numpy as np
 import os, glob
-import multiprocessing
+
 
 from astropy.table import Table
 from astropy.time import Time
 import psycopg2
-from psycopg2 import pool
+#from psycopg2 import pool
 from datetime import datetime
 from bokeh.models import ColumnDataSource
 
 
-start = '20210615'
-end = '20210617'
-mode = 'update'
-os.environ['DATA_DIR'] = '/n/home/desiobserver/parkerf/desiperf/py/desiperf/data_local/' 
-fiberpos = pd.read_csv(os.path.join('./fiberpos.csv'))
-start = datetime.now()
-
+conn = psycopg2.connect(host="db.replicator.dev-cattle.stable.spin.nersc.org", port="60042", database="desi_dev", user="desi_reader", password="reader")
 petal_loc_to_id = {0:'4',1:'5',2:'6',3:'3',4:'8',5:'10',6:'11',7:'2',8:'7',9:'9'}
 
-def get_exp_df(start_date, end_date, conn):
-    exp_cols = ['id','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec','reqtime','exptime','flavor','program','lead','focus','airmass',
-        'mountha','zd','mountaz','domeaz','spectrographs','s2n','transpar','skylevel','zenith','mjd_obs','date_obs','night','moonra','moondec','parallactic','mountel',
-        'dome','telescope','tower','hexapod','adc','sequence','obstype']
 
-    exp_df = pd.read_sql_query(f"SELECT * FROM exposure WHERE date_obs >= '{start_date}' AND date_obs < '{end_date}'", conn)
-
+def get_dfs(start, end):
+    exp_cols = ['id','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec','reqtime','exptime','flavor','program','lead','focus','airmass',  'mountha','zd','mountaz','domeaz','spectrographs','s2n','transpar','skylevel','zenith','mjd_obs','date_obs','night','moonra','moondec','parallactic','mountel','dome','telescope','tower','hexapod','adc','sequence','obstype']
+    exp_df = pd.read_sql_query("SELECT * FROM exposure WHERE date_obs >= '{}' AND date_obs < '{}'".format(start, end), conn)
     exp_df_new = exp_df[exp_cols]
     exp_df_new = exp_df_new.rename(columns={'id':'EXPID'})
-
     exp_df_base = exp_df_new[['EXPID','date_obs']]
 
-    return exp_df_new
-
-def get_telem_data(exp_df_new):
-    exp_df_base = exp_df_new[['EXPID','date_obs']]
+    print('get telem data')
     dfs = []
     for d in ['telescope','tower','dome']:
         get_keys = True
@@ -58,7 +45,7 @@ def get_telem_data(exp_df_new):
                     except:
                         dd[key].append(None)
             else:
-               for key, l in dd.items():
+                for key, l in dd.items():
                     dd[key].append(None)
         df = pd.DataFrame.from_dict(dd)
         dfs.append(df)
@@ -68,13 +55,12 @@ def get_telem_data(exp_df_new):
         dfs[i] = df
     telem_df = pd.concat(dfs, axis=1)
     telem_df = pd.concat([exp_df_base, telem_df], axis=1)
-    return telem_df
 
-def get_coord_data(exp_df_new):
+    print('get_coord_data')
     nights = np.unique(exp_df_new['night'])
     dates = [int(d) for d in nights[np.isfinite(nights)]]
 
-    coord_dir = '/exposures/desi/'
+    coord_dir = '/global/cfs/cdirs/desi/spectro/data/'
     coord_df = []
     for date in dates:
         coord_files = glob.glob(coord_dir+'{}/*/coordinates-*'.format(date))
@@ -90,36 +76,17 @@ def get_coord_data(exp_df_new):
             except:
                 pass
     coord_df = pd.concat(coord_df)
-
-    return coord_df
-
-
-all_pos = np.unique(fiberpos.CAN_ID)
-#all_pos = all_pos[0:10]
-#finished = pd.read_csv('/n/home/desiobserver/parkerf/desiperf/py/desiperf/data_local/positioners/finished.txt',header=None)
-#fin = list(finished[0])[:-1]
-#finished_pos = [int(os.path.splitext(os.path.split(f)[1])[0]) for f in fin]
-#print(finished_pos)
-#all_pos = [x for x in all_pos if x not in finished_pos]
-print(len(all_pos))
-
-db = psycopg2.pool.ThreadedConnectionPool(4,64,host="desi-db", port="5442", database="desi_dev", user="desi_reader", password="reader")
-conn = db.getconn()
-exp_df_new = get_exp_df(start, end, conn)
-db.putconn(conn)
-exp_df_base = exp_df_new[['EXPID','date_obs']]
-print('done with exp df')
-telem_df = get_telem_data(exp_df_new)
-print('done with telem')
-coord_df = get_coord_data(exp_df_new)
-print('done with coord')
-ptl_dbs = {}
-for ptl in petal_loc_to_id.values():
-    print(ptl)
-    ptl_dbs[ptl] = pd.read_sql_query("SELECT * FROM positioner_moves_p{} WHERE time_recorded >= '{}' AND time_recorded < '{}'".format(ptl, start,end),conn)
+    print('done with dfs')
+    
+    ptl_dbs = {}
+    for ptl in petal_loc_to_id.values():
+        print('Getting data for Petal {}'.format(ptl))
+        ptl_dbs[ptl] = pd.read_sql_query("SELECT * FROM positioner_moves_p{} WHERE time_recorded >= '{}' AND time_recorded < '{}'".format(ptl, start,end),conn)
+        
+    return exp_df_base, telem_df, coord_df, ptl_dbs 
 
 
-def get_fiberpos_data(pos, coord_df):
+def get_fiberpos_data(pos, coord_df, fiberpos):
     init_df = fiberpos[fiberpos.CAN_ID == pos]
     ptl_loc = int(np.unique(init_df.PETAL))
     ptl = petal_loc_to_id[ptl_loc]
@@ -129,7 +96,7 @@ def get_fiberpos_data(pos, coord_df):
 
     return ptl, dev, pos_df 
 
-def add_posmove_telemetry(ptl, dev, start, end,  exp_df_base):
+def add_posmove_telemetry(ptl, dev, start, end,  exp_df_base, ptl_dbs):
     df = ptl_dbs[ptl]
     df = df[df.device_loc == dev]
     idx = []
@@ -142,7 +109,7 @@ def add_posmove_telemetry(ptl, dev, start, end,  exp_df_base):
     pos_telem = pd.concat([exp_df_base, df], axis=1)
     return pos_telem
 
-def save_data(pos, df):
+def save_data(pos, df, mode):
     save_dir = os.path.join(os.environ['DATA_DIR'],'positioners')
     filen = os.path.join(save_dir, '{}.csv'.format(pos))
     if mode == 'new':
@@ -150,32 +117,26 @@ def save_data(pos, df):
     elif mode == 'update':
         old_df = pd.read_csv(filen)
         for col in list(df.columns):
-           if col not in list(old_df.columns):
-               try:
-                   df.drop(columns=[col], axis=1, inplace=True) 
-               except:
-                   print(col)
+            if col not in list(old_df.columns):
+                try:
+                    df.drop(columns=[col], axis=1, inplace=True) 
+                except:
+                    pass
+                    #print(col)
         final_df = pd.concat([old_df, df])
 
     final_df.to_csv(filen, index=False)
 
-print('Starting')
-def run(pos):
+def run(pos, start, end, exp_df_base, coord_df, telem_df, fiberpos, ptl_dbs, mode):
     try:
-        ptl, dev, pos_df = get_fiberpos_data(pos, coord_df)
-        pos_telem = add_posmove_telemetry(ptl, dev, start, end, exp_df_base)
+        ptl, dev, pos_df = get_fiberpos_data(pos, coord_df, fiberpos)
+        pos_telem = add_posmove_telemetry(ptl, dev, start, end, exp_df_base, ptl_dbs)
         final_pos_df = pd.merge(pos_df, pos_telem, on=['EXPID'], how='left')
         final_pos_df = pd.merge(final_pos_df, telem_df, on=['EXPID'], how='left')
-        save_data(pos, final_pos_df)
+        save_data(pos, final_pos_df, mode)
         print('Pos {} Done: {}'.format(pos, datetime.now()))
-    except:
-        print("Issue with {}".format(pos))
+    except Exception as e:
+        print("Issue with {}: {}".format(pos,e))
 
 
 
-
-pool = multiprocessing.Pool(processes=64)
-pool.map(run, all_pos)
-pool.terminate()
-db.closeall()
-print((datetime.now()-start).total_seconds())

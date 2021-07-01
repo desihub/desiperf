@@ -16,7 +16,7 @@ class FPData():
         self.start_date = start
         self.end_date = end
 
-        self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev", user="desi_reader", password="reader")
+        self.conn = psycopg2.connect(host="db.replicator.dev-cattle.stable.spin.nersc.org", port="60042", database="desi_dev", user="desi_reader", password="reader")
 
         self.save_dir = self.data_dir = os.path.join(os.environ['DATA_DIR'],'focalplane')
         self.fp_file = 'fpa_all.fits.gz'
@@ -209,7 +209,8 @@ class FPData():
         dates = [int(d) for d in nights[np.isfinite(nights)]]
 
         start = datetime.now()
-        coord_dir = '/exposures/desi/'
+        coord_dir = '/global/cfs/cdirs/desi/spectro/data/'
+        #coord_dir = '/exposures/desi/'
         self.all_coord_files = {}
         for date in dates:
             self.all_coord_files[date] = []
