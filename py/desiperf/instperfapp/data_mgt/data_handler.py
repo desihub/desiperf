@@ -13,7 +13,7 @@ from bokeh.models import ColumnDataSource
 
 from data_mgt.get_fp_data import FPData
 from data_mgt.get_spec_data import SPECData
-from data_mgt.get_pos_data import POSData
+#from data_mgt.get_pos_data import POSData
 
 
 class DataHandler(object):

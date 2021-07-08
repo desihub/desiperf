@@ -25,12 +25,12 @@ from bokeh.models.widgets.markups import Div
 from pages.focalplane import FocalPlanePage
 from pages.positioner import PosAccPage
 from pages.spectrograph import SpectrographPage
-from pages.telemetry import TelemetryPage
+#from pages.telemetry import TelemetryPage
 from bokeh.models.callbacks import CustomJS
 
 from data_mgt.data_handler import DataHandler
 
-os.environ["DATA_DIR"] = "/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/"
+#os.environ["DATA_DIR"] = "/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/"
 
 import cProfile, pstats, io
 from pstats import SortKey
