@@ -130,6 +130,8 @@ class DataHandler(object):
         return df
 
     def run(self):
-        self.prepare_focalplane_source() #self.focalplane_source
-        self.prepare_detector_source() #self.detector_source
-        self.prepare_positioner_source()
+        #self.prepare_focalplane_source() #self.focalplane_source
+        #self.prepare_detector_source() #self.detector_source
+        self.focalplane_source = None
+        self.detector_source = None
+        #self.prepare_positioner_source()

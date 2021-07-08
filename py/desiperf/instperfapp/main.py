@@ -21,6 +21,7 @@ from bokeh.models.widgets.tables import DataTable, TableColumn
 from bokeh.layouts import layout
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.models.widgets.markups import Div
+from bokeh.client import push_session
 
 from pages.focalplane import FocalPlanePage
 from pages.positioner import PosAccPage
@@ -30,7 +31,6 @@ from bokeh.models.callbacks import CustomJS
 
 from data_mgt.data_handler import DataHandler
 
-#os.environ["DATA_DIR"] = "/n/home/desiobserver/parkerf/desiperf/py/desiperf/instperfapp/data/"
 
 import cProfile, pstats, io
 from pstats import SortKey
@@ -46,13 +46,13 @@ def init_pages(datahandler):
     Calls the individual pages and initializes the data used
     '''
     FP = FocalPlanePage(datahandler)
-    PP = PosAccPage(datahandler) #Has its own data
-    SP = SpectrographPage(datahandler)
+    #PP = PosAccPage(datahandler) #Has its own data
+    #SP = SpectrographPage(datahandler)
     #TP = TelemetryPage(datahandler)
-    for page in [FP, PP, SP]: #TP
+    for page in [FP]: #, PP, SP]: #TP
         page.run()
 
-    return FP.page_layout(), PP.page_layout(), SP.page_layout() #, TP.page_layout() #
+    return FP.page_layout() #, PP.page_layout(), SP.page_layout() #, TP.page_layout() #
 
 def limit_data():
     print('Updating data')
@@ -69,7 +69,7 @@ def limit_data():
 
 def update_data():
     update_btn.label = 'Updating'
-    today = datetime.today().strftime('%Y%m%d')
+    today = '20210629'#datetime.today().strftime('%Y%m%d')
     DH = DataHandler(start_date='20200123', end_date=today, option='update')
     DH.run()
     fp_tab, pp_tab, sp_tab= init_pages(DH)
@@ -98,11 +98,11 @@ if PROFILE:
 
 #- Initialize data & pages
 data_start = '20200123'
-today = datetime.today().strftime('%Y%m%d')
+today = '20210629'#datetime.today().strftime('%Y%m%d')
 DH = DataHandler(start_date = data_start,end_date=today)
 DH.run()
-fp_tab, pp_tab, sp_tab= init_pages(DH) # 
-
+#fp_tab = init_pages(DH) # 
+print('here')
 if PROFILE: 
     # Print cProfile stats for startup
     pr.disable()
@@ -124,10 +124,10 @@ welcome_text = """ Welcome to the DESI Instrument Performance Analysis Tool!
 welcome = Div(text=welcome_text, width=800, css_classes=['inst-style'])
 
 subtitle1 = Div(text="Data Overview", width=800, css_classes=['title-style'])
-ds = pd.DataFrame(DH.detector_source.data)
-fps = pd.DataFrame(DH.focalplane_source.data)
-df, max_night, min_night = data_text(ds, fps)
-data_source = ColumnDataSource(df)
+#ds = pd.DataFrame(DH.detector_source.data)
+#fps = pd.DataFrame(DH.focalplane_source.data)
+#df, max_night, min_night = data_text(ds, fps)
+#data_source = ColumnDataSource(df)
 
 columns = [TableColumn(field='type', title='Data Source', width=200),
            TableColumn(field='date_start', title='Date Start', width=100),
@@ -135,12 +135,12 @@ columns = [TableColumn(field='type', title='Data Source', width=200),
            TableColumn(field='exp_start', title='Exposure Start', width=100),
            TableColumn(field='exp_end', title='Exposure End', width=100)]
 
-data_table = DataTable(source=data_source, columns=columns, height=100)
+#data_table = DataTable(source=data_source, columns=columns, height=100)
 
 
 subtitle1_5 = Div(text="<b>Limit the data to a shorter date range below.</b>", width=800, css_classes=['inst-style'])
-start_date = TextInput(title ='Start Date', width=200, placeholder = str(int(min_night)))
-end_date = TextInput(title ='End Date', width=200, placeholder = str(int(max_night)))
+#start_date = TextInput(title ='Start Date', width=200, placeholder = str(int(min_night)))
+#end_date = TextInput(title ='End Date', width=200, placeholder = str(int(max_night)))
 data_update_info = Div(text=' ', width=800, css_classes=['alert-style'])
 date_btn = Button(label='Limit Date Range', width=200, css_classes=['save_button'])
 
@@ -172,9 +172,8 @@ layout1 = layout([[title_1],
                   [page_logo],
                   [welcome],
                   [subtitle1],
-                  [data_table],
                   [subtitle1_5],
-                  [start_date, end_date, date_btn],
+                  [date_btn],
                   [data_update_info],
                   [data_instructions],
                   [update_btn],
@@ -183,15 +182,19 @@ layout1 = layout([[title_1],
                   [contact_info]])
 tab1 = Panel(child=layout1, title="Welcome")
 
-tab2 = fp_tab
-tab3 = pp_tab
-tab4 = sp_tab
+#tab2 = fp_tab
+#tab3 = pp_tab
+#tab4 = sp_tab
 #tab5 = tp_tab
 
-tabs = Tabs(tabs=[tab1, tab2, tab3, tab4]) #
+tabs = Tabs(tabs=[tab1])#, tab2])# , tab3, tab4]) #
 
-date_btn.on_click(limit_data)
-update_btn.on_click(update_data)
+#date_btn.on_click(limit_data)
+#update_btn.on_click(update_data)
 
 curdoc().title = 'DESI Instrument Performance Analysis Tool'
 curdoc().add_root(tabs)
+print('here2')
+#session = push_session(curdoc())
+#session.show()
+#session.loop_until_closed()
