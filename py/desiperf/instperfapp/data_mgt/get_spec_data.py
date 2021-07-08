@@ -18,7 +18,7 @@ class SPECData():
 
         self.save_dir = self.data_dir = os.path.join(os.environ['DATA_DIR'],'detector')
         self.spec_file = 'spec_all.fits.gz'
-        self.conn = psycopg2.connect(host="desi-db", port="5442", database="desi_dev", user="desi_reader", password="reader")
+        self.conn = psycopg2.connect(host="db.replicator.dev-cattle.stable.spin.nersc.org", port="60042", database="desi_dev", user="desi_reader", password="reader")
 
     def get_exp_df(self):
         exp_cols = ['id','data_location','targtra','targtdec','skyra','skydec','deltara','deltadec','reqtime','exptime','flavor','program','lead','focus','airmass',
@@ -208,7 +208,8 @@ class SPECData():
         return df
 
     def get_qa_df(self):
-        all_qa_files = {date: glob.glob('/exposures/nightwatch/{}/*/qa-*.fits'.format(date)) for date in self.dates}
+        all_qa_files = {date: glob.glob('/global/cfs/cdirs/desi/spectro/nightwatch/nersc/{}/*/qa-*.fits'.format(date)) for date in self.dates}
+        print(all_qa_files)
         
         dfs = []
         for night, files in all_qa_files.items():
